@@ -1,0 +1,28 @@
+Class.forName("org.apache.hive.jdbc.HiveDriver");
+		
+	//	Connection connection = DriverManager.getConnection("jdbc:hive2://10.215.28.222:10000/default;user=root,password=innotechx.com?mapred.job.queue.name=root.default", "root", "innotechx.com");
+	//	Connection connection = DriverManager.getConnection("jdbc:hive2://10.215.28.222:10000/default;?mapred.job.queue.name=root.default", "", "");
+		
+		//以指定的用户，在指定的队列提交mr任务
+		Connection connection = DriverManager.getConnection("jdbc:hive2://10.215.28.222:10000/default;?mapred.job.queue.name=root.lechuan.report", "jinyishu", "");
+		
+		Statement statement = connection.createStatement();
+		String sql = "select count (*) from maptest limit 10";
+		long startTime = System.currentTimeMillis();
+		//statement.executeQuery("set mapred.queue.names=root.default");
+		ResultSet resultSet = statement.executeQuery(sql);
+		int columnsCount = resultSet.getMetaData().getColumnCount();
+		while (resultSet.next()) {
+			StringBuilder stringBuilder = new StringBuilder();
+			for (int i = 1; i < columnsCount + 1; i++) {
+				stringBuilder.append(resultSet.getString(i));
+				stringBuilder.append(",");
+			}
+			System.out.println(stringBuilder.toString());
+		}
+		
+		long endTime = System.currentTimeMillis();
+		System.out.println(endTime - startTime);
+		
+		resultSet.close();
+		connection.close();
