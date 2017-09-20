@@ -4,7 +4,7 @@ Class.forName("org.apache.hive.jdbc.HiveDriver");
 	//	Connection connection = DriverManager.getConnection("jdbc:hive2://10.215.28.222:10000/default;?mapred.job.queue.name=root.default", "", "");
 		
 		//以指定的用户，在指定的队列提交mr任务
-		Connection connection = DriverManager.getConnection("jdbc:hive2://10.215.28.222:10000/default;?mapred.job.queue.name=root.lechuan.report", "jinyishu", "");
+		Connection connection = DriverManager.getConnection("jdbc:hive2://10.215.28.222:10000/default;?mapred.job.queue.name=root.lechuan.report;hive.execution.engine=spark", "jinyishu", "");
 		
 		Statement statement = connection.createStatement();
 		String sql = "select count (*) from maptest limit 10";
