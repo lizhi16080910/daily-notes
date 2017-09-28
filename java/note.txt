@@ -6,5 +6,6 @@
 3、java 截尾舍入：
 	举例：将29.7转换为int，则为29
 	如果想四舍五入的话，泽勇Math中的round方法。
-4、在对char，byte，short类型进行运算的时候，都会自动转换成int类型进行运算。	
+4、在对char，byte，short类型进行运算的时候，都会自动转换成int类型进行运算。
+5、java static初始化只有在必要时刻才会进行。	
    
