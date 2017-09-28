@@ -1,0 +1,7 @@
+1、java的基本类型是有void的，void不占用内存空间；
+   在Java虚拟机中没有任何供boolean值专用的字节码指令，Java语言表达式所操作的boolean值，在编译之后都使用Java虚拟机中的int数据类型来代替，而boolean数组将会被编码成Java虚拟机的byte数组，每个元素boolean元素占8位
+2、基本类型成员的默认值
+   在作为类成员时，Boolean：false ；char ： null； byte：0 ；short ：0 ，int ，long，float，double，都是0.
+   在作为局部变量（并非类的成员时），则可能被初始化为任意值。
+3、
+   
