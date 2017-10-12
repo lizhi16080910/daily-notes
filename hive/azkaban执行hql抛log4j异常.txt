@@ -1,0 +1,46 @@
+1、运行环境
+	hadoop 2.7.2
+	hive 2.0.1
+	azkaban
+
+2、异常表现
+	12-10-2017 07:21:29 CST rpt_quduopai_tab_video_p INFO - 17/10/12 07:21:29 INFO mr.MapredLocalTask: Executing: /usr/lib/hadoop-current/bin/hadoop jar /opt/apps/hive-current/lib/hive-exec-2.0.1.jar org.apache.hadoop.hive.ql.exec.mr.ExecDriver -localtask -plan file:/tmp/lechuan/21b9a80c-89ec-41b3-afa3-0fcd0f332033/hive_2017-10-12_07-00-42_486_4598380960374186739-1/-local-10015/plan.xml   -jobconffile file:/tmp/lechuan/21b9a80c-89ec-41b3-afa3-0fcd0f332033/hive_2017-10-12_07-00-42_486_4598380960374186739-1/-local-10016/jobconf.xml
+12-10-2017 07:21:32 CST rpt_quduopai_tab_video_p INFO - Exception in thread "main" java.lang.NoClassDefFoundError: org/apache/logging/log4j/core/config/Configurator
+12-10-2017 07:21:32 CST rpt_quduopai_tab_video_p INFO - 	at org.apache.hadoop.hive.common.LogUtils.initHiveLog4jDefault(LogUtils.java:121)
+12-10-2017 07:21:32 CST rpt_quduopai_tab_video_p INFO - 	at org.apache.hadoop.hive.common.LogUtils.initHiveLog4jCommon(LogUtils.java:73)
+12-10-2017 07:21:32 CST rpt_quduopai_tab_video_p INFO - 	at org.apache.hadoop.hive.common.LogUtils.initHiveExecLog4j(LogUtils.java:65)
+12-10-2017 07:21:32 CST rpt_quduopai_tab_video_p INFO - 	at org.apache.hadoop.hive.ql.exec.mr.ExecDriver.setupChildLog4j(ExecDriver.java:625)
+12-10-2017 07:21:32 CST rpt_quduopai_tab_video_p INFO - 	at org.apache.hadoop.hive.ql.exec.mr.ExecDriver.main(ExecDriver.java:696)
+12-10-2017 07:21:32 CST rpt_quduopai_tab_video_p INFO - 	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+12-10-2017 07:21:32 CST rpt_quduopai_tab_video_p INFO - 	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+12-10-2017 07:21:32 CST rpt_quduopai_tab_video_p INFO - 	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+12-10-2017 07:21:32 CST rpt_quduopai_tab_video_p INFO - 	at java.lang.reflect.Method.invoke(Method.java:498)
+12-10-2017 07:21:32 CST rpt_quduopai_tab_video_p INFO - 	at org.apache.hadoop.util.RunJar.run(RunJar.java:221)
+12-10-2017 07:21:32 CST rpt_quduopai_tab_video_p INFO - 	at org.apache.hadoop.util.RunJar.main(RunJar.java:136)
+12-10-2017 07:21:32 CST rpt_quduopai_tab_video_p INFO - Caused by: java.lang.ClassNotFoundException: org.apache.logging.log4j.core.config.Configurator
+12-10-2017 07:21:32 CST rpt_quduopai_tab_video_p INFO - 	at java.net.URLClassLoader.findClass(URLClassLoader.java:381)
+12-10-2017 07:21:32 CST rpt_quduopai_tab_video_p INFO - 	at java.lang.ClassLoader.loadClass(ClassLoader.java:424)
+12-10-2017 07:21:32 CST rpt_quduopai_tab_video_p INFO - 	at java.lang.ClassLoader.loadClass(ClassLoader.java:357)
+12-10-2017 07:21:32 CST rpt_quduopai_tab_video_p INFO - 	... 11 more
+12-10-2017 07:21:33 CST rpt_quduopai_tab_video_p INFO - Execution failed with exit status: 1
+12-10-2017 07:21:33 CST rpt_quduopai_tab_video_p INFO - 17/10/12 07:21:33 ERROR exec.Task: Execution failed with exit status: 1
+12-10-2017 07:21:33 CST rpt_quduopai_tab_video_p INFO - Obtaining error information
+12-10-2017 07:21:33 CST rpt_quduopai_tab_video_p INFO - 17/10/12 07:21:33 ERROR exec.Task: Obtaining error information
+12-10-2017 07:21:33 CST rpt_quduopai_tab_video_p INFO - 
+12-10-2017 07:21:33 CST rpt_quduopai_tab_video_p INFO - Task failed!
+12-10-2017 07:21:33 CST rpt_quduopai_tab_video_p INFO - Task ID:
+12-10-2017 07:21:33 CST rpt_quduopai_tab_video_p INFO -   Stage-9
+12-10-2017 07:21:33 CST rpt_quduopai_tab_video_p INFO - 
+12-10-2017 07:21:33 CST rpt_quduopai_tab_video_p INFO - Logs:
+12-10-2017 07:21:33 CST rpt_quduopai_tab_video_p INFO - 
+12-10-2017 07:21:33 CST rpt_quduopai_tab_video_p INFO - 17/10/12 07:21:33 ERROR exec.Task: 
+12-10-2017 07:21:33 CST rpt_quduopai_tab_video_p INFO - Task failed!
+12-10-2017 07:21:33 CST rpt_quduopai_tab_video_p INFO - Task ID:
+12-10-2017 07:21:33 CST rpt_quduopai_tab_video_p INFO -   Stage-9
+
+3、异常原因
+	执行该命令时/usr/lib/hadoop-current/bin/hadoop jar /opt/apps/hive-current/lib/hive-exec-2.0.1.jar org.apache.hadoop.hive.ql.exec.mr.ExecDriver
+	hive-exec-2.0.1.jar需要依赖以下jar：log4j-1.2-api-2.4.1.jar  log4j-api-2.4.1.jar  log4j-core-2.4.1.jar  log4j-slf4j-impl-2.4.1.jar  log4j-web-2.4.1.jar
+	hadoop命令启动时默认加载hadoop目录下的jar包，但是hadoop的log4j日志依赖的是：log4j-1.2.16.jar,与hive依赖的jar不一样，导致上述异常
+4、	解决办法
+	将hive所依赖的log4j jar包，复制到hadoop share/common/lib/ 目录下。
