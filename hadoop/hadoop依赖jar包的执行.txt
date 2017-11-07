@@ -1,0 +1,3 @@
+1、在执行脚本中添加HADOOP_CLASSPATH值
+HADOOP_CLASSPATH的值为jar包，每个jar包之间以":"分割
+例如：export HADOOP_CLASSPATH=jar1.jar:jar2.jar:jar3.jar

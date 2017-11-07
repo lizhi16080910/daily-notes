@@ -1,0 +1,1159 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!-- saved from url=(0046)http://www.csdn.net/article/2015-01-13/2823530 -->
+<html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<link href="http://c.csdnimg.cn/public/favicon.ico" rel="SHORTCUT ICON">
+
+	
+<title>深入浅出数据仓库中SQL性能优化之Hive篇-CSDN.NET </title>
+<meta name="description" content="Hive查询生成多个map reduce job，一个map reduce job又有map，reduce，spill，shuffle，sort等多个阶段，所以针对hive查询的优化可以大致分为针对MR中单个步骤的优化，针对MR全局的优化以及针对整个查询的优化。">
+<meta name="keywords" content="数据仓库,性能优化,SQL,Hive ,MapReduce">
+<meta name="author" content="CSDN.NET">
+<meta name="Copyright" content="CSDN.NET">
+<!-- toolbar start --> 
+<link href="./深入浅出数据仓库中SQL性能优化之Hive篇-CSDN.NET_files/index.css" type="text/css" rel="stylesheet">
+<script src="./深入浅出数据仓库中SQL性能优化之Hive篇-CSDN.NET_files/hm.js.下载"></script><script src="./深入浅出数据仓库中SQL性能优化之Hive篇-CSDN.NET_files/hm.js(1).下载"></script><script src="./深入浅出数据仓库中SQL性能优化之Hive篇-CSDN.NET_files/jquery-1.9.1.min.js.下载" type="text/javascript"></script>
+<!-- toolbar end -->
+<link href="./深入浅出数据仓库中SQL性能优化之Hive篇-CSDN.NET_files/content.css" rel="stylesheet" type="text/css">
+
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?6275c7f2c7d9617f47b5ea3c72633374";
+  var s = document.getElementsByTagName("script")[0];
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+<script src="./深入浅出数据仓库中SQL性能优化之Hive篇-CSDN.NET_files/tracking.js.下载" type="text/javascript"></script>
+<script src="./深入浅出数据仓库中SQL性能优化之Hive篇-CSDN.NET_files/share.js.下载"></script><link rel="stylesheet" type="text/css" href="./深入浅出数据仓库中SQL性能优化之Hive篇-CSDN.NET_files/comments.css"><script src="./深入浅出数据仓库中SQL性能优化之Hive篇-CSDN.NET_files/wxLogin.js.下载"></script><script type="text/javascript" charset="utf-8" src="./深入浅出数据仓库中SQL性能优化之Hive篇-CSDN.NET_files/tracking.js(1).下载"></script><script type="text/javascript" charset="utf-8" src="./深入浅出数据仓库中SQL性能优化之Hive篇-CSDN.NET_files/main.js.下载"></script><link rel="stylesheet" type="text/css" href="./深入浅出数据仓库中SQL性能优化之Hive篇-CSDN.NET_files/highlighter.css"><link type="text/css" rel="stylesheet" href="./深入浅出数据仓库中SQL性能优化之Hive篇-CSDN.NET_files/style.css"><script src="./深入浅出数据仓库中SQL性能优化之Hive篇-CSDN.NET_files/get_ads.php" type="text/javascript"></script><link rel="stylesheet" href="./深入浅出数据仓库中SQL性能优化之Hive篇-CSDN.NET_files/share_style0_32.css"></head>
+<body><div id="BAIDU_DUP_fp_wrapper" style="position: absolute; left: -1px; bottom: -1px; z-index: 0; width: 0px; height: 0px; overflow: hidden; visibility: hidden; display: none;"><iframe id="BAIDU_DUP_fp_iframe" src="./深入浅出数据仓库中SQL性能优化之Hive篇-CSDN.NET_files/o.html" style="width: 0px; height: 0px; visibility: hidden; display: none;"></iframe></div><div class="csdn-toolbar csdn-toolbar-skin-black ">        <div class="container row center-block ">          <div class="col-md-3 pull-left logo clearfix"><a href="http://www.csdn.net/?ref=toolbar" title="CSDN首页" target="_blank" class="icon"></a><a title="频道首页" href="http://cloud.csdn.net/?ref=toolbar_logo" class="img news-icon"></a></div>          <div class="pull-right login-wrap unlogin">            <ul class="btns">              <li class="loginlink"><a href="https://passport.csdn.net/account/login?ref=toolbar" target="_top">登录&nbsp;</a>|<a target="_top" href="http://passport.csdn.net/account/mobileregister?ref=toolbar&amp;action=mobileRegister">&nbsp;注册</a></li>              <li class="search">                <div class="icon on-search-icon">                  <div class="wrap">                    <div class="curr-icon-wrap">                      <div class="curr-icon"></div>                    </div>                    <form action="http://so.csdn.net/search" id="toolbar_search" method="get" target="_blank">                      <input type="hidden" value="toolbar" name="ref" accesskey="2">                      <div class="border">                        <input placeholder="搜索" type="text" value="" name="q" accesskey="2"><span class="icon-enter-sm"></span>                      </div>                    </form>                  </div>                </div>              </li>              <li class="favor">                <div class="icon on-favor-icon">                  <div class="wrap">                    <div class="curr-icon-wrap">                      <div class="curr-icon"></div>                    </div>                    <div style="display:none;" class="favor-success"><span class="msg">收藏成功</span>                      <div class="btns"><span class="btn btn-primary ok">确定</span></div>                    </div>                    <div style="display:none;" class="favor-failed"><span class="icon-danger-lg"></span><span class="msg">收藏失败，请重新收藏</span>                      <div class="btns"><span class="btn btn-primary ok">确定</span></div>                    </div>                    <form role="form" class="form-horizontal favor-form">                      <div class="form-group">                        <div class="clearfix">                          <label for="input-title" class="col-sm-2 control-label"><span class="red_txt">*</span>标题</label>                          <div class="col-sm-10">                            <input id="inputTitle" type="text" placeholder="" class="title form-control">                          </div>                        </div>                        <div class="alert alert-danger"><strong></strong>标题不能为空</div>                      </div>                      <div class="form-group" style="display:none;">                        <label for="input-url" class="col-sm-2 control-label">网址</label>                        <div class="col-sm-10">                          <input id="input-url" type="text" placeholder="" class="url form-control">                        </div>                      </div>                      <div class="form-group">                        <label for="input-tag" class="col-sm-2 tag control-label">标签</label>                        <div class="col-sm-10">                          <input id="input-tag" type="text" class="form-control tag">                        </div>                      </div>                      <div class="form-group">                        <label for="input-description" class="description col-sm-2 control-label">位置</label>                        <div class="col-sm-10">                          <div class="my_lib_box">                            个人主页&nbsp;-&nbsp;<a href="http://my.csdn.net/" target="_blank">我的知识</a>                          </div>                          <div class="checkbox">                            <div class="pull-left">                              <label>                                <input type="checkbox" name="share" class="save_lib_map" checked="checked">同时保存至：                              </label>                            </div>                            <div class="pull-left">                              <div class="dropdown">                                <button id="toolbar_sele_map" type="button">                                  选择知识图谱                                  <i class="fa fa-chevron-down"></i>                                </button>                                <div class="top_arr"></div>                                <div class="outside">                                  <ul class="dropdown-menu" id="toolbar_Design_knowledge"><li>选择知识图谱</li></ul>                                </div>                              </div>                            </div>                            <div class="pull-left new_txt">                              <a href="http://lib.csdn.net/my/create/structure" target="_blank">新建？</a>                            </div>                          </div>                        </div>                      </div>                      <div class="form-group">                        <div class="col-sm-offset-2 col-sm-10 ft">                          <div class="col-sm-4 pull-left" style="display:none">                            <div class="checkbox">                              <label>                                <input type="checkbox" name="share" checked="checked" class="share">公开                              </label>                            </div>                          </div>                          <div class="col-sm-8 pull-right favor-btns">                            <button type="button" class="cancel btn btn-default">取消</button>                            <button type="submit" class="submit btn btn-primary">收藏</button>                          </div>                        </div>                      </div>                    </form>                  </div>                </div>              </li>              <li class="notify">                <div style="display:none" class="number"></div>                <div style="display:none" class="icon-hasnotes-sm"></div>                <div id="header_notice_num"></div>                <div class="icon on-notify-icon">                  <div class="wrap">                    <div class="curr-icon-wrap">                      <div class="curr-icon"></div>                    </div>                    <div id="note1" class="csdn_note">                      <div class="box"></div>                    <iframe src="./深入浅出数据仓库中SQL性能优化之Hive篇-CSDN.NET_files/saved_resource.html" frameborder="0" allowtransparency="true" style="z-index:-1;position:absolute;top:0;left:0;width:100%;height:100%;background:transparent"></iframe></div>                  </div>                </div>              </li>              <li class="ugc">                <div class="icon on-ugc-icon">                  <div class="wrap clearfix">                    <div class="curr-icon-wrap">                      <div class="curr-icon"></div>                    </div>                    <dl>                      <dt><a href="http://geek.csdn.net/news/expert?ref=toolbar" target="_blank" class="p-news clearfix" style="display:none;"><em class="icon"></em><span>分享资讯</span></a></dt>                      <dt style="border: none;"><a href="http://u.download.csdn.net/upload?ref=toolbar" target="_blank" class="p-doc clearfix"><em class="icon"></em><span>传PPT/文档</span></a></dt>                      <dt><a href="http://bbs.csdn.net/topics/new?ref=toolbar" target="_blank" class="p-ask clearfix"><em class="icon"></em><span>提问题</span></a></dt>                      <dt><a href="http://write.blog.csdn.net/postedit?ref=toolbar" target="_blank" class="p-blog clearfix"><em class="icon"></em><span>写博客</span></a></dt>                      <dt><a href="http://gitbook.cn/new/gitchat/activity?utm_source=csdnblog1" target="_blank" class="gitchat clearfix"><em class="icon"></em><span>发布Chat</span></a></dt>                      <dt><a href="http://u.download.csdn.net/upload?ref=toolbar" target="_blank" class="p-src clearfix"><em class="icon"></em><span>传资源</span></a></dt>                      <dt><a href="https://code.csdn.net/projects/new?ref=toolbar" target="_blank" class="c-obj clearfix"><em class="icon"></em><span>创建项目</span></a></dt>                      <dt><a href="https://code.csdn.net/snippets/new?ref=toolbar" target="_blank" class="c-code clearfix"><em class="icon"></em><span>创建代码片</span></a></dt>                    </dl>                  </div>                </div>              </li>              <li class="profile">                <div class="icon on-profile-icon"><img src="./深入浅出数据仓库中SQL性能优化之Hive篇-CSDN.NET_files/100x100.jpg" class="curr-icon-img">                  <div class="wrap clearfix">                    <div class="curr-icon-wrap">                      <div class="curr-icon"></div>                    </div>                    <div class="bd">                      <dl class="clearfix">                        <dt class="pull-left img"><a target="_blank" href="http://my.csdn.net/?ref=toolbar" class="avatar"><img src="./深入浅出数据仓库中SQL性能优化之Hive篇-CSDN.NET_files/100x100.jpg"></a></dt>                        <dd class="info" style="border: none;"><a target="_blank" href="http://my.csdn.net/?ref=toolbar" class="nickname"></a><a class="set-nick" href="https://passport.csdn.net/account/profile">设置昵称<span class="write-icon"></span></a><span class="dec"><a class="fill-dec" href="http://my.csdn.net/" target="_blank">编辑自我介绍，让更多人了解你<span class="write-icon"></span></a></span></dd>                      </dl>                    </div>                    <div class="ft clearfix"><a target="_blank" href="http://my.csdn.net/my/account/changepwd?ref=toolbar" class="pull-left"><span class="icon-cog"></span>帐号设置</a><a href="https://passport.csdn.net/account/logout?ref=toolbar" target="_top" class="pull-left" style="margin-left:132px; width:18px; height:27px; white-space:nowrap; overflow:hidden;"><span class="icon-signout"></span><span class="out">退出</span></a></div>                  </div>                </div>              </li>              <li class="apps">                <div id="chasnew123" class="hasnew" style="display: none;"></div>                <div id="cappsarea123" class="icon on-apps-icon">                  <div class="wrap clearfix">                    <div class="curr-icon-wrap">                      <div class="curr-icon"></div>                    </div>                  <div class="detail">                    <dl>                      <dt>                        <h5>社区</h5>                      </dt>                      <dd> <a href="http://blog.csdn.net/?ref=toolbar" target="_blank">博客</a></dd>                      <dd> <a href="http://bbs.csdn.net/?ref=toolbar" target="_blank">论坛</a></dd>                      <dd> <a href="http://download.csdn.net/?ref=toolbar" target="_blank">下载</a></dd>                      <dd> <a href="http://lib.csdn.net/?ref=toolbar" target="_blank">知识库</a></dd>                      <dd><a href="http://ask.csdn.net/?ref=toolbar" target="_blank">技术问答</a></dd>                      <dd><a href="http://geek.csdn.net/?ref=toolbar" target="_blank">极客头条</a></dd>                      <dd style="display:none"> <a href="http://hero.csdn.net/?ref=toolbar" target="_blank">英雄会</a></dd>                    </dl>                  </div>                  <div class="detail">                    <dl>                      <dt>                        <h5>服务</h5>                      </dt>                      <dd style="display:none"> <a href="http://job.csdn.net/?ref=toolbar" target="_blank">JOB<img src="./深入浅出数据仓库中SQL性能优化之Hive篇-CSDN.NET_files/new.gif" style="display: none; margin-top: -26px; width: 23px;"></a></dd>                      <dd> <a href="http://edu.csdn.net/?ref=toolbar" target="_blank">学院<img src="./深入浅出数据仓库中SQL性能优化之Hive篇-CSDN.NET_files/new.gif" style="display: none; margin-top: -26px; width: 23px;"></a></dd>                      <dd> <a href="https://code.csdn.net/?ref=toolbar" target="_blank">CODE</a></dd>                      <dd> <a href="http://huiyi.csdn.net/?ref=toolbar" target="_blank">活动</a></dd>                      <dd> <a href="http://www.csto.com/?ref=toolbar" target="_blank">CSTO</a></dd>                      <dd> <a href="http://mall.csdn.net/?ref=toolbar" target="_blank">C币兑换<img src="./深入浅出数据仓库中SQL性能优化之Hive篇-CSDN.NET_files/new.gif" style="display: none; margin-top: -26px; width: 23px;"></a></dd>                    </dl>                  </div>                  <div class="detail last">                    <dl>                      <dt>                        <h5>俱乐部</h5>                      </dt>                      <dd> <a href="http://cto.csdn.net/?ref=toolbar" target="_blank">CTO俱乐部</a></dd>                      <dd> <a href="http://student.csdn.net/?ref=toolbar" target="_blank">高校俱乐部</a></dd>                    </dl>                  </div>                </div>              </div>            </li>            </ul>          </div>        </div>    </div>
+<script type="text/javascript" ads-src="http://csdnim.qtmojo.com/main/s?user=allyestest|allyestest|allyestest0410&amp;db=csdnim&amp;border=0&amp;local=yes&amp;js=ie" src="./深入浅出数据仓库中SQL性能优化之Hive篇-CSDN.NET_files/AllyesDeliver.min.js.下载" charset="gbk" id="allyes_ins_21df0c4e5" ads-outputs="0" ads-tid="e12b0c41_0"></script><div id="e12b0c41_0" style="padding:0;margin:0;border:0;"><script type="text/javascript" data-belong="allyes" src="http://csdnim.qtmojo.com/main/s?user=allyestest|allyestest|allyestest0410&amp;db=csdnim&amp;border=0&amp;local=yes&amp;js=ie"></script><script type="text/javascript" data-belong="allyes" src="./深入浅出数据仓库中SQL性能优化之Hive篇-CSDN.NET_files/delay.min.js.下载"></script><script type="text/javascript" data-belong="allyes" src="./深入浅出数据仓库中SQL性能优化之Hive篇-CSDN.NET_files/delay.min.js.下载"></script><script type="text/javascript" data-belong="allyes" src="./深入浅出数据仓库中SQL性能优化之Hive篇-CSDN.NET_files/delay.min.js.下载"></script><script type="text/javascript" data-belong="allyes" src="./深入浅出数据仓库中SQL性能优化之Hive篇-CSDN.NET_files/delay.min.js.下载"></script><script type="text/javascript" data-belong="allyes" src="./深入浅出数据仓库中SQL性能优化之Hive篇-CSDN.NET_files/delay.min.js.下载"></script></div>
+
+<script type="text/javascript">
+  var protocol = window.location.protocol;
+  document.write('<script type="text/javascript" src="' +protocol+ '//c.csdnimg.cn/pubfooter/js/repoAddr2.js?v=' + Math.random() + '"></'+'script>');
+</script><script type="text/javascript" src="./深入浅出数据仓库中SQL性能优化之Hive篇-CSDN.NET_files/repoAddr2.js.下载"></script>
+<script src="./深入浅出数据仓库中SQL性能优化之Hive篇-CSDN.NET_files/html.js.下载" type="text/javascript" id="toolbar-tpl-scriptId" prod="news" skin="black" domain="http://cloud.csdn.net"></script>
+<script type="text/javascript" src="./深入浅出数据仓库中SQL性能优化之Hive篇-CSDN.NET_files/m.js.下载"></script>
+<div class="wrap">
+	<!-- 间歇滚动 -->
+	<script language="javascript">function T(n){document.getElementById("ArticleCnt").style.fontSize=n+"px";}</script>
+	<script src="./深入浅出数据仓库中SQL性能优化之Hive篇-CSDN.NET_files/jquery.autoscroll.js.下载" type="text/javascript"></script><!--滚动js-->
+	<!-- //间歇滚动 -->
+	<script type="text/javascript">BAIDU_CLB_preloadSlots("421718","421717","421715","421714","421712","445821","421709","119835");</script>
+</div>
+	<!-- nav -->
+	<div id="xcx_tabmenu" class="nav">
+		<div id="cx_tabmenu" class="cx_tabmenu">
+			<!-- lev one -->
+			<div id="ddimagetabs" class="lev_1">
+				<ul>
+				<li><a href="http://news.csdn.net/" id="sclink1" target="_blank" onclick="LogClickCount(this, 392);" class="">业界</a></li>
+				<li><a href="http://mobile.csdn.net/" id="sclink2" target="_blank" onclick="LogClickCount(this, 393);" class="">移动开发</a></li>
+				<li><a href="http://cloud.csdn.net/" id="sclink3" target="_blank" onclick="LogClickCount(this, 394);" class="current">云计算</a></li>
+				<li><a href="http://sd.csdn.net/" id="sclink4" target="_blank" onclick="LogClickCount(this, 395);" class="">软件研发</a></li>
+				<li><a href="http://programmer.csdn.net/" id="sclink6" target="_blank" class="">程序员</a></li>
+				<li><a href="http://geek.csdn.net/" id="sclink7" target="_blank" class="">极客头条</a></li>
+				<li><a href="http://special.csdn.net/newssubject/index.html" id="sclink5" target="_blank" class="">专题</a></li>
+				<!--<li><a href="http://share.csdn.net" id="sclink8" target="_blank">CSDN Share</a></li>
+				<li><a href="http://read.csdn.net/" id="sclink9" target="_blank">我的Tag</a></li>-->
+				</ul>
+			</div>
+			<!-- lev two -->
+			<div id="tabcontentcontainer" class="lev_2">
+				<div class="tabcontent" id="sc1">
+					<ul>
+					 
+					<li><a href="http://www.csdn.net/tag/cto/news" target="_blank">CTO</a></li>
+					 
+					<li><a href="http://www.csdn.net/tag/%E4%BA%A7%E5%93%81/news" target="_blank">产品</a></li>
+					 
+					<li><a href="http://www.csdn.net/tag/%E5%88%9B%E4%B8%9A/news" target="_blank">创业</a></li>
+					 
+					<li><a href="http://www.csdn.net/tag/%E8%81%8C%E5%9C%BA/news" target="_blank">职场</a></li>
+					 
+					<li><a href="http://www.csdn.net/tag/%E4%BA%BA%E7%89%A9/news" target="_blank">人物</a></li>
+					 
+					<li><a href="http://www.csdn.net/tag/%E5%AF%B9%E8%AF%9Dcto/news" target="_blank">对话CTO</a></li>
+					 
+					<li><a href="http://www.csdn.net/tag/%E7%A4%BE%E5%8C%BA%E4%B9%8B%E6%98%9F/news" target="_blank">社区之星</a></li>
+										</ul>
+				</div>
+				<div class="tabcontent" id="sc2">
+					<ul>
+					 
+					<li><a href="http://www.csdn.net/tag/android/news" target="_blank">Android</a></li>
+					 
+					<li><a href="http://www.csdn.net/tag/ios/news" target="_blank">iOS</a></li>
+					 
+					<li><a href="http://www.csdn.net/tag/%E7%A7%BB%E5%8A%A8%E6%B8%B8%E6%88%8F/news" target="_blank">移动游戏</a></li>
+					 
+					<li><a href="http://www.csdn.net/tag/html5/news" target="_blank">HTML5</a></li>
+					 
+					<li><a href="http://www.csdn.net/tag/%E6%99%BA%E8%83%BD%E7%A1%AC%E4%BB%B6/news" target="_blank">智能硬件</a></li>
+					 
+					<li><a href="http://www.csdn.net/tag/swift/news" target="_blank">Swift</a></li>
+					 
+					<li><a href="http://www.csdn.net/tag/%E8%BF%91%E5%8C%A0/news" target="_blank">近匠</a></li>
+										</ul>
+				</div>
+				<div class="tabcontent" id="sc3" style="display: block;">
+					<ul>
+					 
+					<li><a href="http://www.csdn.net/tag/%E5%A4%A7%E6%95%B0%E6%8D%AE/news" target="_blank">大数据</a></li>
+					 
+					<li><a href="http://www.csdn.net/tag/%E6%95%B0%E6%8D%AE%E4%B8%AD%E5%BF%83/news" target="_blank">数据中心</a></li>
+					 
+					<li><a href="http://www.csdn.net/tag/%E6%9C%8D%E5%8A%A1%E5%99%A8/news" target="_blank">服务器</a></li>
+					 
+					<li><a href="http://www.csdn.net/tag/%E5%AD%98%E5%82%A8/news" target="_blank">存储</a></li>
+					 
+					<li><a href="http://www.csdn.net/tag/%E8%99%9A%E6%8B%9F%E5%8C%96/news" target="_blank">虚拟化</a></li>
+					 
+					<li><a href="http://www.csdn.net/tag/nosql/news" target="_blank">NoSQL</a></li>
+					 
+					<li><a href="http://www.csdn.net/tag/%E5%AE%89%E5%85%A8/news" target="_blank">安全</a></li>
+					 
+					<li><a href="http://www.csdn.net/tag/%E4%BA%91%E5%85%88%E9%94%8B/news" target="_blank">云先锋</a></li>
+										</ul>
+				</div>
+				<div class="tabcontent" id="sc4">
+					<ul>
+					 
+					<li><a href="http://www.csdn.net/tag/%E7%BC%96%E7%A8%8B%E8%AF%AD%E8%A8%80/news" target="_blank">编程语言</a></li>
+					 
+					<li><a href="http://www.csdn.net/tag/%E5%BC%80%E6%94%BE%E5%B9%B3%E5%8F%B0/news" target="_blank">开放平台</a></li>
+					 
+					<li><a href="http://www.csdn.net/tag/html5/news" target="_blank">HTML5</a></li>
+					 
+					<li><a href="http://www.csdn.net/tag/%E5%89%8D%E7%AB%AF%E5%BC%80%E5%8F%91/news" target="_blank">前端开发</a></li>
+					 
+					<li><a href="http://www.csdn.net/tag/%E6%99%BA%E8%83%BD%E7%AE%97%E6%B3%95/news" target="_blank">智能算法</a></li>
+					 
+					<li><a href="http://www.csdn.net/tag/%E6%9E%B6%E6%9E%84/news" target="_blank">架构</a></li>
+					 
+					<li><a href="http://www.csdn.net/tag/%E5%BC%80%E6%BA%90/news" target="_blank">开源</a></li>
+					 
+					<li><a href="http://www.csdn.net/tag/%E6%95%B0%E6%8D%AE%E5%BA%93/news" target="_blank">数据库</a></li>
+										</ul>
+				</div>
+				<div class="tabcontent" id="sc5">
+					<ul>
+					 
+					<li><a href="http://www.csdn.net/tag/%E5%B0%81%E9%9D%A2%E7%A7%80/news" target="_blank">封面秀</a></li>
+					 
+					<li><a href="http://www.csdn.net/tag/%E7%89%B9%E5%88%AB%E7%AD%96%E5%88%92/news" target="_blank">特别策划</a></li>
+					 
+					<li><a href="http://www.csdn.net/tag/%E7%AE%A1%E7%90%86%E5%AE%9E%E8%B7%B5/news" target="_blank">管理实践</a></li>
+					 
+					<li><a href="http://www.csdn.net/tag/%E6%8A%80%E6%9C%AF%E6%9E%B6%E6%9E%84/news" target="_blank">技术架构</a></li>
+										</ul>
+				</div>
+			</div>
+		</div>
+	</div>
+	<script type="text/javascript">
+	// The idea borrowed from dynamicDrive.com
+	
+	var initialtab = [1, "sc1"]
+	
+	var previoustab = "";
+	var intv;
+	function expandcontent(cid, aobject) {
+	    stopTimer();
+	    highlighttab(aobject);
+	    if (previoustab != ""){
+	         document.getElementById(previoustab).style.display = "none";
+	    }
+	    document.getElementById(cid).style.display = "block";
+	    previoustab = cid;
+	}
+	
+	function highlighttab(aobject) {
+	    stopTimer();
+	
+	   if (typeof tabobjlinks == "undefined"){
+	         collectddimagetabs();
+	    }
+	   for (i = 0; i < tabobjlinks.length; i++){
+	    	tabobjlinks[i].className = "";   
+	    }
+	    aobject.className = "current";
+	}
+	
+	function collectddimagetabs() {
+	    var tabobj = document.getElementById("ddimagetabs");
+	    tabobjlinks = tabobj.getElementsByTagName("A");
+	}
+	
+	function startTimer() {
+	    intv = setTimeout("expandcontent(initialtab[1], tabobjlinks[initialtab[0]-1])", 2000);
+	}
+	
+	function stopTimer() {
+	    clearTimeout(intv);
+	}
+	
+	$(document).ready(function(){ 
+		collectddimagetabs();
+		var domain = new Array('news.','mobile.','cloud.','sd.','programmer.');
+		for(var i=0;i<domain.length;i++){
+			if(window.location.href.indexOf(domain[i]) > 0){
+				expandcontent('sc'+(i+1), tabobjlinks[i]);
+			}
+		}
+		$('#button_both').click(function(){
+			var key=$('#queries_searchfield_query-new').val();
+			key = $.trim(key);
+			if(key==""){
+				alert("关键字不能为空！");
+			}
+			else{
+				key =  encodeURIComponent(key)
+				var url="http://so.csdn.net/search?sort=created_at&t=news&q="+key;
+				window.location.href=url;
+			}
+			return false;
+		});
+	});
+	
+	</script>
+ 
+<div class="wrap">
+	
+	
+		<div class="ad_960">
+		<ins data-revive-zoneid="94" data-revive-id="8c38e720de1c90a6f6ff52f3f89c4d57" id="revive-0-0"></ins>
+	</div>
+		
+	<div class="brea_nav">
+				<span class="fr">
+		<a href="http://news.csdn.net/rss_cloud.html" class="rss" target="_blank">订阅云计算RSS</a>					
+		</span><a href="http://www.csdn.net/">CSDN首页</a><em>&gt;</em>
+		<a href="http://cloud.csdn.net/" target="_blank">云计算</a>	</div>
+	
+	<div class="content">
+		<div class="left">
+			<div class="detail">
+				<h1 class="title">深入浅出数据仓库中SQL性能优化之Hive篇</h1>
+				<h4>
+					<div class="tit_bar">
+						发表于<span class="ago">2015-01-13 10:42</span>|
+						<span class="view_time">35986次阅读</span>| 
+						来源<span class="ago">CSDN</span>|
+						<span class="num_recom"><font id="remark_count1" class="cmtcount" style="font-size:12px;color:#c00;">26</font> 条评论</span>| 
+						作者<span class="ago">孙逸</span>
+					</div>
+				</h4>
+				<div class="tag"><a href="http://www.csdn.net/tag/%E6%95%B0%E6%8D%AE%E4%BB%93%E5%BA%93/news">数据仓库</a><a href="http://www.csdn.net/tag/%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/news">性能优化</a><a href="http://www.csdn.net/tag/sql/news">SQL</a><a href="http://www.csdn.net/tag/hive%20/news">Hive </a><a href="http://www.csdn.net/tag/mapreduce/news">MapReduce</a></div>
+				<div class="summary">
+					<input type="hidden" id="article_description" name="article_description" value="Hive查询生成多个map reduce job，一个map reduce job又有map，reduce，spill，shuffle，sort等多个阶段，所以针对hive查询的优化可以大致分为针对MR中单个步骤的优化，针对MR全局的优化以及针对整个查询的优化。">
+				<script type="text/javascript" charset="utf-8">
+(function(){
+  var _w = 22 , _h = 16;
+  var article_description=$("#article_description").val();
+  var param = {
+    url:location.href,
+    type:'3',
+    count:'', /**是否显示分享数，1显示(可选)*/
+    appkey:'', /**您申请的应用appkey,显示分享来源(可选)*/
+    title:article_description, /**分享的文字内容(可选，默认为所在页面的title)*/
+    pic:'', /**分享图片的路径(可选)*/
+    ralateUid:'', /**关联用户的UID，分享微博会@该用户(可选)*/
+	language:'zh_cn', /**设置语言，zh_cn|zh_tw(可选)*/
+    rnd:new Date().valueOf()
+  }
+  var temp = [];
+  for( var p in param ){
+    temp.push(p + '=' + encodeURIComponent( param[p] || '' ) )
+  }
+  document.write('<iframe allowTransparency="true" frameborder="0" scrolling="no" src="http://hits.sinajs.cn/A1/weiboshare.html?' + temp.join('&') + '" width="'+ _w+'" height="'+_h+'"></iframe>')
+})()
+</script><iframe allowtransparency="true" frameborder="0" scrolling="no" src="./深入浅出数据仓库中SQL性能优化之Hive篇-CSDN.NET_files/weiboshare.html" width="22" height="16"></iframe><strong>摘要：</strong>Hive查询生成多个map reduce job，一个map reduce job又有map，reduce，spill，shuffle，sort等多个阶段，所以针对hive查询的优化可以大致分为针对MR中单个步骤的优化，针对MR全局的优化以及针对整个查询的优化。				</div>
+				<div class="con news_content">
+				<p>一个Hive查询生成多个Map Reduce Job，一个Map Reduce Job又有Map，Reduce，Spill，Shuffle，Sort等多个阶段，所以针对Hive查询的优化可以大致分为针对MR中单个步骤的优化（其中又会有细分），针对MR全局的优化，和针对整个查询（多MR
+    Job）的优化，下文会分别阐述。</p>
+<p style="text-align: center;">
+    <img src="./深入浅出数据仓库中SQL性能优化之Hive篇-CSDN.NET_files/54b4810c17bf4_middle.jpg" style="">
+    <br>
+</p>
+<p>在开始之前，先把MR的流程图帖出来（摘自Hadoop权威指南），方便后面对照。另外要说明的是，这个优化只是针对Hive 0.9版本，而不是后来Hortonwork发起Stinger项目之后的版本。相对应的Hadoop版本是1.x而非2.x。</p>
+<p style="text-align: center;">
+    <img src="./深入浅出数据仓库中SQL性能优化之Hive篇-CSDN.NET_files/54b4811772cf5_middle.jpg" style="">
+    <br>
+    </p>
+     <h2>Map阶段的优化(Map phase)</h2>
+
+    <p>Map阶段的优化，主要是确定合适的Map数。那么首先要了解Map数的计算公式：</p>
+    <p></p><div class="dp-highlighter bg_js"><div class="bar"><div class="tools"><b>[js]</b> <a href="http://www.csdn.net/article/2015-01-13/2823530#" class="ViewSource" title="view plain" onclick="dp.sh.Toolbar.Command(&#39;ViewSource&#39;,this);return false;">view plain</a><a href="http://www.csdn.net/article/2015-01-13/2823530#" class="CopyToClipboard" title="copy" onclick="dp.sh.Toolbar.Command(&#39;CopyToClipboard&#39;,this);return false;">copy</a><a href="http://www.csdn.net/article/2015-01-13/2823530#" class="PrintSource" title="print" onclick="dp.sh.Toolbar.Command(&#39;PrintSource&#39;,this);return false;">print</a><a href="http://www.csdn.net/article/2015-01-13/2823530#" class="About" title="?" onclick="dp.sh.Toolbar.Command(&#39;About&#39;,this);return false;">?</a><div style="position: absolute; left: 389px; top: 1206px; width: 18px; height: 18px; z-index: 99;"><embed id="ZeroClipboardMovie_1" src="http://csdnimg.cn/public/highlighter/ZeroClipboard.swf?e8a7c9a" loop="false" menu="false" quality="best" bgcolor="#ffffff" width="18" height="18" name="ZeroClipboardMovie_1" align="middle" allowscriptaccess="always" allowfullscreen="false" type="application/x-shockwave-flash" pluginspage="http://www.macromedia.com/go/getflashplayer" flashvars="id=1&amp;width=18&amp;height=18" wmode="transparent"></div></div></div><ol start="1" class="dp-c"><li class="alt"><span><span>num_Map_tasks&nbsp;=&nbsp;max[${Mapred.min.split.size}，&nbsp;&nbsp;</span></span></li><li class=""><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;min(${dfs.block.size}，&nbsp;${Mapred.max.split.size})]&nbsp;&nbsp;</span></li></ol></div><pre class="js" name="code" style="display: none;">num_Map_tasks = max[${Mapred.min.split.size}，
+                min(${dfs.block.size}， ${Mapred.max.split.size})]</pre>
+
+    <p></p>
+    <p></p>
+    <blockquote style="border-left-width: 4px; border-left-style: solid; border-left-color: rgb(221， 221， 221); padding-left: 1em; margin-left: 3em !important; font-style: normal !important; color: rgb(119， 119， 119);">
+        <ul>
+            <li><span style="background-color: initial;">Mapred.min.split.size指的是数据的最小分割单元大小。</span>
+
+            </li>
+        </ul>
+        <ul>
+            <li><span style="background-color: initial;">Mapred.max.split.size指的是数据的最大分割单元大小。</span>
+
+            </li>
+        </ul>
+        <ul>
+            <li><span style="background-color: initial;">dfs.block.size指的是HDFS设置的数据块大小。</span>
+
+            </li>
+        </ul>
+    </blockquote>
+    <p></p>
+    <p>一般来说dfs.block.size这个值是一个已经指定好的值，而且这个参数Hive是识别不到的：
+        <br>
+    </p>
+    <p></p><div class="dp-highlighter bg_js"><div class="bar"><div class="tools"><b>[js]</b> <a href="http://www.csdn.net/article/2015-01-13/2823530#" class="ViewSource" title="view plain" onclick="dp.sh.Toolbar.Command(&#39;ViewSource&#39;,this);return false;">view plain</a><a href="http://www.csdn.net/article/2015-01-13/2823530#" class="CopyToClipboard" title="copy" onclick="dp.sh.Toolbar.Command(&#39;CopyToClipboard&#39;,this);return false;">copy</a><a href="http://www.csdn.net/article/2015-01-13/2823530#" class="PrintSource" title="print" onclick="dp.sh.Toolbar.Command(&#39;PrintSource&#39;,this);return false;">print</a><a href="http://www.csdn.net/article/2015-01-13/2823530#" class="About" title="?" onclick="dp.sh.Toolbar.Command(&#39;About&#39;,this);return false;">?</a><div style="position: absolute; left: 389px; top: 1462px; width: 18px; height: 18px; z-index: 99;"><embed id="ZeroClipboardMovie_2" src="http://csdnimg.cn/public/highlighter/ZeroClipboard.swf?e8a7c9a" loop="false" menu="false" quality="best" bgcolor="#ffffff" width="18" height="18" name="ZeroClipboardMovie_2" align="middle" allowscriptaccess="always" allowfullscreen="false" type="application/x-shockwave-flash" pluginspage="http://www.macromedia.com/go/getflashplayer" flashvars="id=2&amp;width=18&amp;height=18" wmode="transparent"></div></div></div><ol start="1" class="dp-c"><li class="alt"><span><span>Hive&gt;&nbsp;set&nbsp;dfs.block.size;&nbsp;&nbsp;</span></span></li><li class=""><span>dfs.block.size&nbsp;is&nbsp;undefined&nbsp;&nbsp;</span></li></ol></div><pre class="js" name="code" style="display: none;">Hive&gt; set dfs.block.size;
+dfs.block.size is undefined</pre>
+
+    <p></p>
+    <p>所以实际上只有Mapred.min.split.size和Mapred.max.split.size这两个参数（本节内容后面就以min和max指代这两个参数）来决定Map数量。在Hive中min的默认值是1B，max的默认值是256MB：
+        <br>
+    </p>
+    <p></p><div class="dp-highlighter bg_js"><div class="bar"><div class="tools"><b>[js]</b> <a href="http://www.csdn.net/article/2015-01-13/2823530#" class="ViewSource" title="view plain" onclick="dp.sh.Toolbar.Command(&#39;ViewSource&#39;,this);return false;">view plain</a><a href="http://www.csdn.net/article/2015-01-13/2823530#" class="CopyToClipboard" title="copy" onclick="dp.sh.Toolbar.Command(&#39;CopyToClipboard&#39;,this);return false;">copy</a><a href="http://www.csdn.net/article/2015-01-13/2823530#" class="PrintSource" title="print" onclick="dp.sh.Toolbar.Command(&#39;PrintSource&#39;,this);return false;">print</a><a href="http://www.csdn.net/article/2015-01-13/2823530#" class="About" title="?" onclick="dp.sh.Toolbar.Command(&#39;About&#39;,this);return false;">?</a><div style="position: absolute; left: 389px; top: 1621px; width: 18px; height: 18px; z-index: 99;"><embed id="ZeroClipboardMovie_3" src="http://csdnimg.cn/public/highlighter/ZeroClipboard.swf?e8a7c9a" loop="false" menu="false" quality="best" bgcolor="#ffffff" width="18" height="18" name="ZeroClipboardMovie_3" align="middle" allowscriptaccess="always" allowfullscreen="false" type="application/x-shockwave-flash" pluginspage="http://www.macromedia.com/go/getflashplayer" flashvars="id=3&amp;width=18&amp;height=18" wmode="transparent"></div></div></div><ol start="1" class="dp-c"><li class="alt"><span><span>Hive&gt;&nbsp;set&nbsp;Mapred.min.split。size;&nbsp;&nbsp;</span></span></li><li class=""><span>Mapred.min.split.size=1&nbsp;&nbsp;</span></li><li class="alt"><span>Hive&gt;&nbsp;set&nbsp;Mapred.max.split。size;&nbsp;&nbsp;</span></li><li class=""><span>Mapred.max.split.size=256000000&nbsp;&nbsp;</span></li></ol></div><pre class="js" name="code" style="display: none;">Hive&gt; set Mapred.min.split。size;
+Mapred.min.split.size=1
+Hive&gt; set Mapred.max.split。size;
+Mapred.max.split.size=256000000</pre>
+
+    <p></p>
+    <p>所以如果不做修改的话，就是1个Map task处理256MB数据，我们就以调整max为主。通过调整max可以起到调整Map数的作用，减小max可以增加Map数，增大max可以减少Map数。需要提醒的是，直接调整Mapred.Map.tasks这个参数是没有效果的。</p>
+    <p>调整大小的时机根据查询的不同而不同，总的来讲可以通过观察Map task的完成时间来确定是否需要增加Map资源。如果Map task的完成时间都是接近1分钟，甚至几分钟了，那么往往增加Map数量，使得每个Map
+        task处理的数据量减少，能够让Map task更快完成；而如果Map task的运行时间已经很少了，比如10-20秒，这个时候增加Map不太可能让Map
+        task更快完成，反而可能因为Map需要的初始化时间反而让Job总体速度变慢，这个时候反而需要考虑是否可以把Map的数量减少，这样可以节省更多资源给其他Job。</p>
+     <h2>Reduce阶段的优化(Reduce phase)</h2>
+
+    <p>这里说的Reduce阶段，是指前面流程图中的Reduce phase（实际的Reduce计算）而非图中整个Reduce task。Reduce阶段优化的主要工作也是选择合适的Reduce
+        task数量，跟上面的Map优化类似。</p>
+    <p>与Map优化不同的是，Reduce优化时，可以直接设置Mapred。Reduce。tasks参数从而直接指定Reduce的个数。当然直接指定Reduce个数虽然比较方便，但是不利于自动扩展。Reduce数的设置虽然相较Map更灵活，但是也可以像Map一样设定一个自动生成规则，这样运行定时Job的时候就不用担心原来设置的固定Reduce数会由于数据量的变化而不合适。</p>
+    <p>Hive估算Reduce数量的时候，使用的是下面的公式：</p>
+    <p></p><div class="dp-highlighter bg_js"><div class="bar"><div class="tools"><b>[js]</b> <a href="http://www.csdn.net/article/2015-01-13/2823530#" class="ViewSource" title="view plain" onclick="dp.sh.Toolbar.Command(&#39;ViewSource&#39;,this);return false;">view plain</a><a href="http://www.csdn.net/article/2015-01-13/2823530#" class="CopyToClipboard" title="copy" onclick="dp.sh.Toolbar.Command(&#39;CopyToClipboard&#39;,this);return false;">copy</a><a href="http://www.csdn.net/article/2015-01-13/2823530#" class="PrintSource" title="print" onclick="dp.sh.Toolbar.Command(&#39;PrintSource&#39;,this);return false;">print</a><a href="http://www.csdn.net/article/2015-01-13/2823530#" class="About" title="?" onclick="dp.sh.Toolbar.Command(&#39;About&#39;,this);return false;">?</a><div style="position: absolute; left: 389px; top: 2298px; width: 18px; height: 18px; z-index: 99;"><embed id="ZeroClipboardMovie_4" src="http://csdnimg.cn/public/highlighter/ZeroClipboard.swf?e8a7c9a" loop="false" menu="false" quality="best" bgcolor="#ffffff" width="18" height="18" name="ZeroClipboardMovie_4" align="middle" allowscriptaccess="always" allowfullscreen="false" type="application/x-shockwave-flash" pluginspage="http://www.macromedia.com/go/getflashplayer" flashvars="id=4&amp;width=18&amp;height=18" wmode="transparent"></div></div></div><ol start="1" class="dp-c"><li class="alt"><span><span>num_Reduce_tasks&nbsp;=&nbsp;min[${Hive.exec.Reducers.max}，&nbsp;&nbsp;&nbsp;</span></span></li><li class=""><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(${input.size}&nbsp;/&nbsp;${&nbsp;Hive.exec.Reducers.bytes.per.Reducer})]&nbsp;&nbsp;</span></li></ol></div><pre class="js" name="code" style="display: none;">num_Reduce_tasks = min[${Hive.exec.Reducers.max}， 
+                      (${input.size} / ${ Hive.exec.Reducers.bytes.per.Reducer})]</pre>
+
+    <p></p>
+    <p>也就是说，根据输入的数据量大小来决定Reduce的个数，默认Hive.exec.Reducers.bytes.per.Reducer为1G，而且Reduce个数不能超过一个上限参数值，这个参数的默认取值为999。所以我们可以调整Hive.exec.Reducers.bytes.per.Reducer来设置Reduce个数。</p>
+    <p>设置Reduce数同样也是根据运行时间作为参考调整，并且可以根据特定的业务需求、工作负载类型总结出经验，所以不再赘述。</p>
+     <h2>Map与Reduce之间的优化(Spill， copy， Sort phase)</h2>
+
+    <p>Map phase和Reduce phase之间主要有3道工序。首先要把Map输出的结果进行排序后做成中间文件，其次这个中间文件就能分发到各个Reduce，最后Reduce端在执行Reduce
+        phase之前把收集到的排序子文件合并成一个排序文件。这个部分可以调的参数挺多，但是一般都是不要调整的，不必重点关注。</p>
+    <p><b>Spill 与 Sort</b>
+
+    </p>
+    <p>在Spill阶段，由于内存不够，数据可能没办法在内存中一次性排序完成，那么就只能把局部排序的文件先保存到磁盘上，这个动作叫Spill，然后Spill出来的多个文件可以在最后进行merge。如果发生Spill，可以通过设置io.Sort.mb来增大Mapper输出buffer的大小，避免Spill的发生。另外合并时可以通过设置io.Sort.factor来使得一次性能够合并更多的数据。调试参数的时候，一个要看Spill的时间成本，一个要看merge的时间成本，还需要注意不要撑爆内存（io.Sort.mb是算在Map的内存里面的）。Reduce端的merge也是一样可以用io.Sort.factor。一般情况下这两个参数很少需要调整，除非很明确知道这个地方是瓶颈。</p>
+    <p><b>Copy</b>
+
+    </p>
+    <p>copy阶段是把文件从Map端copy到Reduce端。默认情况下在5%的Map完成的情况下Reduce就开始启动copy，这个有时候是很浪费资源的，因为Reduce一旦启动就被占用，一直等到Map全部完成，收集到所有数据才可以进行后面的动作，所以我们可以等比较多的Map完成之后再启动Reduce流程，这个比例可以通Mapred.Reduce.slowstart.completed.Maps去调整，他的默认值就是5%。如果觉得这么做会减慢Reduce端copy的进度，可以把copy过程的线程增大。tasktracker.http.threads可以决定作为server端的Map用于提供数据传输服务的线程，Mapred.Reduce.parallel.copies可以决定作为client端的Reduce同时从Map端拉取数据的并行度（一次同时从多少个Map拉数据），修改参数的时候这两个注意协调一下，server端能处理client端的请求即可。</p>
+    <p><b>文件格式的优化</b>
+
+    </p>
+    <p>文件格式方面有两个问题，一个是给输入和输出选择合适的文件格式，另一个则是小文件问题。小文件问题在目前的Hive环境下已经得到了比较好的解决，Hive的默认配置中就可以在小文件输入时自动把多个文件合并给1个Map处理，输出时如果文件很小也会进行一轮单独的合并，所以这里就不专门讨论了。相关的参数可以在这里找到。</p>
+    <p>关于文件格式，Hive0.9版本有3种，textfile，sequencefile和rcfile。总体上来说，rcfile的压缩比例和查询时间稍好一点，所以推荐使用。</p>
+    <p>关于使用方法，可以在建表结构时可以指定格式，然后指定压缩插入：</p>
+    <p></p><div class="dp-highlighter bg_js"><div class="bar"><div class="tools"><b>[js]</b> <a href="http://www.csdn.net/article/2015-01-13/2823530#" class="ViewSource" title="view plain" onclick="dp.sh.Toolbar.Command(&#39;ViewSource&#39;,this);return false;">view plain</a><a href="http://www.csdn.net/article/2015-01-13/2823530#" class="CopyToClipboard" title="copy" onclick="dp.sh.Toolbar.Command(&#39;CopyToClipboard&#39;,this);return false;">copy</a><a href="http://www.csdn.net/article/2015-01-13/2823530#" class="PrintSource" title="print" onclick="dp.sh.Toolbar.Command(&#39;PrintSource&#39;,this);return false;">print</a><a href="http://www.csdn.net/article/2015-01-13/2823530#" class="About" title="?" onclick="dp.sh.Toolbar.Command(&#39;About&#39;,this);return false;">?</a><div style="position: absolute; left: 389px; top: 3475px; width: 18px; height: 18px; z-index: 99;"><embed id="ZeroClipboardMovie_5" src="http://csdnimg.cn/public/highlighter/ZeroClipboard.swf?e8a7c9a" loop="false" menu="false" quality="best" bgcolor="#ffffff" width="18" height="18" name="ZeroClipboardMovie_5" align="middle" allowscriptaccess="always" allowfullscreen="false" type="application/x-shockwave-flash" pluginspage="http://www.macromedia.com/go/getflashplayer" flashvars="id=5&amp;width=18&amp;height=18" wmode="transparent"></div></div></div><ol start="1" class="dp-c"><li class="alt"><span><span>create&nbsp;table&nbsp;rc_file_test(&nbsp;col&nbsp;</span><span class="keyword">int</span><span>&nbsp;)&nbsp;stored&nbsp;as&nbsp;rcfile;&nbsp;&nbsp;</span></span></li><li class=""><span>set&nbsp;Hive.exec.compress.output&nbsp;=&nbsp;<span class="keyword">true</span><span>;&nbsp;&nbsp;</span></span></li><li class="alt"><span>insert&nbsp;overwrite&nbsp;table&nbsp;rc_file_test&nbsp;&nbsp;</span></li><li class=""><span>select&nbsp;*&nbsp;from&nbsp;source_table;&nbsp;&nbsp;</span></li></ol></div><pre class="js" name="code" style="display: none;">create table rc_file_test( col int ) stored as rcfile;
+set Hive.exec.compress.output = true;
+insert overwrite table rc_file_test
+select * from source_table;</pre>
+
+    <p></p>
+    <p>另外时也可以指定输出格式，也可以通过Hive。default。fileformat来设定输出格式，适用于create table as select的情况：
+        <br>
+    </p>
+    <p></p><div class="dp-highlighter bg_js"><div class="bar"><div class="tools"><b>[js]</b> <a href="http://www.csdn.net/article/2015-01-13/2823530#" class="ViewSource" title="view plain" onclick="dp.sh.Toolbar.Command(&#39;ViewSource&#39;,this);return false;">view plain</a><a href="http://www.csdn.net/article/2015-01-13/2823530#" class="CopyToClipboard" title="copy" onclick="dp.sh.Toolbar.Command(&#39;CopyToClipboard&#39;,this);return false;">copy</a><a href="http://www.csdn.net/article/2015-01-13/2823530#" class="PrintSource" title="print" onclick="dp.sh.Toolbar.Command(&#39;PrintSource&#39;,this);return false;">print</a><a href="http://www.csdn.net/article/2015-01-13/2823530#" class="About" title="?" onclick="dp.sh.Toolbar.Command(&#39;About&#39;,this);return false;">?</a><div style="position: absolute; left: 389px; top: 3669px; width: 18px; height: 18px; z-index: 99;"><embed id="ZeroClipboardMovie_6" src="http://csdnimg.cn/public/highlighter/ZeroClipboard.swf?e8a7c9a" loop="false" menu="false" quality="best" bgcolor="#ffffff" width="18" height="18" name="ZeroClipboardMovie_6" align="middle" allowscriptaccess="always" allowfullscreen="false" type="application/x-shockwave-flash" pluginspage="http://www.macromedia.com/go/getflashplayer" flashvars="id=6&amp;width=18&amp;height=18" wmode="transparent"></div></div></div><ol start="1" class="dp-c"><li class="alt"><span><span>set&nbsp;Hive.</span><span class="keyword">default</span><span>.fileformat&nbsp;=&nbsp;SequenceFile;&nbsp;&nbsp;</span></span></li><li class=""><span>set&nbsp;Hive.exec.compress.output&nbsp;=&nbsp;<span class="keyword">true</span><span>;&nbsp;&nbsp;&nbsp;</span></span></li><li class="alt"><span><span class="comment">/*对于sequencefile，有record和block两种压缩方式可选，block压缩比更高*/</span><span>&nbsp;&nbsp;</span></span></li><li class=""><span>set&nbsp;Mapred.output.compression.type&nbsp;=&nbsp;BLOCK;&nbsp;&nbsp;&nbsp;</span></li><li class="alt"><span>create&nbsp;table&nbsp;seq_file_test&nbsp;&nbsp;</span></li><li class=""><span>as&nbsp;select&nbsp;*&nbsp;from&nbsp;source_table;&nbsp;&nbsp;</span></li></ol></div><pre class="js" name="code" style="display: none;">set Hive.default.fileformat = SequenceFile;
+set Hive.exec.compress.output = true; 
+/*对于sequencefile，有record和block两种压缩方式可选，block压缩比更高*/
+set Mapred.output.compression.type = BLOCK; 
+create table seq_file_test
+as select * from source_table;</pre>
+
+    <p></p>
+    <p>上面的文件格式转换，其实是由Hive完成的（也就是插入动作）。但是也可以由外部直接导入纯文本（可以按照这里的做法预先压缩），或者是由MapReduce
+        Job生成的数据。</p>
+    <p>值得注意的是，Hive读取sequencefile的时候，是把key忽略的，也就是直接读value并且按照指定分隔符分隔字段。但是如果Hive的数据来源是从mr生成的，那么写sequencefile的时候，key和value都是有意义的，key不能被忽略，而是应该当成第一个字段。为了解决这种不匹配的情况，有两种办法。一种是要求凡是结果会给Hive用的mr
+        Job输出value的时候带上key。但是这样的话对于开发是一个负担，读写数据的时候都要注意这个情况。所以更好的方法是第二种，也就是把这个源自于Hive的问题交给Hive解决，写一个InputFormat包装一下，把value输出加上key即可。以下是核心代码，修改了RecordReader的next方法：</p>
+    <p></p><div class="dp-highlighter bg_js"><div class="bar"><div class="tools"><b>[js]</b> <a href="http://www.csdn.net/article/2015-01-13/2823530#" class="ViewSource" title="view plain" onclick="dp.sh.Toolbar.Command(&#39;ViewSource&#39;,this);return false;">view plain</a><a href="http://www.csdn.net/article/2015-01-13/2823530#" class="CopyToClipboard" title="copy" onclick="dp.sh.Toolbar.Command(&#39;CopyToClipboard&#39;,this);return false;">copy</a><a href="http://www.csdn.net/article/2015-01-13/2823530#" class="PrintSource" title="print" onclick="dp.sh.Toolbar.Command(&#39;PrintSource&#39;,this);return false;">print</a><a href="http://www.csdn.net/article/2015-01-13/2823530#" class="About" title="?" onclick="dp.sh.Toolbar.Command(&#39;About&#39;,this);return false;">?</a><div style="position: absolute; left: 389px; top: 4086px; width: 18px; height: 18px; z-index: 99;"><embed id="ZeroClipboardMovie_7" src="http://csdnimg.cn/public/highlighter/ZeroClipboard.swf?e8a7c9a" loop="false" menu="false" quality="best" bgcolor="#ffffff" width="18" height="18" name="ZeroClipboardMovie_7" align="middle" allowscriptaccess="always" allowfullscreen="false" type="application/x-shockwave-flash" pluginspage="http://www.macromedia.com/go/getflashplayer" flashvars="id=7&amp;width=18&amp;height=18" wmode="transparent"></div></div></div><ol start="1" class="dp-c"><li class="alt"><span><span class="keyword">public</span><span>&nbsp;</span><span class="keyword">synchronized</span><span>&nbsp;</span><span class="keyword">boolean</span><span>&nbsp;next(K&nbsp;key，&nbsp;V&nbsp;value)&nbsp;</span><span class="keyword">throws</span><span>&nbsp;IOException&nbsp;&nbsp;&nbsp;</span></span></li><li class=""><span>{&nbsp;&nbsp;</span></li><li class="alt"><span>&nbsp;&nbsp;&nbsp;&nbsp;Text&nbsp;tKey&nbsp;=&nbsp;(Text)&nbsp;key;&nbsp;&nbsp;</span></li><li class=""><span>&nbsp;&nbsp;&nbsp;&nbsp;Text&nbsp;tValue&nbsp;=&nbsp;(Text)&nbsp;value;&nbsp;&nbsp;</span></li><li class="alt"><span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">if</span><span>&nbsp;(!</span><span class="keyword">super</span><span>.next(innerKey，&nbsp;innerValue))&nbsp;&nbsp;&nbsp;</span></span></li><li class=""><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">return</span><span>&nbsp;</span><span class="keyword">false</span><span>;&nbsp;&nbsp;</span></span></li><li class="alt"><span>&nbsp;&nbsp;</span></li><li class=""><span>&nbsp;&nbsp;&nbsp;&nbsp;Text&nbsp;inner_key&nbsp;=&nbsp;(Text)&nbsp;innerKey;&nbsp;<span class="comment">//在构造函数中用createKey()生成</span><span>&nbsp;&nbsp;</span></span></li><li class="alt"><span>&nbsp;&nbsp;&nbsp;&nbsp;Text&nbsp;inner_value&nbsp;=&nbsp;(Text)&nbsp;innerValue;&nbsp;<span class="comment">//在构造函数中用createValue()生成</span><span>&nbsp;&nbsp;</span></span></li><li class=""><span>&nbsp;&nbsp;</span></li><li class="alt"><span>&nbsp;&nbsp;&nbsp;&nbsp;tKey.set(inner_key);&nbsp;&nbsp;</span></li><li class=""><span>&nbsp;&nbsp;&nbsp;&nbsp;tValue.set(inner_key.toString()&nbsp;+&nbsp;<span class="string">'\t'</span><span>&nbsp;+&nbsp;inner_value.toString());&nbsp;</span><span class="comment">//&nbsp;分隔符注意自己定义</span><span>&nbsp;&nbsp;</span></span></li><li class="alt"><span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">return</span><span>&nbsp;</span><span class="keyword">true</span><span>;&nbsp;&nbsp;</span></span></li><li class=""><span>}&nbsp;&nbsp;</span></li></ol></div><pre class="js" name="code" style="display: none;">public synchronized boolean next(K key， V value) throws IOException 
+{
+    Text tKey = (Text) key;
+    Text tValue = (Text) value;
+    if (!super.next(innerKey， innerValue)) 
+        return false;
+
+    Text inner_key = (Text) innerKey; //在构造函数中用createKey()生成
+    Text inner_value = (Text) innerValue; //在构造函数中用createValue()生成
+
+    tKey.set(inner_key);
+    tValue.set(inner_key.toString() + '\t' + inner_value.toString()); // 分隔符注意自己定义
+    return true;
+}</pre>
+
+    <p></p>
+    <p><b>Job整体优化</b>
+
+    </p>
+    <p>有一些问题必须从Job的整体角度去观察。这里讨论几个问题：Job执行模式（本地执行v.s.分布式执行）、JVM重用、索引、Join算法、数据倾斜。</p>
+    <p><b>Job执行模式</b>
+
+    </p>
+    <p>Hadoop的Map Reduce Job可以有3种模式执行，即本地模式，伪分布式，还有真正的分布式。本地模式和伪分布式都是在最初学习Hadoop的时候往往被说成是做单机开发的时候用到。但是实际上对于处理数据量非常小的Job，直接启动分布式Job会消耗大量资源，而真正执行计算的时间反而非常少。这个时候就应该使用本地模式执行mr
+        Job，这样执行的时候不会启动分布式Job，执行速度就会快很多。比如一般来说启动分布式Job，无论多小的数据量，执行时间一般不会少于20s，而使用本地mr模式，10秒左右就能出结果。</p>
+    <p>设置执行模式的主要参数有三个，一个是Hive.exec.mode.local.auto，把他设为true就能够自动开启local mr模式。但是这还不足以启动local
+        mr，输入的文件数量和数据量大小必须要控制，这两个参数分别为Hive.exec.mode.local.auto.tasks.max和Hive.exec.mode.local.auto.inputbytes.max，默认值分别为4和128MB，即默认情况下，Map处理的文件数不超过4个并且总大小小于128MB就启用local
+        mr模式。</p>
+    <p><b>JVM重用</b>
+
+    </p>
+    <p>正常情况下，MapReduce启动的JVM在完成一个task之后就退出了，但是如果任务花费时间很短，又要多次启动JVM的情况下（比如对很大数据量进行计数操作），JVM的启动时间就会变成一个比较大的overhead。在这种情况下，可以使用jvm重用的参数：</p>
+    <p></p><div class="dp-highlighter bg_js"><div class="bar"><div class="tools"><b>[js]</b> <a href="http://www.csdn.net/article/2015-01-13/2823530#" class="ViewSource" title="view plain" onclick="dp.sh.Toolbar.Command(&#39;ViewSource&#39;,this);return false;">view plain</a><a href="http://www.csdn.net/article/2015-01-13/2823530#" class="CopyToClipboard" title="copy" onclick="dp.sh.Toolbar.Command(&#39;CopyToClipboard&#39;,this);return false;">copy</a><a href="http://www.csdn.net/article/2015-01-13/2823530#" class="PrintSource" title="print" onclick="dp.sh.Toolbar.Command(&#39;PrintSource&#39;,this);return false;">print</a><a href="http://www.csdn.net/article/2015-01-13/2823530#" class="About" title="?" onclick="dp.sh.Toolbar.Command(&#39;About&#39;,this);return false;">?</a><div style="position: absolute; left: 389px; top: 5008px; width: 18px; height: 18px; z-index: 99;"><embed id="ZeroClipboardMovie_8" src="http://csdnimg.cn/public/highlighter/ZeroClipboard.swf?e8a7c9a" loop="false" menu="false" quality="best" bgcolor="#ffffff" width="18" height="18" name="ZeroClipboardMovie_8" align="middle" allowscriptaccess="always" allowfullscreen="false" type="application/x-shockwave-flash" pluginspage="http://www.macromedia.com/go/getflashplayer" flashvars="id=8&amp;width=18&amp;height=18" wmode="transparent"></div></div></div><ol start="1" class="dp-c"><li class="alt"><span><span>set&nbsp;Mapred.Job.reuse.jvm.num.tasks&nbsp;=&nbsp;5;&nbsp;&nbsp;</span></span></li></ol></div><pre class="js" name="code" style="display: none;">set Mapred.Job.reuse.jvm.num.tasks = 5;</pre>
+
+    <p></p>
+    <p>他的作用是让一个jvm运行多次任务之后再退出。这样一来也能节约不少JVM启动时间。</p>
+     <h2>索引</h2>
+
+    <p>总体上来说，Hive的索引目前还是一个不太适合使用的东西，这里只是考虑到叙述完整性，对其进行基本的介绍。</p>
+    <p>Hive中的索引架构开放了一个接口，允许你根据这个接口去实现自己的索引。目前Hive自己有一个参考的索引实现（CompactIndex），后来在0.8版本中又加入位图索引。这里就讲讲CompactIndex。</p>
+    <p>CompactIndex的实现原理类似一个lookup table，而非传统数据库中的B树。如果你对table A的col1做了索引，索引文件本身就是一个table，这个table会有3列，分别是col1的枚举值，每个值对应的数据文件位置，以及在这个文件位置中的偏移量。通过这种方式，可以减少你查询的数据量（偏移量可以告诉你从哪个位置开始找，自然只需要定位到相应的block），起到减少资源消耗的作用。但是就其性能来说，并没有很大的改善，很可能还不如构建索引需要花的时间。所以在集群资源充足的情况下，没有太大必要考虑索引。</p>
+    <p>CompactIndex的还有一个缺点就是使用起来不友好，索引建完之后，使用之前还需要根据查询条件做一个同样剪裁才能使用，索引的内部结构完全暴露，而且还要花费额外的时间。具体看看下面的使用方法就了解了：</p>
+    <p></p><div class="dp-highlighter bg_js"><div class="bar"><div class="tools"><b>[js]</b> <a href="http://www.csdn.net/article/2015-01-13/2823530#" class="ViewSource" title="view plain" onclick="dp.sh.Toolbar.Command(&#39;ViewSource&#39;,this);return false;">view plain</a><a href="http://www.csdn.net/article/2015-01-13/2823530#" class="CopyToClipboard" title="copy" onclick="dp.sh.Toolbar.Command(&#39;CopyToClipboard&#39;,this);return false;">copy</a><a href="http://www.csdn.net/article/2015-01-13/2823530#" class="PrintSource" title="print" onclick="dp.sh.Toolbar.Command(&#39;PrintSource&#39;,this);return false;">print</a><a href="http://www.csdn.net/article/2015-01-13/2823530#" class="About" title="?" onclick="dp.sh.Toolbar.Command(&#39;About&#39;,this);return false;">?</a><div style="position: absolute; left: 389px; top: 5561px; width: 18px; height: 18px; z-index: 99;"><embed id="ZeroClipboardMovie_9" src="http://csdnimg.cn/public/highlighter/ZeroClipboard.swf?e8a7c9a" loop="false" menu="false" quality="best" bgcolor="#ffffff" width="18" height="18" name="ZeroClipboardMovie_9" align="middle" allowscriptaccess="always" allowfullscreen="false" type="application/x-shockwave-flash" pluginspage="http://www.macromedia.com/go/getflashplayer" flashvars="id=9&amp;width=18&amp;height=18" wmode="transparent"></div></div></div><ol start="1" class="dp-c"><li class="alt"><span><span class="comment">/*在index_test_table表的id字段上创建索引*/</span><span>&nbsp;&nbsp;</span></span></li><li class=""><span>create&nbsp;index&nbsp;idx&nbsp;on&nbsp;table&nbsp;index_test_table(id)&nbsp;&nbsp;&nbsp;&nbsp;</span></li><li class="alt"><span>as&nbsp;<span class="string">'org.apache.Hadoop.Hive.ql.index.compact.CompactIndexHandler'</span><span>&nbsp;</span><span class="keyword">with</span><span>&nbsp;deferred&nbsp;rebuild;&nbsp;&nbsp;</span></span></li><li class=""><span>alter&nbsp;index&nbsp;idx&nbsp;on&nbsp;index_test_table&nbsp;rebuild;&nbsp;&nbsp;</span></li><li class="alt"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></li><li class=""><span><span class="comment">/*索引的剪裁。找到上面建的索引表，根据你最终要用的查询条件剪裁一下。*/</span><span>&nbsp;&nbsp;</span></span></li><li class="alt"><span><span class="comment">/*如果你想跟RDBMS一样建完索引就用，那是不行的，会直接报错，这也是其麻烦的地方*/</span><span>&nbsp;&nbsp;</span></span></li><li class=""><span>create&nbsp;table&nbsp;my_index&nbsp;&nbsp;</span></li><li class="alt"><span>as&nbsp;select&nbsp;_bucketname，&nbsp;`_offsets`&nbsp;&nbsp;</span></li><li class=""><span>from&nbsp;default__index_test_table_idx__&nbsp;where&nbsp;id&nbsp;=&nbsp;10;&nbsp;&nbsp;</span></li><li class="alt"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></li><li class=""><span><span class="comment">/*现在可以用索引了，注意最终查询条件跟上面的剪裁条件一致*/</span><span>&nbsp;&nbsp;</span></span></li><li class="alt"><span>set&nbsp;Hive.index.compact.file&nbsp;=&nbsp;/user/Hive/warehouse/my_index;&nbsp;&nbsp;&nbsp;</span></li><li class=""><span>set&nbsp;Hive.input.format&nbsp;=&nbsp;org.apache.Hadoop.Hive.ql.index.compact.HiveCompactIndexInputFormat;&nbsp;&nbsp;</span></li><li class="alt"><span>select&nbsp;count(*)&nbsp;from&nbsp;index_test_table&nbsp;where&nbsp;id&nbsp;=&nbsp;10;&nbsp;&nbsp;</span></li></ol></div><pre class="js" name="code" style="display: none;">/*在index_test_table表的id字段上创建索引*/
+create index idx on table index_test_table(id)  
+as 'org.apache.Hadoop.Hive.ql.index.compact.CompactIndexHandler' with deferred rebuild;
+alter index idx on index_test_table rebuild;
+	
+/*索引的剪裁。找到上面建的索引表，根据你最终要用的查询条件剪裁一下。*/
+/*如果你想跟RDBMS一样建完索引就用，那是不行的，会直接报错，这也是其麻烦的地方*/
+create table my_index
+as select _bucketname， `_offsets`
+from default__index_test_table_idx__ where id = 10;
+	
+/*现在可以用索引了，注意最终查询条件跟上面的剪裁条件一致*/
+set Hive.index.compact.file = /user/Hive/warehouse/my_index; 
+set Hive.input.format = org.apache.Hadoop.Hive.ql.index.compact.HiveCompactIndexInputFormat;
+select count(*) from index_test_table where id = 10;</pre>
+
+    <p></p>
+     <h2>Join算法</h2>
+
+    <p>处理分布式join，一般有两种方法:</p>
+    <p></p>
+    <blockquote style="border-left-width: 4px; border-left-style: solid; border-left-color: rgb(221， 221， 221); padding-left: 1em; margin-left: 3em !important; font-style: normal !important; color: rgb(119， 119， 119);">
+        <ul>
+            <li><span style="background-color: initial;">replication join：把其中一个表复制到所有节点，这样另一个表在每个节点上面的分片就可以跟这个完整的表join了；</span>
+
+            </li>
+        </ul>
+        <ul>
+            <li><span style="background-color: initial;">repartition join：把两份数据按照join key进行hash重分布，让每个节点处理hash值相同的join key数据，也就是做局部的join。</span>
+
+            </li>
+        </ul>
+    </blockquote>
+    <p></p>
+    <p>这两种方式在M/R Job中分别对应了Map side join和Reduce side join。在一些MPP DB中，数据可以按照某列字段预先进行hash分布，这样在跟这个表以这个字段为join
+        key进行join的时候，该表肯定不需要做数据重分布了，这种功能是以HDFS作为底层文件系统的Hive所没有的。</p>
+    <p>在默认情况下，Hive的join策略是进行Reduce side join。当两个表中有一个是小表的时候，就可以考虑用Map join了，因为小表复制的代价会好过大表Shuffle的代价。使用Map
+        join的配置方法有两种，一种直接在sql中写hint，语法是/*+MapJOIN (tbl)*/，其中tbl就是你想要做replication的表。另一种方法是设置Hive.auto.convert.join
+        = true，这样Hive会自动判断当前的join操作是否合适做Map join，主要是找join的两个表中有没有小表。至于多大的表算小表，则是由Hive.smalltable.filesize决定，默认25MB。</p>
+    <p>但是有的时候，没有一个表足够小到能够放进内存，但是还是想用Map join怎么办？这个时候就要用到bucket Map join。其方法是两个join表在join
+        key上都做hash bucket，并且把你打算复制的那个（相对）小表的bucket数设置为大表的倍数。这样数据就会按照join key做hash
+        bucket。小表依然复制到所有节点，Map join的时候，小表的每一组bucket加载成hashtable，与对应的一个大表bucket做局部join，这样每次只需要加载部分hashtable就可以了。</p>
+    <p>然后在两个表的join key都具有唯一性的时候（也就是可做主键），还可以进一步做Sort merge bucket Map join。做法还是两边要做hash
+        bucket，而且每个bucket内部要进行排序。这样一来当两边bucket要做局部join的时候，只需要用类似merge Sort算法中的merge操作一样把两个bucket顺序遍历一遍即可完成，这样甚至都不用把一个bucket完整的加载成hashtable，这对性能的提升会有很大帮助。</p>
+    <p>然后这里以一个完整的实验说明这几种join算法如何操作。</p>
+    <p>首先建表要带上bucket：</p>
+    <p></p><div class="dp-highlighter bg_js"><div class="bar"><div class="tools"><b>[js]</b> <a href="http://www.csdn.net/article/2015-01-13/2823530#" class="ViewSource" title="view plain" onclick="dp.sh.Toolbar.Command(&#39;ViewSource&#39;,this);return false;">view plain</a><a href="http://www.csdn.net/article/2015-01-13/2823530#" class="CopyToClipboard" title="copy" onclick="dp.sh.Toolbar.Command(&#39;CopyToClipboard&#39;,this);return false;">copy</a><a href="http://www.csdn.net/article/2015-01-13/2823530#" class="PrintSource" title="print" onclick="dp.sh.Toolbar.Command(&#39;PrintSource&#39;,this);return false;">print</a><a href="http://www.csdn.net/article/2015-01-13/2823530#" class="About" title="?" onclick="dp.sh.Toolbar.Command(&#39;About&#39;,this);return false;">?</a><div style="position: absolute; left: 389px; top: 6742px; width: 18px; height: 18px; z-index: 99;"><embed id="ZeroClipboardMovie_10" src="http://csdnimg.cn/public/highlighter/ZeroClipboard.swf?e8a7c9a" loop="false" menu="false" quality="best" bgcolor="#ffffff" width="18" height="18" name="ZeroClipboardMovie_10" align="middle" allowscriptaccess="always" allowfullscreen="false" type="application/x-shockwave-flash" pluginspage="http://www.macromedia.com/go/getflashplayer" flashvars="id=10&amp;width=18&amp;height=18" wmode="transparent"></div></div></div><ol start="1" class="dp-c"><li class="alt"><span><span>create&nbsp;table&nbsp;Map_join_test(id&nbsp;</span><span class="keyword">int</span><span>)&nbsp;&nbsp;</span></span></li><li class=""><span>clustered&nbsp;by&nbsp;(id)&nbsp;Sorted&nbsp;by&nbsp;(id)&nbsp;into&nbsp;32&nbsp;buckets&nbsp;&nbsp;</span></li><li class="alt"><span>stored&nbsp;as&nbsp;textfile;&nbsp;&nbsp;</span></li></ol></div><pre class="js" name="code" style="display: none;">create table Map_join_test(id int)
+clustered by (id) Sorted by (id) into 32 buckets
+stored as textfile;</pre>
+
+    <p></p>
+    <p>然后插入我们准备好的800万行数据，注意要强制划分成bucket（也就是用Reduce划分hash值相同的数据到相同的文件）：
+        <br>
+    </p>
+    <p></p><div class="dp-highlighter bg_js"><div class="bar"><div class="tools"><b>[js]</b> <a href="http://www.csdn.net/article/2015-01-13/2823530#" class="ViewSource" title="view plain" onclick="dp.sh.Toolbar.Command(&#39;ViewSource&#39;,this);return false;">view plain</a><a href="http://www.csdn.net/article/2015-01-13/2823530#" class="CopyToClipboard" title="copy" onclick="dp.sh.Toolbar.Command(&#39;CopyToClipboard&#39;,this);return false;">copy</a><a href="http://www.csdn.net/article/2015-01-13/2823530#" class="PrintSource" title="print" onclick="dp.sh.Toolbar.Command(&#39;PrintSource&#39;,this);return false;">print</a><a href="http://www.csdn.net/article/2015-01-13/2823530#" class="About" title="?" onclick="dp.sh.Toolbar.Command(&#39;About&#39;,this);return false;">?</a><div style="position: absolute; left: 389px; top: 6918px; width: 18px; height: 18px; z-index: 99;"><embed id="ZeroClipboardMovie_11" src="http://csdnimg.cn/public/highlighter/ZeroClipboard.swf?e8a7c9a" loop="false" menu="false" quality="best" bgcolor="#ffffff" width="18" height="18" name="ZeroClipboardMovie_11" align="middle" allowscriptaccess="always" allowfullscreen="false" type="application/x-shockwave-flash" pluginspage="http://www.macromedia.com/go/getflashplayer" flashvars="id=11&amp;width=18&amp;height=18" wmode="transparent"></div></div></div><ol start="1" class="dp-c"><li class="alt"><span><span>set&nbsp;Hive.enforce.bucketing&nbsp;=&nbsp;</span><span class="keyword">true</span><span>;&nbsp;&nbsp;</span></span></li><li class=""><span>insert&nbsp;overwrite&nbsp;table&nbsp;Map_join_test&nbsp;&nbsp;</span></li><li class="alt"><span>select&nbsp;*&nbsp;from&nbsp;Map_join_source_data;&nbsp;&nbsp;</span></li></ol></div><pre class="js" name="code" style="display: none;">set Hive.enforce.bucketing = true;
+insert overwrite table Map_join_test
+select * from Map_join_source_data;</pre>
+
+    <p></p>
+    <p>这样这个表就有了800万id值（且里面没有重复值，所以可以做Sort merge），占用80MB左右。</p>
+    <p>接下来我们就可以一一尝试Map join的算法了。首先是普通的Map join：</p>
+    <p></p><div class="dp-highlighter bg_js"><div class="bar"><div class="tools"><b>[js]</b> <a href="http://www.csdn.net/article/2015-01-13/2823530#" class="ViewSource" title="view plain" onclick="dp.sh.Toolbar.Command(&#39;ViewSource&#39;,this);return false;">view plain</a><a href="http://www.csdn.net/article/2015-01-13/2823530#" class="CopyToClipboard" title="copy" onclick="dp.sh.Toolbar.Command(&#39;CopyToClipboard&#39;,this);return false;">copy</a><a href="http://www.csdn.net/article/2015-01-13/2823530#" class="PrintSource" title="print" onclick="dp.sh.Toolbar.Command(&#39;PrintSource&#39;,this);return false;">print</a><a href="http://www.csdn.net/article/2015-01-13/2823530#" class="About" title="?" onclick="dp.sh.Toolbar.Command(&#39;About&#39;,this);return false;">?</a><div style="position: absolute; left: 389px; top: 7115px; width: 18px; height: 18px; z-index: 99;"><embed id="ZeroClipboardMovie_12" src="http://csdnimg.cn/public/highlighter/ZeroClipboard.swf?e8a7c9a" loop="false" menu="false" quality="best" bgcolor="#ffffff" width="18" height="18" name="ZeroClipboardMovie_12" align="middle" allowscriptaccess="always" allowfullscreen="false" type="application/x-shockwave-flash" pluginspage="http://www.macromedia.com/go/getflashplayer" flashvars="id=12&amp;width=18&amp;height=18" wmode="transparent"></div></div></div><ol start="1" class="dp-c"><li class="alt"><span><span>select&nbsp;</span><span class="comment">/*+Mapjoin(a)&nbsp;*/</span><span>count(*)&nbsp;&nbsp;</span></span></li><li class=""><span>from&nbsp;Map_join_test&nbsp;a&nbsp;&nbsp;</span></li><li class="alt"><span>join&nbsp;Map_join_test&nbsp;b&nbsp;on&nbsp;a.id&nbsp;=&nbsp;b.id;&nbsp;&nbsp;</span></li></ol></div><pre class="js" name="code" style="display: none;">select /*+Mapjoin(a) */count(*)
+from Map_join_test a
+join Map_join_test b on a.id = b.id;</pre>
+
+    <p></p>
+    <p>然后就会看到分发hash table的过程：
+        <br>
+    </p>
+    <p></p><div class="dp-highlighter bg_js"><div class="bar"><div class="tools"><b>[js]</b> <a href="http://www.csdn.net/article/2015-01-13/2823530#" class="ViewSource" title="view plain" onclick="dp.sh.Toolbar.Command(&#39;ViewSource&#39;,this);return false;">view plain</a><a href="http://www.csdn.net/article/2015-01-13/2823530#" class="CopyToClipboard" title="copy" onclick="dp.sh.Toolbar.Command(&#39;CopyToClipboard&#39;,this);return false;">copy</a><a href="http://www.csdn.net/article/2015-01-13/2823530#" class="PrintSource" title="print" onclick="dp.sh.Toolbar.Command(&#39;PrintSource&#39;,this);return false;">print</a><a href="http://www.csdn.net/article/2015-01-13/2823530#" class="About" title="?" onclick="dp.sh.Toolbar.Command(&#39;About&#39;,this);return false;">?</a><div style="position: absolute; left: 389px; top: 7267px; width: 18px; height: 18px; z-index: 99;"><embed id="ZeroClipboardMovie_13" src="http://csdnimg.cn/public/highlighter/ZeroClipboard.swf?e8a7c9a" loop="false" menu="false" quality="best" bgcolor="#ffffff" width="18" height="18" name="ZeroClipboardMovie_13" align="middle" allowscriptaccess="always" allowfullscreen="false" type="application/x-shockwave-flash" pluginspage="http://www.macromedia.com/go/getflashplayer" flashvars="id=13&amp;width=18&amp;height=18" wmode="transparent"></div></div></div><ol start="1" class="dp-c"><li class="alt"><span><span>2013-08-31&nbsp;09:08:43&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Starting&nbsp;to&nbsp;launch&nbsp;local&nbsp;task&nbsp;to&nbsp;process&nbsp;Map&nbsp;join;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;maximum&nbsp;memory&nbsp;=&nbsp;1004929024&nbsp;&nbsp;</span></span></li><li class=""><span>2013-08-31&nbsp;09:08:45&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Processing&nbsp;rows:&nbsp;&nbsp;&nbsp;200000&nbsp;&nbsp;Hashtable&nbsp;size:&nbsp;199999&nbsp;&nbsp;Memory&nbsp;usage:&nbsp;&nbsp;&nbsp;38823016&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;rate:&nbsp;&nbsp;&nbsp;0.039&nbsp;&nbsp;</span></li><li class="alt"><span>2013-08-31&nbsp;09:08:46&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Processing&nbsp;rows:&nbsp;&nbsp;&nbsp;300000&nbsp;&nbsp;Hashtable&nbsp;size:&nbsp;299999&nbsp;&nbsp;Memory&nbsp;usage:&nbsp;&nbsp;&nbsp;56166968&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;rate:&nbsp;&nbsp;&nbsp;0.056&nbsp;&nbsp;</span></li><li class=""><span>……&nbsp;&nbsp;</span></li><li class="alt"><span>2013-08-31&nbsp;09:12:39&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Processing&nbsp;rows:&nbsp;&nbsp;4900000&nbsp;Hashtable&nbsp;size:&nbsp;4899999&nbsp;Memory&nbsp;usage:&nbsp;&nbsp;&nbsp;896968104&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;rate:&nbsp;&nbsp;&nbsp;0.893&nbsp;&nbsp;</span></li><li class=""><span>2013-08-31&nbsp;09:12:47&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Processing&nbsp;rows:&nbsp;&nbsp;5000000&nbsp;Hashtable&nbsp;size:&nbsp;4999999&nbsp;Memory&nbsp;usage:&nbsp;&nbsp;&nbsp;922733048&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;rate:&nbsp;&nbsp;&nbsp;0.918&nbsp;&nbsp;</span></li><li class="alt"><span>Execution&nbsp;failed&nbsp;<span class="keyword">with</span><span>&nbsp;exit&nbsp;status:&nbsp;2&nbsp;&nbsp;</span></span></li><li class=""><span>Obtaining&nbsp;error&nbsp;information&nbsp;&nbsp;</span></li><li class="alt"><span>&nbsp;&nbsp;</span></li><li class=""><span>Task&nbsp;failed!&nbsp;&nbsp;</span></li><li class="alt"><span>Task&nbsp;ID:&nbsp;&nbsp;</span></li><li class=""><span>&nbsp;&nbsp;Stage-4&nbsp;&nbsp;</span></li></ol></div><pre class="js" name="code" style="display: none;">2013-08-31 09:08:43     Starting to launch local task to process Map join;      maximum memory = 1004929024
+2013-08-31 09:08:45     Processing rows:   200000  Hashtable size: 199999  Memory usage:   38823016        rate:   0.039
+2013-08-31 09:08:46     Processing rows:   300000  Hashtable size: 299999  Memory usage:   56166968        rate:   0.056
+……
+2013-08-31 09:12:39     Processing rows:  4900000 Hashtable size: 4899999 Memory usage:   896968104       rate:   0.893
+2013-08-31 09:12:47     Processing rows:  5000000 Hashtable size: 4999999 Memory usage:   922733048       rate:   0.918
+Execution failed with exit status: 2
+Obtaining error information
+
+Task failed!
+Task ID:
+  Stage-4</pre>
+
+    <p></p>
+    <p>不幸的是，居然内存不够了，直接做Map join失败了。但是80MB的大小为何用1G的heap size都放不下？观察整个过程就会发现，平均一条记录需要用到200字节的存储空间，这个overhead太大了，对于Map
+        join的小表size一定要好好评估，如果有几十万记录数就要小心了。虽然不太清楚其中的构造原理，但是在互联网上也能找到其他的例证，比如这里和这里，平均一行500字节左右。这个明显比一般的表一行占用的数据量要大。不过Hive也在做这方面的改进，争取缩小hash
+        table，比如Hive-6430。</p>
+    <p>所以接下来我们就用bucket Map join，之前分的bucket就派上用处了。只需要在上述sql的前面加上如下的设置：</p>
+    <p></p><div class="dp-highlighter bg_js"><div class="bar"><div class="tools"><b>[js]</b> <a href="http://www.csdn.net/article/2015-01-13/2823530#" class="ViewSource" title="view plain" onclick="dp.sh.Toolbar.Command(&#39;ViewSource&#39;,this);return false;">view plain</a><a href="http://www.csdn.net/article/2015-01-13/2823530#" class="CopyToClipboard" title="copy" onclick="dp.sh.Toolbar.Command(&#39;CopyToClipboard&#39;,this);return false;">copy</a><a href="http://www.csdn.net/article/2015-01-13/2823530#" class="PrintSource" title="print" onclick="dp.sh.Toolbar.Command(&#39;PrintSource&#39;,this);return false;">print</a><a href="http://www.csdn.net/article/2015-01-13/2823530#" class="About" title="?" onclick="dp.sh.Toolbar.Command(&#39;About&#39;,this);return false;">?</a><div style="position: absolute; left: 389px; top: 7872px; width: 18px; height: 18px; z-index: 99;"><embed id="ZeroClipboardMovie_14" src="http://csdnimg.cn/public/highlighter/ZeroClipboard.swf?e8a7c9a" loop="false" menu="false" quality="best" bgcolor="#ffffff" width="18" height="18" name="ZeroClipboardMovie_14" align="middle" allowscriptaccess="always" allowfullscreen="false" type="application/x-shockwave-flash" pluginspage="http://www.macromedia.com/go/getflashplayer" flashvars="id=14&amp;width=18&amp;height=18" wmode="transparent"></div></div></div><ol start="1" class="dp-c"><li class="alt"><span><span>set&nbsp;Hive。optimize。bucketMapjoin&nbsp;=&nbsp;</span><span class="keyword">true</span><span>;&nbsp;&nbsp;</span></span></li></ol></div><pre class="js" name="code" style="display: none;">set Hive。optimize。bucketMapjoin = true;</pre>
+
+    <p></p>
+    <p>然后还是会看到hash table分发：
+        <br>
+    </p>
+    <p></p><div class="dp-highlighter bg_js"><div class="bar"><div class="tools"><b>[js]</b> <a href="http://www.csdn.net/article/2015-01-13/2823530#" class="ViewSource" title="view plain" onclick="dp.sh.Toolbar.Command(&#39;ViewSource&#39;,this);return false;">view plain</a><a href="http://www.csdn.net/article/2015-01-13/2823530#" class="CopyToClipboard" title="copy" onclick="dp.sh.Toolbar.Command(&#39;CopyToClipboard&#39;,this);return false;">copy</a><a href="http://www.csdn.net/article/2015-01-13/2823530#" class="PrintSource" title="print" onclick="dp.sh.Toolbar.Command(&#39;PrintSource&#39;,this);return false;">print</a><a href="http://www.csdn.net/article/2015-01-13/2823530#" class="About" title="?" onclick="dp.sh.Toolbar.Command(&#39;About&#39;,this);return false;">?</a><div style="position: absolute; left: 389px; top: 7989px; width: 18px; height: 18px; z-index: 99;"><embed id="ZeroClipboardMovie_15" src="http://csdnimg.cn/public/highlighter/ZeroClipboard.swf?e8a7c9a" loop="false" menu="false" quality="best" bgcolor="#ffffff" width="18" height="18" name="ZeroClipboardMovie_15" align="middle" allowscriptaccess="always" allowfullscreen="false" type="application/x-shockwave-flash" pluginspage="http://www.macromedia.com/go/getflashplayer" flashvars="id=15&amp;width=18&amp;height=18" wmode="transparent"></div></div></div><ol start="1" class="dp-c"><li class="alt"><span><span>2013-08-31&nbsp;09:20:39&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Starting&nbsp;to&nbsp;launch&nbsp;local&nbsp;task&nbsp;to&nbsp;process&nbsp;Map&nbsp;join;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;maximum&nbsp;memory&nbsp;=&nbsp;1004929024&nbsp;&nbsp;</span></span></li><li class=""><span>2013-08-31&nbsp;09:20:41&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Processing&nbsp;rows:&nbsp;&nbsp;&nbsp;200000&nbsp;&nbsp;Hashtable&nbsp;size:&nbsp;199999&nbsp;&nbsp;Memory&nbsp;usage:&nbsp;&nbsp;&nbsp;38844832&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;rate:&nbsp;&nbsp;&nbsp;0.039&nbsp;&nbsp;</span></li><li class="alt"><span>2013-08-31&nbsp;09:20:42&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Processing&nbsp;rows:&nbsp;&nbsp;&nbsp;275567&nbsp;&nbsp;Hashtable&nbsp;size:&nbsp;275567&nbsp;&nbsp;Memory&nbsp;usage:&nbsp;&nbsp;&nbsp;51873632&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;rate:&nbsp;&nbsp;&nbsp;0.052&nbsp;&nbsp;</span></li><li class=""><span>2013-08-31&nbsp;09:20:42&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Dump&nbsp;the&nbsp;hashtable&nbsp;into&nbsp;file:&nbsp;file:/tmp/Hadoop/Hive_2013-08-31_21-20-37_444_1135806892100127714/-local-10003/HashTable-Stage-1/MapJoin-a-10-000000_0。hashtable&nbsp;&nbsp;</span></li><li class="alt"><span>2013-08-31&nbsp;09:20:46&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Upload&nbsp;1&nbsp;File&nbsp;to:&nbsp;file:/tmp/Hadoop/Hive_2013-08-31_21-20-37_444_1135806892100127714/-local-10003/HashTable-Stage-1/MapJoin-a-10-000000_0。hashtable&nbsp;File&nbsp;size:&nbsp;11022975&nbsp;&nbsp;</span></li><li class=""><span>2013-08-31&nbsp;09:20:47&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Processing&nbsp;rows:&nbsp;&nbsp;&nbsp;300000&nbsp;&nbsp;Hashtable&nbsp;size:&nbsp;24432&nbsp;&nbsp;&nbsp;Memory&nbsp;usage:&nbsp;&nbsp;&nbsp;8470976&nbsp;rate:&nbsp;&nbsp;&nbsp;0.008&nbsp;&nbsp;</span></li><li class="alt"><span>2013-08-31&nbsp;09:20:47&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Processing&nbsp;rows:&nbsp;&nbsp;&nbsp;400000&nbsp;&nbsp;Hashtable&nbsp;size:&nbsp;124432&nbsp;&nbsp;Memory&nbsp;usage:&nbsp;&nbsp;&nbsp;25368080&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;rate:&nbsp;&nbsp;&nbsp;0.025&nbsp;&nbsp;</span></li><li class=""><span>2013-08-31&nbsp;09:20:48&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Processing&nbsp;rows:&nbsp;&nbsp;&nbsp;500000&nbsp;&nbsp;Hashtable&nbsp;size:&nbsp;224432&nbsp;&nbsp;Memory&nbsp;usage:&nbsp;&nbsp;&nbsp;42968080&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;rate:&nbsp;&nbsp;&nbsp;0.043&nbsp;&nbsp;</span></li><li class="alt"><span>2013-08-31&nbsp;09:20:49&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Processing&nbsp;rows:&nbsp;&nbsp;&nbsp;551527&nbsp;&nbsp;Hashtable&nbsp;size:&nbsp;275960&nbsp;&nbsp;Memory&nbsp;usage:&nbsp;&nbsp;&nbsp;52022488&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;rate:&nbsp;&nbsp;&nbsp;0.052&nbsp;&nbsp;</span></li><li class=""><span>2013-08-31&nbsp;09:20:49&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Dump&nbsp;the&nbsp;hashtable&nbsp;into&nbsp;file:&nbsp;file:/tmp/Hadoop/Hive_2013-08-31_21-20-37_444_1135806892100127714/-local-10003/HashTable-Stage-1/MapJoin-a-10-000001_0。hashtable&nbsp;&nbsp;</span></li><li class="alt"><span>……&nbsp;&nbsp;</span></li></ol></div><pre class="js" name="code" style="display: none;">2013-08-31 09:20:39     Starting to launch local task to process Map join;      maximum memory = 1004929024
+2013-08-31 09:20:41     Processing rows:   200000  Hashtable size: 199999  Memory usage:   38844832        rate:   0.039
+2013-08-31 09:20:42     Processing rows:   275567  Hashtable size: 275567  Memory usage:   51873632        rate:   0.052
+2013-08-31 09:20:42     Dump the hashtable into file: file:/tmp/Hadoop/Hive_2013-08-31_21-20-37_444_1135806892100127714/-local-10003/HashTable-Stage-1/MapJoin-a-10-000000_0。hashtable
+2013-08-31 09:20:46     Upload 1 File to: file:/tmp/Hadoop/Hive_2013-08-31_21-20-37_444_1135806892100127714/-local-10003/HashTable-Stage-1/MapJoin-a-10-000000_0。hashtable File size: 11022975
+2013-08-31 09:20:47     Processing rows:   300000  Hashtable size: 24432   Memory usage:   8470976 rate:   0.008
+2013-08-31 09:20:47     Processing rows:   400000  Hashtable size: 124432  Memory usage:   25368080        rate:   0.025
+2013-08-31 09:20:48     Processing rows:   500000  Hashtable size: 224432  Memory usage:   42968080        rate:   0.043
+2013-08-31 09:20:49     Processing rows:   551527  Hashtable size: 275960  Memory usage:   52022488        rate:   0.052
+2013-08-31 09:20:49     Dump the hashtable into file: file:/tmp/Hadoop/Hive_2013-08-31_21-20-37_444_1135806892100127714/-local-10003/HashTable-Stage-1/MapJoin-a-10-000001_0。hashtable
+……</pre>
+
+    <p></p>
+    <p>这次就会看到每次构建完一个hash table（也就是所对应的对应一个bucket），会把这个hash table写入文件，重新构建新的hash
+        table。这样一来由于每个hash table的量比较小，也就不会有内存不足的问题，整个sql也能成功运行。不过光光是这个复制动作就要花去3分半的时间，所以如果整个Job本来就花不了多少时间的，那这个时间就不可小视。&nbsp;
+        <span style="background-color: initial;">&nbsp;&nbsp;</span>
+    </p>
+    <p>最后我们试试Sort merge bucket Map join，在bucket Map join的基础上加上下面的设置即可：</p>
+    <p></p><div class="dp-highlighter bg_js"><div class="bar"><div class="tools"><b>[js]</b> <a href="http://www.csdn.net/article/2015-01-13/2823530#" class="ViewSource" title="view plain" onclick="dp.sh.Toolbar.Command(&#39;ViewSource&#39;,this);return false;">view plain</a><a href="http://www.csdn.net/article/2015-01-13/2823530#" class="CopyToClipboard" title="copy" onclick="dp.sh.Toolbar.Command(&#39;CopyToClipboard&#39;,this);return false;">copy</a><a href="http://www.csdn.net/article/2015-01-13/2823530#" class="PrintSource" title="print" onclick="dp.sh.Toolbar.Command(&#39;PrintSource&#39;,this);return false;">print</a><a href="http://www.csdn.net/article/2015-01-13/2823530#" class="About" title="?" onclick="dp.sh.Toolbar.Command(&#39;About&#39;,this);return false;">?</a><div style="position: absolute; left: 389px; top: 8644px; width: 18px; height: 18px; z-index: 99;"><embed id="ZeroClipboardMovie_16" src="http://csdnimg.cn/public/highlighter/ZeroClipboard.swf?e8a7c9a" loop="false" menu="false" quality="best" bgcolor="#ffffff" width="18" height="18" name="ZeroClipboardMovie_16" align="middle" allowscriptaccess="always" allowfullscreen="false" type="application/x-shockwave-flash" pluginspage="http://www.macromedia.com/go/getflashplayer" flashvars="id=16&amp;width=18&amp;height=18" wmode="transparent"></div></div></div><ol start="1" class="dp-c"><li class="alt"><span><span>set&nbsp;Hive.optimize.bucketMapjoin.Sortedmerge&nbsp;=&nbsp;</span><span class="keyword">true</span><span>;&nbsp;&nbsp;</span></span></li><li class=""><span>set&nbsp;Hive.input.format&nbsp;=&nbsp;org.apache.Hadoop.Hive.ql.io.BucketizedHiveInputFormat;&nbsp;&nbsp;</span></li></ol></div><pre class="js" name="code" style="display: none;">set Hive.optimize.bucketMapjoin.Sortedmerge = true;
+set Hive.input.format = org.apache.Hadoop.Hive.ql.io.BucketizedHiveInputFormat;</pre>
+
+    <p></p>
+    <p>Sort merge bucket Map join是不会产生hash table复制的步骤的，直接开始做实际Map端join操作了，数据在join的时候边做边读。跳过复制的步骤，外加join算法的改进，使得Sort
+        merge bucket Map join的效率要明显好于bucket Map join。</p>
+    <p>关于join的算法虽然有这么些选择，但是个人觉得，对于日常使用，掌握默认的Reduce join和普通的（无bucket）Map join已经能解决大多数问题。如果小表不能完全放内存，但是小表相对大表的size量级差别也非常大的时候也可以试试bucket
+        Map join，不过其hash table分发的过程会浪费不少时间，需要评估下是否能够比Reduce join更高效。而Sort merge
+        bucket Map join虽然性能不错，但是把数据做成bucket本身也需要时间，另外其发动条件比较特殊，就是两边join key必须都唯一（很多介绍资料中都不提这一点。强调下必须都是唯一，哪怕只有一个表不唯一，出来的结果也是错的。当然，其实这点完全可以根据其算法原理推敲出来）。这样的场景相对比较少见，“用户基本表
+        join 用户扩展表”以及“用户今天的数据快照 join 用户昨天的数据快照”这类场景可能比较合适。</p>
+    <p>这里顺便说个题外话，在数据仓库中，小表往往是维度表，而小表Map join这件事情其实用udf代替还会更快，因为不用单独启动一轮Job，所以这也是一种可选方案。当然前提条件是维度表是固定的自然属性（比如日期），只增加不修改（比如网站的页面编号）的情况也可以考虑。如果维度有更新，要做缓慢变化维的，当然还是维表好维护。至于维表原本的一个主要用途OLAP，以Hive目前的性能是没法实现的，也就不需要多虑了。</p>
+     <h2>数据倾斜</h2>
+
+    <p>所谓数据倾斜，说的是由于数据分布不均匀，个别值集中占据大部分数据量，加上Hadoop的计算模式，导致计算资源不均匀引起性能下降。下图就是一个例子：</p>
+    <p style="text-align: center;">
+        <img src="./深入浅出数据仓库中SQL性能优化之Hive篇-CSDN.NET_files/54b481388e192_middle.jpg" style="">
+        <br>
+        </p>
+        <p>还是拿网站的访问日志说事吧。假设网站访问日志中会记录用户的user_id，并且对于注册用户使用其用户表的user_id，对于非注册用户使用一个user_id=0代表。那么鉴于大多数用户是非注册用户（只看不写），所以user_id=0占据了绝大多数。而如果进行计算的时候如果以user_id作为group
+            by的维度或者是join key，那么个别Reduce会收到比其他Reduce多得多的数据——因为它要接收所有user_id=0的记录进行处理，使得其处理效果会非常差，其他Reduce都跑完很久了它还在运行。</p>
+        <p>倾斜分成group by造成的倾斜和join造成的倾斜，需要分开看。</p>
+        <p>group by造成的倾斜有两个参数可以解决，一个是Hive.Map.aggr，默认值已经为true，意思是会做Map端的combiner。所以如果你的group
+            by查询只是做count(*)的话，其实是看不出倾斜效果的，但是如果你做的是count(distinct)，那么还是会看出一点倾斜效果。另一个参数是Hive.groupby.
+            skewindata。这个参数的意思是做Reduce操作的时候，拿到的key并不是所有相同值给同一个Reduce，而是随机分发，然后Reduce做聚合，做完之后再做一轮MR，拿前面聚合过的数据再算结果。所以这个参数其实跟Hive.Map.aggr做的是类似的事情，只是拿到Reduce端来做，而且要额外启动一轮Job，所以其实不怎么推荐用，效果不明显。</p>
+        <p>如果说要改写SQL来优化的话，可以按照下面这么做：</p>
+        <p></p><div class="dp-highlighter bg_js"><div class="bar"><div class="tools"><b>[js]</b> <a href="http://www.csdn.net/article/2015-01-13/2823530#" class="ViewSource" title="view plain" onclick="dp.sh.Toolbar.Command(&#39;ViewSource&#39;,this);return false;">view plain</a><a href="http://www.csdn.net/article/2015-01-13/2823530#" class="CopyToClipboard" title="copy" onclick="dp.sh.Toolbar.Command(&#39;CopyToClipboard&#39;,this);return false;">copy</a><a href="http://www.csdn.net/article/2015-01-13/2823530#" class="PrintSource" title="print" onclick="dp.sh.Toolbar.Command(&#39;PrintSource&#39;,this);return false;">print</a><a href="http://www.csdn.net/article/2015-01-13/2823530#" class="About" title="?" onclick="dp.sh.Toolbar.Command(&#39;About&#39;,this);return false;">?</a><div style="position: absolute; left: 389px; top: 10039px; width: 18px; height: 18px; z-index: 99;"><embed id="ZeroClipboardMovie_17" src="http://csdnimg.cn/public/highlighter/ZeroClipboard.swf?e8a7c9a" loop="false" menu="false" quality="best" bgcolor="#ffffff" width="18" height="18" name="ZeroClipboardMovie_17" align="middle" allowscriptaccess="always" allowfullscreen="false" type="application/x-shockwave-flash" pluginspage="http://www.macromedia.com/go/getflashplayer" flashvars="id=17&amp;width=18&amp;height=18" wmode="transparent"></div></div></div><ol start="1" class="dp-c"><li class="alt"><span><span class="comment">/*改写前*/</span><span>&nbsp;&nbsp;</span></span></li><li class=""><span>select&nbsp;a，&nbsp;count(distinct&nbsp;b)&nbsp;as&nbsp;c&nbsp;from&nbsp;tbl&nbsp;group&nbsp;by&nbsp;a;&nbsp;&nbsp;</span></li><li class="alt"><span><span class="comment">/*改写后*/</span><span>&nbsp;&nbsp;</span></span></li><li class=""><span>select&nbsp;a，&nbsp;count(*)&nbsp;as&nbsp;c&nbsp;&nbsp;</span></li><li class="alt"><span>from&nbsp;(select&nbsp;distinct&nbsp;a，&nbsp;b&nbsp;from&nbsp;tbl)&nbsp;group&nbsp;by&nbsp;a;&nbsp;&nbsp;</span></li></ol></div><pre class="js" name="code" style="display: none;">/*改写前*/
+select a， count(distinct b) as c from tbl group by a;
+/*改写后*/
+select a， count(*) as c
+from (select distinct a， b from tbl) group by a;</pre>
+
+        <p></p>
+        <p>join造成的倾斜，就比如上面描述的网站访问日志和用户表两个表join：
+            <br>
+        </p>
+        <p></p><div class="dp-highlighter bg_js"><div class="bar"><div class="tools"><b>[js]</b> <a href="http://www.csdn.net/article/2015-01-13/2823530#" class="ViewSource" title="view plain" onclick="dp.sh.Toolbar.Command(&#39;ViewSource&#39;,this);return false;">view plain</a><a href="http://www.csdn.net/article/2015-01-13/2823530#" class="CopyToClipboard" title="copy" onclick="dp.sh.Toolbar.Command(&#39;CopyToClipboard&#39;,this);return false;">copy</a><a href="http://www.csdn.net/article/2015-01-13/2823530#" class="PrintSource" title="print" onclick="dp.sh.Toolbar.Command(&#39;PrintSource&#39;,this);return false;">print</a><a href="http://www.csdn.net/article/2015-01-13/2823530#" class="About" title="?" onclick="dp.sh.Toolbar.Command(&#39;About&#39;,this);return false;">?</a><div style="position: absolute; left: 389px; top: 10227px; width: 18px; height: 18px; z-index: 99;"><embed id="ZeroClipboardMovie_18" src="http://csdnimg.cn/public/highlighter/ZeroClipboard.swf?e8a7c9a" loop="false" menu="false" quality="best" bgcolor="#ffffff" width="18" height="18" name="ZeroClipboardMovie_18" align="middle" allowscriptaccess="always" allowfullscreen="false" type="application/x-shockwave-flash" pluginspage="http://www.macromedia.com/go/getflashplayer" flashvars="id=18&amp;width=18&amp;height=18" wmode="transparent"></div></div></div><ol start="1" class="dp-c"><li class="alt"><span><span>select&nbsp;a.*&nbsp;from&nbsp;logs&nbsp;a&nbsp;join&nbsp;users&nbsp;b&nbsp;on&nbsp;a。user_id&nbsp;=&nbsp;b.user_id;&nbsp;&nbsp;</span></span></li></ol></div><pre class="js" name="code" style="display: none;">select a.* from logs a join users b on a。user_id = b.user_id;</pre>
+
+        <p></p>
+        <p>Hive给出的解决方案叫skew join，其原理把这种user_id = 0的特殊值先不在Reduce端计算掉，而是先写入hdfs，然后启动一轮Map
+            join专门做这个特殊值的计算，期望能提高计算这部分值的处理速度。当然你要告诉Hive这个join是个skew join，即：</p>
+        <p></p><div class="dp-highlighter bg_js"><div class="bar"><div class="tools"><b>[js]</b> <a href="http://www.csdn.net/article/2015-01-13/2823530#" class="ViewSource" title="view plain" onclick="dp.sh.Toolbar.Command(&#39;ViewSource&#39;,this);return false;">view plain</a><a href="http://www.csdn.net/article/2015-01-13/2823530#" class="CopyToClipboard" title="copy" onclick="dp.sh.Toolbar.Command(&#39;CopyToClipboard&#39;,this);return false;">copy</a><a href="http://www.csdn.net/article/2015-01-13/2823530#" class="PrintSource" title="print" onclick="dp.sh.Toolbar.Command(&#39;PrintSource&#39;,this);return false;">print</a><a href="http://www.csdn.net/article/2015-01-13/2823530#" class="About" title="?" onclick="dp.sh.Toolbar.Command(&#39;About&#39;,this);return false;">?</a><div style="position: absolute; left: 389px; top: 10392px; width: 18px; height: 18px; z-index: 99;"><embed id="ZeroClipboardMovie_19" src="http://csdnimg.cn/public/highlighter/ZeroClipboard.swf?e8a7c9a" loop="false" menu="false" quality="best" bgcolor="#ffffff" width="18" height="18" name="ZeroClipboardMovie_19" align="middle" allowscriptaccess="always" allowfullscreen="false" type="application/x-shockwave-flash" pluginspage="http://www.macromedia.com/go/getflashplayer" flashvars="id=19&amp;width=18&amp;height=18" wmode="transparent"></div></div></div><ol start="1" class="dp-c"><li class="alt"><span><span>set&nbsp;Hive.optimize.skewjoin&nbsp;=&nbsp;</span><span class="keyword">true</span><span>;&nbsp;&nbsp;</span></span></li></ol></div><pre class="js" name="code" style="display: none;">set Hive.optimize.skewjoin = true;</pre>
+
+        <p></p>
+        <p>还有要告诉Hive如何判断特殊值，根据Hive.skewjoin.key设置的数量Hive可以知道，比如默认值是100000，那么超过100000条记录的值就是特殊值。</p>
+        <p>skew join的流程可以用下图描述：</p>
+        <p style="text-align: center;">
+            <img src="./深入浅出数据仓库中SQL性能优化之Hive篇-CSDN.NET_files/54b4814ddec0d_middle.jpg" style="">
+            <br>
+        </p>
+        <p>另外对于特殊值的处理往往跟业务有关系，所以也可以从业务角度重写sql解决。比如前面这种倾斜join，可以把特殊值隔离开来（从业务角度说，users表应该不存在user_id
+            = 0的情况，但是这里还是假设有这个值，使得这个写法更加具有通用性）：
+            <br>
+        </p>
+        <p></p><div class="dp-highlighter bg_js"><div class="bar"><div class="tools"><b>[js]</b> <a href="http://www.csdn.net/article/2015-01-13/2823530#" class="ViewSource" title="view plain" onclick="dp.sh.Toolbar.Command(&#39;ViewSource&#39;,this);return false;">view plain</a><a href="http://www.csdn.net/article/2015-01-13/2823530#" class="CopyToClipboard" title="copy" onclick="dp.sh.Toolbar.Command(&#39;CopyToClipboard&#39;,this);return false;">copy</a><a href="http://www.csdn.net/article/2015-01-13/2823530#" class="PrintSource" title="print" onclick="dp.sh.Toolbar.Command(&#39;PrintSource&#39;,this);return false;">print</a><a href="http://www.csdn.net/article/2015-01-13/2823530#" class="About" title="?" onclick="dp.sh.Toolbar.Command(&#39;About&#39;,this);return false;">?</a><div style="position: absolute; left: 389px; top: 10875px; width: 18px; height: 18px; z-index: 99;"><embed id="ZeroClipboardMovie_20" src="http://csdnimg.cn/public/highlighter/ZeroClipboard.swf?e8a7c9a" loop="false" menu="false" quality="best" bgcolor="#ffffff" width="18" height="18" name="ZeroClipboardMovie_20" align="middle" allowscriptaccess="always" allowfullscreen="false" type="application/x-shockwave-flash" pluginspage="http://www.macromedia.com/go/getflashplayer" flashvars="id=20&amp;width=18&amp;height=18" wmode="transparent"></div></div></div><ol start="1" class="dp-c"><li class="alt"><span><span>select&nbsp;a.*&nbsp;from&nbsp;&nbsp;&nbsp;</span></span></li><li class=""><span>(&nbsp;&nbsp;</span></li><li class="alt"><span>select&nbsp;a.*&nbsp;&nbsp;</span></li><li class=""><span>from&nbsp;(select&nbsp;*&nbsp;from&nbsp;logs&nbsp;where&nbsp;user_id&nbsp;=&nbsp;0)&nbsp;&nbsp;a&nbsp;&nbsp;&nbsp;</span></li><li class="alt"><span>join&nbsp;(select&nbsp;*&nbsp;from&nbsp;users&nbsp;where&nbsp;user_id&nbsp;=&nbsp;0)&nbsp;b&nbsp;&nbsp;&nbsp;</span></li><li class=""><span>on&nbsp;a。user_id&nbsp;=&nbsp;&nbsp;b。user_id&nbsp;&nbsp;</span></li><li class="alt"><span>union&nbsp;all&nbsp;&nbsp;</span></li><li class=""><span>select&nbsp;a.*&nbsp;&nbsp;&nbsp;</span></li><li class="alt"><span>from&nbsp;logs&nbsp;a&nbsp;join&nbsp;users&nbsp;b&nbsp;&nbsp;</span></li><li class=""><span>on&nbsp;a。user_id&nbsp;&lt;&gt;&nbsp;0&nbsp;and&nbsp;a。user_id&nbsp;=&nbsp;b.user_id&nbsp;&nbsp;</span></li><li class="alt"><span>)t;&nbsp;&nbsp;</span></li></ol></div><pre class="js" name="code" style="display: none;">select a.* from 
+(
+select a.*
+from (select * from logs where user_id = 0)  a 
+join (select * from users where user_id = 0) b 
+on a。user_id =  b。user_id
+union all
+select a.* 
+from logs a join users b
+on a。user_id &lt;&gt; 0 and a。user_id = b.user_id
+)t;</pre>
+
+        <p></p>
+        <p>数据倾斜不仅仅是Hive的问题，其实是share nothing架构下必然会碰到的数据分布问题，对此学界也有专门的研究，比如skewtune。</p>
+         <h2>SQL整体优化</h2>
+
+        <p>前面对于单个Job如何做优化已经做过详细讨论，但是Hive查询会生成多个Job，针对多个Job，有什么地方需要优化？</p>
+        <p><b>Job间并行</b>
+
+        </p>
+        <p>首先，在Hive生成的多个Job中，在有些情况下Job之间是可以并行的，典型的就是子查询。当需要执行多个子查询union all或者join操作的时候，Job间并行就可以使用了。比如下面的代码就是一个可以并行的场景示意：</p>
+        <p></p><div class="dp-highlighter bg_js"><div class="bar"><div class="tools"><b>[js]</b> <a href="http://www.csdn.net/article/2015-01-13/2823530#" class="ViewSource" title="view plain" onclick="dp.sh.Toolbar.Command(&#39;ViewSource&#39;,this);return false;">view plain</a><a href="http://www.csdn.net/article/2015-01-13/2823530#" class="CopyToClipboard" title="copy" onclick="dp.sh.Toolbar.Command(&#39;CopyToClipboard&#39;,this);return false;">copy</a><a href="http://www.csdn.net/article/2015-01-13/2823530#" class="PrintSource" title="print" onclick="dp.sh.Toolbar.Command(&#39;PrintSource&#39;,this);return false;">print</a><a href="http://www.csdn.net/article/2015-01-13/2823530#" class="About" title="?" onclick="dp.sh.Toolbar.Command(&#39;About&#39;,this);return false;">?</a><div style="position: absolute; left: 389px; top: 11439px; width: 18px; height: 18px; z-index: 99;"><embed id="ZeroClipboardMovie_21" src="http://csdnimg.cn/public/highlighter/ZeroClipboard.swf?e8a7c9a" loop="false" menu="false" quality="best" bgcolor="#ffffff" width="18" height="18" name="ZeroClipboardMovie_21" align="middle" allowscriptaccess="always" allowfullscreen="false" type="application/x-shockwave-flash" pluginspage="http://www.macromedia.com/go/getflashplayer" flashvars="id=21&amp;width=18&amp;height=18" wmode="transparent"></div></div></div><ol start="1" class="dp-c"><li class="alt"><span><span>select&nbsp;*&nbsp;from&nbsp;&nbsp;&nbsp;</span></span></li><li class=""><span>(&nbsp;&nbsp;</span></li><li class="alt"><span>&nbsp;&nbsp;&nbsp;select&nbsp;count(*)&nbsp;from&nbsp;logs&nbsp;&nbsp;&nbsp;</span></li><li class=""><span>&nbsp;&nbsp;&nbsp;where&nbsp;log_date&nbsp;=&nbsp;20130801&nbsp;and&nbsp;item_id&nbsp;=&nbsp;1&nbsp;&nbsp;</span></li><li class="alt"><span>&nbsp;&nbsp;&nbsp;union&nbsp;all&nbsp;&nbsp;&nbsp;</span></li><li class=""><span>&nbsp;&nbsp;&nbsp;select&nbsp;count(*)&nbsp;from&nbsp;logs&nbsp;&nbsp;&nbsp;</span></li><li class="alt"><span>&nbsp;&nbsp;&nbsp;where&nbsp;log_date&nbsp;=&nbsp;20130802&nbsp;and&nbsp;item_id&nbsp;=&nbsp;2&nbsp;&nbsp;</span></li><li class=""><span>&nbsp;&nbsp;&nbsp;union&nbsp;all&nbsp;&nbsp;&nbsp;</span></li><li class="alt"><span>&nbsp;&nbsp;&nbsp;select&nbsp;count(*)&nbsp;from&nbsp;logs&nbsp;&nbsp;&nbsp;</span></li><li class=""><span>&nbsp;&nbsp;&nbsp;where&nbsp;log_date&nbsp;=&nbsp;20130803&nbsp;and&nbsp;item_id&nbsp;=&nbsp;3&nbsp;&nbsp;</span></li><li class="alt"><span>)t&nbsp;&nbsp;</span></li></ol></div><pre class="js" name="code" style="display: none;">select * from 
+(
+   select count(*) from logs 
+   where log_date = 20130801 and item_id = 1
+   union all 
+   select count(*) from logs 
+   where log_date = 20130802 and item_id = 2
+   union all 
+   select count(*) from logs 
+   where log_date = 20130803 and item_id = 3
+)t</pre>
+
+        <p></p>
+        <p>设置Job间并行的参数是Hive.exec.parallel，将其设为true即可。默认的并行度为8，也就是最多允许sql中8个Job并行。如果想要更高的并行度，可以通过Hive.exec.parallel.
+            thread.number参数进行设置，但要避免设置过大而占用过多资源。</p>
+        <p><b>减少Job数</b>
+
+        </p>
+        <p>另外在实际开发过程中也发现，一些实现思路会导致生成多余的Job而显得不够高效。比如这个需求：查询某网站日志中访问过页面a和页面b的用户数量。低效的思路是面向明细的，先取出看过页面a的用户，再取出看过页面b的用户，然后取交集，代码如下：</p>
+        <p></p><div class="dp-highlighter bg_js"><div class="bar"><div class="tools"><b>[js]</b> <a href="http://www.csdn.net/article/2015-01-13/2823530#" class="ViewSource" title="view plain" onclick="dp.sh.Toolbar.Command(&#39;ViewSource&#39;,this);return false;">view plain</a><a href="http://www.csdn.net/article/2015-01-13/2823530#" class="CopyToClipboard" title="copy" onclick="dp.sh.Toolbar.Command(&#39;CopyToClipboard&#39;,this);return false;">copy</a><a href="http://www.csdn.net/article/2015-01-13/2823530#" class="PrintSource" title="print" onclick="dp.sh.Toolbar.Command(&#39;PrintSource&#39;,this);return false;">print</a><a href="http://www.csdn.net/article/2015-01-13/2823530#" class="About" title="?" onclick="dp.sh.Toolbar.Command(&#39;About&#39;,this);return false;">?</a><div style="position: absolute; left: 389px; top: 11918px; width: 18px; height: 18px; z-index: 99;"><embed id="ZeroClipboardMovie_22" src="http://csdnimg.cn/public/highlighter/ZeroClipboard.swf?e8a7c9a" loop="false" menu="false" quality="best" bgcolor="#ffffff" width="18" height="18" name="ZeroClipboardMovie_22" align="middle" allowscriptaccess="always" allowfullscreen="false" type="application/x-shockwave-flash" pluginspage="http://www.macromedia.com/go/getflashplayer" flashvars="id=22&amp;width=18&amp;height=18" wmode="transparent"></div></div></div><ol start="1" class="dp-c"><li class="alt"><span><span>select&nbsp;count(*)&nbsp;&nbsp;&nbsp;</span></span></li><li class=""><span>from&nbsp;&nbsp;&nbsp;</span></li><li class="alt"><span>(select&nbsp;distinct&nbsp;user_id&nbsp;&nbsp;&nbsp;</span></li><li class=""><span>from&nbsp;logs&nbsp;where&nbsp;page_name&nbsp;=&nbsp;‘a’)&nbsp;a&nbsp;&nbsp;</span></li><li class="alt"><span>join&nbsp;&nbsp;&nbsp;</span></li><li class=""><span>(select&nbsp;distinct&nbsp;user_id&nbsp;&nbsp;&nbsp;</span></li><li class="alt"><span>from&nbsp;logs&nbsp;where&nbsp;blog_owner&nbsp;=&nbsp;‘b’)&nbsp;b&nbsp;&nbsp;&nbsp;</span></li><li class=""><span>on&nbsp;a.user_id&nbsp;=&nbsp;b.user_id;&nbsp;&nbsp;</span></li></ol></div><pre class="js" name="code" style="display: none;">select count(*) 
+from 
+(select distinct user_id 
+from logs where page_name = ‘a’) a
+join 
+(select distinct user_id 
+from logs where blog_owner = ‘b’) b 
+on a.user_id = b.user_id;</pre>
+
+        <p></p>
+        <p>这样一来，就要产生2个求子查询的Job，一个用于关联的Job，还有一个计数的Job，一共有4个Job。</p>
+        <p>但是我们直接用面向统计的方法去计算的话（也就是用group by替代join），则会更加符合M/R的模式，而且生成了一个完全不带子查询的sql，只需要用一个Job就能跑完：</p>
+        <p></p><div class="dp-highlighter bg_js"><div class="bar"><div class="tools"><b>[js]</b> <a href="http://www.csdn.net/article/2015-01-13/2823530#" class="ViewSource" title="view plain" onclick="dp.sh.Toolbar.Command(&#39;ViewSource&#39;,this);return false;">view plain</a><a href="http://www.csdn.net/article/2015-01-13/2823530#" class="CopyToClipboard" title="copy" onclick="dp.sh.Toolbar.Command(&#39;CopyToClipboard&#39;,this);return false;">copy</a><a href="http://www.csdn.net/article/2015-01-13/2823530#" class="PrintSource" title="print" onclick="dp.sh.Toolbar.Command(&#39;PrintSource&#39;,this);return false;">print</a><a href="http://www.csdn.net/article/2015-01-13/2823530#" class="About" title="?" onclick="dp.sh.Toolbar.Command(&#39;About&#39;,this);return false;">?</a><div style="position: absolute; left: 389px; top: 12251px; width: 18px; height: 18px; z-index: 99;"><embed id="ZeroClipboardMovie_23" src="http://csdnimg.cn/public/highlighter/ZeroClipboard.swf?e8a7c9a" loop="false" menu="false" quality="best" bgcolor="#ffffff" width="18" height="18" name="ZeroClipboardMovie_23" align="middle" allowscriptaccess="always" allowfullscreen="false" type="application/x-shockwave-flash" pluginspage="http://www.macromedia.com/go/getflashplayer" flashvars="id=23&amp;width=18&amp;height=18" wmode="transparent"></div></div></div><ol start="1" class="dp-c"><li class="alt"><span><span>select&nbsp;count(*)&nbsp;&nbsp;&nbsp;</span></span></li><li class=""><span>from&nbsp;logs&nbsp;group&nbsp;by&nbsp;user_id&nbsp;&nbsp;</span></li><li class="alt"><span>having&nbsp;(count(<span class="keyword">case</span><span>&nbsp;when&nbsp;page_name&nbsp;=&nbsp;‘a’&nbsp;then&nbsp;1&nbsp;end)&nbsp;&gt;&nbsp;0&nbsp;&nbsp;</span></span></li><li class=""><span>&nbsp;&nbsp;&nbsp;&nbsp;and&nbsp;count(<span class="keyword">case</span><span>&nbsp;when&nbsp;page_name&nbsp;=&nbsp;‘b’&nbsp;then&nbsp;1&nbsp;end)&nbsp;&gt;&nbsp;0)&nbsp;&nbsp;</span></span></li></ol></div><pre class="js" name="code" style="display: none;">select count(*) 
+from logs group by user_id
+having (count(case when page_name = ‘a’ then 1 end) &gt; 0
+    and count(case when page_name = ‘b’ then 1 end) &gt; 0)</pre>
+
+        <p></p>
+        <p>第一种查询方法符合思考问题的直觉，是工程师和分析师在实际查数据中最先想到的写法，但是如果在目前Hive的query planner不是那么智能的情况下，想要更加快速的跑出结果，懂一点工具的内部机理也是必须的。<b>（作者：孙逸&nbsp;/ 审校：刘亚琼）</b>
+
+        </p>
+        <hr>
+        <p>作者介绍：孙逸，zamplus，数据仓库工程师。从事数据仓库平台建设与数据产品开发，热衷于研究大数据相关的计算技术，并应用于实践之中，让数据产生真正价值。</p>				
+				<p class="copyright">本文为CSDN原创文章，未经允许不得转载，如需转载请联系market#csdn.net(#换成@)</p>
+				</div>
+							
+		 
+		
+		 
+		 <div class="share"> 	 
+			  <div class="bdsharebuttonbox bdshare-button-style0-32" style="float:right;" data-bd-bind="1510037812831">
+			  <!-- a href="#" class="bds_more" data-cmd="more"></a -->
+			  <a href="http://www.csdn.net/article/2015-01-13/2823530#" class="bds_weixin" data-cmd="weixin" title="分享到微信"></a>
+			  <a href="http://www.csdn.net/article/2015-01-13/2823530#" class="bds_tsina" data-cmd="tsina" title="分享到新浪微博"></a>
+			  <a href="http://www.csdn.net/article/2015-01-13/2823530#" class="bds_tqq" data-cmd="tqq" title="分享到腾讯微博"></a>
+			  <a href="http://www.csdn.net/article/2015-01-13/2823530#" class="bds_qzone" data-cmd="qzone" title="分享到QQ空间"></a>
+			  </div>
+			<script>window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"2","bdMiniList":false,"bdPic":"","bdStyle":"0","bdSize":"32"},"share":{}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];</script>  
+			
+ 		</div> 
+
+				<div class="detail">
+				<div class="digg">
+						<input type="hidden" id="digg_id" value="2823530">
+						<dl class="support disable">
+							<dt>顶</dt>
+							<dd>40</dd>
+						</dl>
+						<dl class="oppose disable">
+							<dt>踩</dt>
+							<dd>0</dd>
+						</dl>
+				</div>
+			</div>	
+ 	
+				<div class="ad_600_90">
+					<ins data-revive-zoneid="95" data-revive-id="8c38e720de1c90a6f6ff52f3f89c4d57" id="revive-0-1"></ins>
+				</div>
+				<div class="related">推荐阅读相关主题：
+											<a href="http://www.csdn.net/tag/%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F/news" title="文件系统" target="_blank">文件系统</a>
+											<a href="http://www.csdn.net/tag/%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88/news" title="解决方案" target="_blank">解决方案</a>
+											<a href="http://www.csdn.net/tag/%E5%B7%A5%E7%A8%8B%E5%B8%88/news" title="工程师" target="_blank">工程师</a>
+											<a href="http://www.csdn.net/tag/%E5%A4%A7%E6%95%B0%E6%8D%AE/news" title="大数据" target="_blank">大数据</a>
+											<a href="http://www.csdn.net/tag/%E4%BA%92%E8%81%94%E7%BD%91/news" title="互联网" target="_blank">互联网</a>
+											<a href="http://www.csdn.net/tag/%E6%95%B0%E6%8D%AE%E5%BA%93/news" title="数据库" target="_blank">数据库</a>
+									</div>
+				<!-- relational article and news -->
+				<div id="Tab3" class="relational">
+					<h2 class="tab_1 Menubox">
+						<ul>
+						<li id="three1" onclick="setTab(&#39;three&#39;,1,2)" class="hover">相关文章</li>
+						<li id="three2" onclick="setTab(&#39;three&#39;,2,2)">最新报道</li>
+						</ul>
+					</h2>
+					<div class="con Contentbox">
+						<div id="con_three_1" class="hover">
+							<ul class="list_1">								
+														<li><a href="http://www.csdn.net/article/1970-01-01/2823243" title="Hermes与开源的Solr、ElasticSearch的不同" target="_blank">Hermes与开源的Solr、ElasticSearch的不同</a></li>
+														<li><a href="http://www.csdn.net/article/1970-01-01/313041" title="五大主流数据库模型" target="_blank">五大主流数据库模型</a></li>
+														<li><a href="http://www.csdn.net/article/1970-01-01/2815749" title="比Hive高效7倍 Facebook推新一代查询引擎Presto" target="_blank">比Hive高效7倍 Facebook推新一代查询引擎Presto</a></li>
+														<li><a href="http://www.csdn.net/article/1970-01-01/2817426" title="从Oracle到MySQL，余额宝云实践分享" target="_blank">从Oracle到MySQL，余额宝云实践分享</a></li>
+														<li><a href="http://www.csdn.net/article/1970-01-01/282620" title="基于Hive的日志数据统计实战" target="_blank">基于Hive的日志数据统计实战</a></li>
+														<li><a href="http://www.csdn.net/article/1970-01-01/2815112" title="LinkedIn：55人支持2700位员工，2亿用户的大数据分析" target="_blank">LinkedIn：55人支持2700位员工，2亿用户的大数据分析</a></li>
+														</ul>
+						</div>
+						<div id="con_three_2" style="display:none">
+							<ul class="list_1 ">
+							 
+							<li><a href="http://www.csdn.net/article/2017-11-03/2826773" title="SmartX 亮相全球系统顶会 SOSP  详解超融合架构下分布式存储挑战与技术突破" target="_blank">SmartX 亮相全球系统顶会 SOSP  详解超融合架构下分布式存储挑战与技术突破</a></li>
+							 
+							<li><a href="http://www.csdn.net/article/2017-10-29/2826772" title="2017金鸡湖金融科技安全与发展论坛成功举办" target="_blank">2017金鸡湖金融科技安全与发展论坛成功举办</a></li>
+							 
+							<li><a href="http://www.csdn.net/article/2017-10-24/2826770" title="美团云人工智能峰会议程曝光 新产品新技术将亮相" target="_blank">美团云人工智能峰会议程曝光 新产品新技术将亮相</a></li>
+							 
+							<li><a href="http://www.csdn.net/article/2017-10-23/2826769" title="企业用云OPEN FORUM，与云技术大牛面对面丨北京丨深圳丨武汉丨福州" target="_blank">企业用云OPEN FORUM，与云技术大牛面对面丨北京丨深圳丨武汉丨福州</a></li>
+							 
+							<li><a href="http://www.csdn.net/article/2017-10-20/2826768" title="Gluon 简介：AWS 和 Microsoft 合作推出的新机器学习库" target="_blank">Gluon 简介：AWS 和 Microsoft 合作推出的新机器学习库</a></li>
+							 
+							<li><a href="http://www.csdn.net/article/2017-10-16/2826767" title="2017 FinTech领袖峰会即将召开---即商业创新与风险防范" target="_blank">2017 FinTech领袖峰会即将召开---即商业创新与风险防范</a></li>
+													
+							</ul>
+						</div>
+					</div>
+				</div>
+
+				<!-- //relational article and news 广告 -->	
+
+				<!-- comments -->
+                
+									<div id="comments" class="csdn_comments">    <h2 class="comments_tit">        <p>已有<span>26</span>条评论</p>    </h2>                <div class="reply topreply">            <h6>还可以再输入<span>500</span>个字</h6>            <dl>                <dt class="user_img"><img src="./深入浅出数据仓库中SQL性能优化之Hive篇-CSDN.NET_files/user_01.gif" alt=""></dt>                <dd><textarea class="reply_box" placeholder="有什么感想，你也来说说吧！" name="" rows="4"></textarea>                    <div class="reply_submit note_grey clearfix">                    <div class="fr"><input id="user" value="发表评论" type="submit" class="reply_btn"></div>                    <span class="loginwrap"><span class="error">您还没有登录! </span> 请<a class="dologin" href="javascript:viod(0);"> 登录 </a> 或<a href="https://passport.csdn.net/account/register">  注册 </a></span>                   <!-- <span class="error">您还没有登录! </span> 请<a href="#"> 登录 </a> 或<a href="#">  注册 </a>-->                    </div>                </dd>            </dl>            </div>    <div id="csdnTab" class="comments_reply">        <h3 class="tit tab_1">            <ul>                <li class="hover">最新评论</li>                <li>最热评论</li>            </ul>        </h3>        <div class="con last"><div lang="595206" class="reply parentId_0">            <dl>                <dt class="user_img"><a target="_blank" href="http://my.csdn.net/woshiyangshushun"><img src="./深入浅出数据仓库中SQL性能优化之Hive篇-CSDN.NET_files/3_woshiyangshushun.jpg"></a></dt>                <dd>                    <div class="note_grey"><a target="_blank" href="http://my.csdn.net/woshiyangshushun" class="user_name" realname="woshiyangshushun">woshiyangshushun</a>   <span class="time">2017-10-31 10:09</span>   <span class="from from0"></span></div>                                        <div class="reply_content">select a.*   
+from logs a join users b  
+on a。user_id &lt;&gt; 0 and a。user_id = b.user_id 
+目前新版本的hive支持等值连接，不支持非等值连接</div>                    <div class="comment-btns note_grey clearfix">                        <span class="fr">                            <span class="votewrap" style="display:none;"><span class="num">0</span>票，来自<span class="from"></span></span>                            <a class="vote vote-like" href="javascript:void(0);" id="woshiyangshushun595206_vote" title="顶一下"> </a>                            <a href="javascript:void(0);" class="more more_close" id="woshiyangshushun595206_more" style="display:none;">更多</a>                            <span style="display:inline-block; width:12px;"></span>                            <span class="dislike_count" style="display: none" title="被踩了0票">0票</span>                            <a class="vote vote-dislike" href="javascript:void 0" id="woshiyangshushun595206_vote_dislike" title="踩一下"> </a>                             <a class="reply_comments" href="javascript:void(0);">回复</a>                        </span>                    </div>                    <div class="vote_user " style="display:none;"></div>                    <div class="reply_reply" style="display:none;">                        <textarea class="reply_box" placeholder="有什么感想，你也来说说吧！" name="" rows="3"></textarea>                        <div class="reply_submit note_grey clearfix">                            <div class="fr"><input id="woshiyangshushun595206_btn" value="回复" type="submit" class="reply_btn"></div>                        </div>                    </div>                </dd>            </dl>        </div><div lang="562813" class="reply parentId_0">            <dl>                <dt class="user_img"><a target="_blank" href="http://my.csdn.net/weixin_34617502"><img src="./深入浅出数据仓库中SQL性能优化之Hive篇-CSDN.NET_files/3_weixin_34617502.jpg"></a></dt>                <dd>                    <div class="note_grey"><a target="_blank" href="http://my.csdn.net/weixin_34617502" class="user_name" realname="weixin_34617502">weixin_34617502</a>   <span class="time">2017-08-02 11:11</span>   <span class="from from0"></span></div>                                        <div class="reply_content">谢谢分享，能够用实际的例子说明问题帮助初学者</div>                    <div class="comment-btns note_grey clearfix">                        <span class="fr">                            <span class="votewrap" style="display:none;"><span class="num">0</span>票，来自<span class="from"></span></span>                            <a class="vote vote-like" href="javascript:void(0);" id="weixin_34617502562813_vote" title="顶一下"> </a>                            <a href="javascript:void(0);" class="more more_close" id="weixin_34617502562813_more" style="display:none;">更多</a>                            <span style="display:inline-block; width:12px;"></span>                            <span class="dislike_count" style="display: none" title="被踩了0票">0票</span>                            <a class="vote vote-dislike" href="javascript:void 0" id="weixin_34617502562813_vote_dislike" title="踩一下"> </a>                             <a class="reply_comments" href="javascript:void(0);">回复</a>                        </span>                    </div>                    <div class="vote_user " style="display:none;"></div>                    <div class="reply_reply" style="display:none;">                        <textarea class="reply_box" placeholder="有什么感想，你也来说说吧！" name="" rows="3"></textarea>                        <div class="reply_submit note_grey clearfix">                            <div class="fr"><input id="weixin_34617502562813_btn" value="回复" type="submit" class="reply_btn"></div>                        </div>                    </div>                </dd>            </dl>        </div><div lang="531623" class="reply parentId_0">            <dl>                <dt class="user_img"><a target="_blank" href="http://my.csdn.net/northwindrocker"><img src="./深入浅出数据仓库中SQL性能优化之Hive篇-CSDN.NET_files/3_northwindrocker.jpg"></a></dt>                <dd>                    <div class="note_grey"><a target="_blank" href="http://my.csdn.net/northwindrocker" class="user_name" realname="northwindrocker">northwindrocker</a>   <span class="time">2017-03-31 10:21</span>   <span class="from from0"></span></div>                                        <div class="reply_content">深入浅出，有独到见解</div>                    <div class="comment-btns note_grey clearfix">                        <span class="fr">                            <span class="votewrap" style="display:none;"><span class="num">0</span>票，来自<span class="from"></span></span>                            <a class="vote vote-like" href="javascript:void(0);" id="northwindrocker531623_vote" title="顶一下"> </a>                            <a href="javascript:void(0);" class="more more_close" id="northwindrocker531623_more" style="display:none;">更多</a>                            <span style="display:inline-block; width:12px;"></span>                            <span class="dislike_count" style="display: none" title="被踩了0票">0票</span>                            <a class="vote vote-dislike" href="javascript:void 0" id="northwindrocker531623_vote_dislike" title="踩一下"> </a>                             <a class="reply_comments" href="javascript:void(0);">回复</a>                        </span>                    </div>                    <div class="vote_user " style="display:none;"></div>                    <div class="reply_reply" style="display:none;">                        <textarea class="reply_box" placeholder="有什么感想，你也来说说吧！" name="" rows="3"></textarea>                        <div class="reply_submit note_grey clearfix">                            <div class="fr"><input id="northwindrocker531623_btn" value="回复" type="submit" class="reply_btn"></div>                        </div>                    </div>                </dd>            </dl>        </div><div lang="470253" class="reply parentId_0">            <dl>                <dt class="user_img"><a target="_blank" href="http://my.csdn.net/yang2209323188"><img src="./深入浅出数据仓库中SQL性能优化之Hive篇-CSDN.NET_files/3_yang2209323188.jpg"></a></dt>                <dd>                    <div class="note_grey"><a target="_blank" href="http://my.csdn.net/yang2209323188" class="user_name" realname="yang2209323188">咿咿呀呀527</a>   <span class="time">2016-04-06 16:22</span>   <span class="from from0"></span></div>                                        <div class="reply_content">不错,学习啦!</div>                    <div class="comment-btns note_grey clearfix">                        <span class="fr">                            <span class="votewrap" style="display:none;"><span class="num">0</span>票，来自<span class="from"></span></span>                            <a class="vote vote-like" href="javascript:void(0);" id="yang2209323188470253_vote" title="顶一下"> </a>                            <a href="javascript:void(0);" class="more more_close" id="yang2209323188470253_more" style="display:none;">更多</a>                            <span style="display:inline-block; width:12px;"></span>                            <span class="dislike_count" style="display: none" title="被踩了0票">0票</span>                            <a class="vote vote-dislike" href="javascript:void 0" id="yang2209323188470253_vote_dislike" title="踩一下"> </a>                             <a class="reply_comments" href="javascript:void(0);">回复</a>                        </span>                    </div>                    <div class="vote_user " style="display:none;"></div>                    <div class="reply_reply" style="display:none;">                        <textarea class="reply_box" placeholder="有什么感想，你也来说说吧！" name="" rows="3"></textarea>                        <div class="reply_submit note_grey clearfix">                            <div class="fr"><input id="yang2209323188470253_btn" value="回复" type="submit" class="reply_btn"></div>                        </div>                    </div>                </dd>            </dl>        </div><div lang="452358" class="reply parentId_0">            <dl>                <dt class="user_img"><a target="_blank" href="http://my.csdn.net/qq_30797757"><img src="./深入浅出数据仓库中SQL性能优化之Hive篇-CSDN.NET_files/3_qq_30797757.jpg"></a></dt>                <dd>                    <div class="note_grey"><a target="_blank" href="http://my.csdn.net/qq_30797757" class="user_name" realname="qq_30797757">Time_Now</a>   <span class="time">2016-01-03 13:41</span>   <span class="from from0"></span></div>                                        <div class="reply_content">学习了！谢谢</div>                    <div class="comment-btns note_grey clearfix">                        <span class="fr">                            <span class="votewrap" style="display:none;"><span class="num">0</span>票，来自<span class="from"></span></span>                            <a class="vote vote-like" href="javascript:void(0);" id="qq_30797757452358_vote" title="顶一下"> </a>                            <a href="javascript:void(0);" class="more more_close" id="qq_30797757452358_more" style="display:none;">更多</a>                            <span style="display:inline-block; width:12px;"></span>                            <span class="dislike_count" style="display: none" title="被踩了0票">0票</span>                            <a class="vote vote-dislike" href="javascript:void 0" id="qq_30797757452358_vote_dislike" title="踩一下"> </a>                             <a class="reply_comments" href="javascript:void(0);">回复</a>                        </span>                    </div>                    <div class="vote_user " style="display:none;"></div>                    <div class="reply_reply" style="display:none;">                        <textarea class="reply_box" placeholder="有什么感想，你也来说说吧！" name="" rows="3"></textarea>                        <div class="reply_submit note_grey clearfix">                            <div class="fr"><input id="qq_30797757452358_btn" value="回复" type="submit" class="reply_btn"></div>                        </div>                    </div>                </dd>            </dl>        </div><div lang="429570" class="reply parentId_0">            <dl>                <dt class="user_img"><a target="_blank" href="http://my.csdn.net/zxcliving123tadie"><img src="./深入浅出数据仓库中SQL性能优化之Hive篇-CSDN.NET_files/3_zxcliving123tadie.jpg"></a></dt>                <dd>                    <div class="note_grey"><a target="_blank" href="http://my.csdn.net/zxcliving123tadie" class="user_name" realname="zxcliving123tadie">zxcliving123tadie</a>   <span class="time">2015-09-16 17:22</span>   <span class="from from0"></span></div>                                        <div class="reply_content">确实说的很全面，谢谢</div>                    <div class="comment-btns note_grey clearfix">                        <span class="fr">                            <span class="votewrap" style="display:none;"><span class="num">0</span>票，来自<span class="from"></span></span>                            <a class="vote vote-like" href="javascript:void(0);" id="zxcliving123tadie429570_vote" title="顶一下"> </a>                            <a href="javascript:void(0);" class="more more_close" id="zxcliving123tadie429570_more" style="display:none;">更多</a>                            <span style="display:inline-block; width:12px;"></span>                            <span class="dislike_count" style="display: none" title="被踩了0票">0票</span>                            <a class="vote vote-dislike" href="javascript:void 0" id="zxcliving123tadie429570_vote_dislike" title="踩一下"> </a>                             <a class="reply_comments" href="javascript:void(0);">回复</a>                        </span>                    </div>                    <div class="vote_user " style="display:none;"></div>                    <div class="reply_reply" style="display:none;">                        <textarea class="reply_box" placeholder="有什么感想，你也来说说吧！" name="" rows="3"></textarea>                        <div class="reply_submit note_grey clearfix">                            <div class="fr"><input id="zxcliving123tadie429570_btn" value="回复" type="submit" class="reply_btn"></div>                        </div>                    </div>                </dd>            </dl>        </div><div lang="424821" class="reply parentId_0">            <dl>                <dt class="user_img"><a target="_blank" href="http://my.csdn.net/williamlee_110"><img src="./深入浅出数据仓库中SQL性能优化之Hive篇-CSDN.NET_files/3_williamlee_110.jpg"></a></dt>                <dd>                    <div class="note_grey"><a target="_blank" href="http://my.csdn.net/williamlee_110" class="user_name" realname="williamlee_110">williamlee_110</a>   <span class="time">2015-08-20 15:54</span>   <span class="from from0"></span></div>                                        <div class="reply_content">老师写得非常不错，值得学习</div>                    <div class="comment-btns note_grey clearfix">                        <span class="fr">                            <span class="votewrap" style="display:none;"><span class="num">0</span>票，来自<span class="from"></span></span>                            <a class="vote vote-like" href="javascript:void(0);" id="williamlee_110424821_vote" title="顶一下"> </a>                            <a href="javascript:void(0);" class="more more_close" id="williamlee_110424821_more" style="display:none;">更多</a>                            <span style="display:inline-block; width:12px;"></span>                            <span class="dislike_count" style="display: none" title="被踩了0票">0票</span>                            <a class="vote vote-dislike" href="javascript:void 0" id="williamlee_110424821_vote_dislike" title="踩一下"> </a>                             <a class="reply_comments" href="javascript:void(0);">回复</a>                        </span>                    </div>                    <div class="vote_user " style="display:none;"></div>                    <div class="reply_reply" style="display:none;">                        <textarea class="reply_box" placeholder="有什么感想，你也来说说吧！" name="" rows="3"></textarea>                        <div class="reply_submit note_grey clearfix">                            <div class="fr"><input id="williamlee_110424821_btn" value="回复" type="submit" class="reply_btn"></div>                        </div>                    </div>                </dd>            </dl>        </div><div lang="375989" class="reply parentId_0">            <dl>                <dt class="user_img"><a target="_blank" href="http://my.csdn.net/ajax_jquery"><img src="./深入浅出数据仓库中SQL性能优化之Hive篇-CSDN.NET_files/3_ajax_jquery.jpg"></a></dt>                <dd>                    <div class="note_grey"><a target="_blank" href="http://my.csdn.net/ajax_jquery" class="user_name" realname="ajax_jquery">肖的博客</a>   <span class="time">2015-01-20 17:48</span>   <span class="from from0"></span></div>                                        <div class="reply_content">老师写的太好了，能提供一下您的博客地址吗，和您多请教学习。</div>                    <div class="comment-btns note_grey clearfix">                        <span class="fr">                            <span class="votewrap" style="display:none;"><span class="num">0</span>票，来自<span class="from"></span></span>                            <a class="vote vote-like" href="javascript:void(0);" id="ajax_jquery375989_vote" title="顶一下"> </a>                            <a href="javascript:void(0);" class="more more_close" id="ajax_jquery375989_more" style="display:none;">更多</a>                            <span style="display:inline-block; width:12px;"></span>                            <span class="dislike_count" style="display: none" title="被踩了0票">0票</span>                            <a class="vote vote-dislike" href="javascript:void 0" id="ajax_jquery375989_vote_dislike" title="踩一下"> </a>                             <a class="reply_comments" href="javascript:void(0);">回复</a>                        </span>                    </div>                    <div class="vote_user " style="display:none;"></div>                    <div class="reply_reply" style="display:none;">                        <textarea class="reply_box" placeholder="有什么感想，你也来说说吧！" name="" rows="3"></textarea>                        <div class="reply_submit note_grey clearfix">                            <div class="fr"><input id="ajax_jquery375989_btn" value="回复" type="submit" class="reply_btn"></div>                        </div>                    </div>                </dd>            </dl>        </div><div lang="374905" class="reply parentId_0">            <dl>                <dt class="user_img"><a target="_blank" href="http://my.csdn.net/qtm315"><img src="./深入浅出数据仓库中SQL性能优化之Hive篇-CSDN.NET_files/3_qtm315.jpg"></a></dt>                <dd>                    <div class="note_grey"><a target="_blank" href="http://my.csdn.net/qtm315" class="user_name" realname="qtm315">qtm315</a>   <span class="time">2015-01-16 09:53</span>   <span class="from from0"></span></div>                                        <div class="reply_content">spill or split?</div>                    <div class="comment-btns note_grey clearfix">                        <span class="fr">                            <span class="votewrap" style="display:none;"><span class="num">0</span>票，来自<span class="from"></span></span>                            <a class="vote vote-like" href="javascript:void(0);" id="qtm315374905_vote" title="顶一下"> </a>                            <a href="javascript:void(0);" class="more more_close" id="qtm315374905_more" style="display:none;">更多</a>                            <span style="display:inline-block; width:12px;"></span>                            <span class="dislike_count" style="display: none" title="被踩了0票">0票</span>                            <a class="vote vote-dislike" href="javascript:void 0" id="qtm315374905_vote_dislike" title="踩一下"> </a>                             <a class="reply_comments" href="javascript:void(0);">回复</a>                        </span>                    </div>                    <div class="vote_user " style="display:none;"></div>                    <div class="reply_reply" style="display:none;">                        <textarea class="reply_box" placeholder="有什么感想，你也来说说吧！" name="" rows="3"></textarea>                        <div class="reply_submit note_grey clearfix">                            <div class="fr"><input id="qtm315374905_btn" value="回复" type="submit" class="reply_btn"></div>                        </div>                    </div>                </dd>            </dl>        </div><div lang="374877" class="reply parentId_0">            <dl>                <dt class="user_img"><a target="_blank" href="http://my.csdn.net/hezhong002"><img src="./深入浅出数据仓库中SQL性能优化之Hive篇-CSDN.NET_files/3_hezhong002.jpg"></a></dt>                <dd>                    <div class="note_grey"><a target="_blank" href="http://my.csdn.net/hezhong002" class="user_name" realname="hezhong002">hezhong002</a>   <span class="time">2015-01-16 08:39</span>   <span class="from from0"></span></div>                                        <div class="reply_content">mark</div>                    <div class="comment-btns note_grey clearfix">                        <span class="fr">                            <span class="votewrap" style="display:none;"><span class="num">0</span>票，来自<span class="from"></span></span>                            <a class="vote vote-like" href="javascript:void(0);" id="hezhong002374877_vote" title="顶一下"> </a>                            <a href="javascript:void(0);" class="more more_close" id="hezhong002374877_more" style="display:none;">更多</a>                            <span style="display:inline-block; width:12px;"></span>                            <span class="dislike_count" style="display: none" title="被踩了0票">0票</span>                            <a class="vote vote-dislike" href="javascript:void 0" id="hezhong002374877_vote_dislike" title="踩一下"> </a>                             <a class="reply_comments" href="javascript:void(0);">回复</a>                        </span>                    </div>                    <div class="vote_user " style="display:none;"></div>                    <div class="reply_reply" style="display:none;">                        <textarea class="reply_box" placeholder="有什么感想，你也来说说吧！" name="" rows="3"></textarea>                        <div class="reply_submit note_grey clearfix">                            <div class="fr"><input id="hezhong002374877_btn" value="回复" type="submit" class="reply_btn"></div>                        </div>                    </div>                </dd>            </dl>        </div><div lang="374427" class="reply parentId_0">            <dl>                <dt class="user_img"><a target="_blank" href="http://my.csdn.net/superboyli520"><img src="./深入浅出数据仓库中SQL性能优化之Hive篇-CSDN.NET_files/3_superboyli520.jpg"></a></dt>                <dd>                    <div class="note_grey"><a target="_blank" href="http://my.csdn.net/superboyli520" class="user_name" realname="superboyli520">superboyli520</a>   <span class="time">2015-01-14 21:44</span>   <span class="from from0"></span></div>                                        <div class="reply_content">多谢分享！！！</div>                    <div class="comment-btns note_grey clearfix">                        <span class="fr">                            <span class="votewrap" style="display:none;"><span class="num">0</span>票，来自<span class="from"></span></span>                            <a class="vote vote-like" href="javascript:void(0);" id="superboyli520374427_vote" title="顶一下"> </a>                            <a href="javascript:void(0);" class="more more_close" id="superboyli520374427_more" style="display:none;">更多</a>                            <span style="display:inline-block; width:12px;"></span>                            <span class="dislike_count" style="display: none" title="被踩了0票">0票</span>                            <a class="vote vote-dislike" href="javascript:void 0" id="superboyli520374427_vote_dislike" title="踩一下"> </a>                             <a class="reply_comments" href="javascript:void(0);">回复</a>                        </span>                    </div>                    <div class="vote_user " style="display:none;"></div>                    <div class="reply_reply" style="display:none;">                        <textarea class="reply_box" placeholder="有什么感想，你也来说说吧！" name="" rows="3"></textarea>                        <div class="reply_submit note_grey clearfix">                            <div class="fr"><input id="superboyli520374427_btn" value="回复" type="submit" class="reply_btn"></div>                        </div>                    </div>                </dd>            </dl>        </div><div lang="374183" class="reply parentId_0">            <dl>                <dt class="user_img"><a target="_blank" href="http://my.csdn.net/johnsonchengwu"><img src="./深入浅出数据仓库中SQL性能优化之Hive篇-CSDN.NET_files/3_johnsonchengwu.jpg"></a></dt>                <dd>                    <div class="note_grey"><a target="_blank" href="http://my.csdn.net/johnsonchengwu" class="user_name" realname="johnsonchengwu">johnsonchengwu</a>   <span class="time">2015-01-14 12:48</span>   <span class="from from0"></span></div>                                        <div class="reply_content">select count(*)   
+from logs group by user_id  
+having (count(case when page_name = ‘a’ then 1 end) &gt; 0  
+    and count(case when page_name = ‘b’ then 1 end) &gt; 0)  
+这个语句是错的，博主没有测试过？</div>                    <div class="comment-btns note_grey clearfix">                        <span class="fr">                            <span class="votewrap" style="display:none;"><span class="num">0</span>票，来自<span class="from"></span></span>                            <a class="vote vote-like" href="javascript:void(0);" id="johnsonchengwu374183_vote" title="顶一下"> </a>                            <a href="javascript:void(0);" class="more more_close" id="johnsonchengwu374183_more" style="display:none;">更多</a>                            <span style="display:inline-block; width:12px;"></span>                            <span class="dislike_count" style="display: none" title="被踩了0票">0票</span>                            <a class="vote vote-dislike" href="javascript:void 0" id="johnsonchengwu374183_vote_dislike" title="踩一下"> </a>                             <a class="reply_comments" href="javascript:void(0);">回复</a>                        </span>                    </div>                    <div class="vote_user " style="display:none;"></div>                    <div class="reply_reply" style="display:none;">                        <textarea class="reply_box" placeholder="有什么感想，你也来说说吧！" name="" rows="3"></textarea>                        <div class="reply_submit note_grey clearfix">                            <div class="fr"><input id="johnsonchengwu374183_btn" value="回复" type="submit" class="reply_btn"></div>                        </div>                    </div>                </dd>            </dl>        </div><div lang="374145" class="reply parentId_0">            <dl>                <dt class="user_img"><a target="_blank" href="http://my.csdn.net/liuskysun1986"><img src="./深入浅出数据仓库中SQL性能优化之Hive篇-CSDN.NET_files/3_liuskysun1986.jpg"></a></dt>                <dd>                    <div class="note_grey"><a target="_blank" href="http://my.csdn.net/liuskysun1986" class="user_name" realname="liuskysun1986">liuskysun1986</a>   <span class="time">2015-01-14 11:44</span>   <span class="from from0"></span></div>                                        <div class="reply_content">mark</div>                    <div class="comment-btns note_grey clearfix">                        <span class="fr">                            <span class="votewrap" style="display:none;"><span class="num">0</span>票，来自<span class="from"></span></span>                            <a class="vote vote-like" href="javascript:void(0);" id="liuskysun1986374145_vote" title="顶一下"> </a>                            <a href="javascript:void(0);" class="more more_close" id="liuskysun1986374145_more" style="display:none;">更多</a>                            <span style="display:inline-block; width:12px;"></span>                            <span class="dislike_count" style="display: none" title="被踩了0票">0票</span>                            <a class="vote vote-dislike" href="javascript:void 0" id="liuskysun1986374145_vote_dislike" title="踩一下"> </a>                             <a class="reply_comments" href="javascript:void(0);">回复</a>                        </span>                    </div>                    <div class="vote_user " style="display:none;"></div>                    <div class="reply_reply" style="display:none;">                        <textarea class="reply_box" placeholder="有什么感想，你也来说说吧！" name="" rows="3"></textarea>                        <div class="reply_submit note_grey clearfix">                            <div class="fr"><input id="liuskysun1986374145_btn" value="回复" type="submit" class="reply_btn"></div>                        </div>                    </div>                </dd>            </dl>        </div><div lang="373855" class="reply parentId_0">            <dl>                <dt class="user_img"><a target="_blank" href="http://my.csdn.net/wy447114759"><img src="./深入浅出数据仓库中SQL性能优化之Hive篇-CSDN.NET_files/3_wy447114759.jpg"></a></dt>                <dd>                    <div class="note_grey"><a target="_blank" href="http://my.csdn.net/wy447114759" class="user_name" realname="wy447114759">wy447114759</a>   <span class="time">2015-01-13 17:15</span>   <span class="from from0"></span></div>                                        <div class="reply_content">说的很好</div>                    <div class="comment-btns note_grey clearfix">                        <span class="fr">                            <span class="votewrap" style="display:none;"><span class="num">0</span>票，来自<span class="from"></span></span>                            <a class="vote vote-like" href="javascript:void(0);" id="wy447114759373855_vote" title="顶一下"> </a>                            <a href="javascript:void(0);" class="more more_close" id="wy447114759373855_more" style="display:none;">更多</a>                            <span style="display:inline-block; width:12px;"></span>                            <span class="dislike_count" style="display: none" title="被踩了0票">0票</span>                            <a class="vote vote-dislike" href="javascript:void 0" id="wy447114759373855_vote_dislike" title="踩一下"> </a>                             <a class="reply_comments" href="javascript:void(0);">回复</a>                        </span>                    </div>                    <div class="vote_user " style="display:none;"></div>                    <div class="reply_reply" style="display:none;">                        <textarea class="reply_box" placeholder="有什么感想，你也来说说吧！" name="" rows="3"></textarea>                        <div class="reply_submit note_grey clearfix">                            <div class="fr"><input id="wy447114759373855_btn" value="回复" type="submit" class="reply_btn"></div>                        </div>                    </div>                </dd>            </dl>        </div><div lang="373854" class="reply parentId_0">            <dl>                <dt class="user_img"><a target="_blank" href="http://my.csdn.net/hzsailuck"><img src="./深入浅出数据仓库中SQL性能优化之Hive篇-CSDN.NET_files/3_hzsailuck.jpg"></a></dt>                <dd>                    <div class="note_grey"><a target="_blank" href="http://my.csdn.net/hzsailuck" class="user_name" realname="hzsailuck">hzsailuck</a>   <span class="time">2015-01-13 17:10</span>   <span class="from from0"></span></div>                                        <div class="reply_content">非常好的一个建议</div>                    <div class="comment-btns note_grey clearfix">                        <span class="fr">                            <span class="votewrap" style="display:none;"><span class="num">0</span>票，来自<span class="from"></span></span>                            <a class="vote vote-like" href="javascript:void(0);" id="hzsailuck373854_vote" title="顶一下"> </a>                            <a href="javascript:void(0);" class="more more_close" id="hzsailuck373854_more" style="display:none;">更多</a>                            <span style="display:inline-block; width:12px;"></span>                            <span class="dislike_count" style="display: none" title="被踩了0票">0票</span>                            <a class="vote vote-dislike" href="javascript:void 0" id="hzsailuck373854_vote_dislike" title="踩一下"> </a>                             <a class="reply_comments" href="javascript:void(0);">回复</a>                        </span>                    </div>                    <div class="vote_user " style="display:none;"></div>                    <div class="reply_reply" style="display:none;">                        <textarea class="reply_box" placeholder="有什么感想，你也来说说吧！" name="" rows="3"></textarea>                        <div class="reply_submit note_grey clearfix">                            <div class="fr"><input id="hzsailuck373854_btn" value="回复" type="submit" class="reply_btn"></div>                        </div>                    </div>                </dd>            </dl>        </div><div lang="373845" class="reply parentId_0">            <dl>                <dt class="user_img"><a target="_blank" href="http://my.csdn.net/sanshengshi1"><img src="./深入浅出数据仓库中SQL性能优化之Hive篇-CSDN.NET_files/3_sanshengshi1.jpg"></a></dt>                <dd>                    <div class="note_grey"><a target="_blank" href="http://my.csdn.net/sanshengshi1" class="user_name" realname="sanshengshi1">SunKing三生石</a>   <span class="time">2015-01-13 16:58</span>   <span class="from from0"></span></div>                                        <div class="reply_content">很好</div>                    <div class="comment-btns note_grey clearfix">                        <span class="fr">                            <span class="votewrap" style="display:none;"><span class="num">0</span>票，来自<span class="from"></span></span>                            <a class="vote vote-like" href="javascript:void(0);" id="sanshengshi1373845_vote" title="顶一下"> </a>                            <a href="javascript:void(0);" class="more more_close" id="sanshengshi1373845_more" style="display:none;">更多</a>                            <span style="display:inline-block; width:12px;"></span>                            <span class="dislike_count" style="display: none" title="被踩了0票">0票</span>                            <a class="vote vote-dislike" href="javascript:void 0" id="sanshengshi1373845_vote_dislike" title="踩一下"> </a>                             <a class="reply_comments" href="javascript:void(0);">回复</a>                        </span>                    </div>                    <div class="vote_user " style="display:none;"></div>                    <div class="reply_reply" style="display:none;">                        <textarea class="reply_box" placeholder="有什么感想，你也来说说吧！" name="" rows="3"></textarea>                        <div class="reply_submit note_grey clearfix">                            <div class="fr"><input id="sanshengshi1373845_btn" value="回复" type="submit" class="reply_btn"></div>                        </div>                    </div>                </dd>            </dl>        </div><div lang="373800" class="reply parentId_0">            <dl>                <dt class="user_img"><a target="_blank" href="http://my.csdn.net/u012801156"><img src="./深入浅出数据仓库中SQL性能优化之Hive篇-CSDN.NET_files/3_u012801156.jpg"></a></dt>                <dd>                    <div class="note_grey"><a target="_blank" href="http://my.csdn.net/u012801156" class="user_name" realname="u012801156">nicklyh</a>   <span class="time">2015-01-13 14:54</span>   <span class="from from0"></span></div>                                        <div class="reply_content">不错很好的文章</div>                    <div class="comment-btns note_grey clearfix">                        <span class="fr">                            <span class="votewrap" style="display:none;"><span class="num">0</span>票，来自<span class="from"></span></span>                            <a class="vote vote-like" href="javascript:void(0);" id="u012801156373800_vote" title="顶一下"> </a>                            <a href="javascript:void(0);" class="more more_close" id="u012801156373800_more" style="display:none;">更多</a>                            <span style="display:inline-block; width:12px;"></span>                            <span class="dislike_count" style="display: none" title="被踩了0票">0票</span>                            <a class="vote vote-dislike" href="javascript:void 0" id="u012801156373800_vote_dislike" title="踩一下"> </a>                             <a class="reply_comments" href="javascript:void(0);">回复</a>                        </span>                    </div>                    <div class="vote_user " style="display:none;"></div>                    <div class="reply_reply" style="display:none;">                        <textarea class="reply_box" placeholder="有什么感想，你也来说说吧！" name="" rows="3"></textarea>                        <div class="reply_submit note_grey clearfix">                            <div class="fr"><input id="u012801156373800_btn" value="回复" type="submit" class="reply_btn"></div>                        </div>                    </div>                </dd>            </dl>        </div><div lang="373794" class="reply parentId_0">            <dl>                <dt class="user_img"><a target="_blank" href="http://my.csdn.net/vecof"><img src="./深入浅出数据仓库中SQL性能优化之Hive篇-CSDN.NET_files/3_vecof.jpg"></a></dt>                <dd>                    <div class="note_grey"><a target="_blank" href="http://my.csdn.net/vecof" class="user_name" realname="vecof">vecof</a>   <span class="time">2015-01-13 14:32</span>   <span class="from from0"></span></div>                                        <div class="reply_content">不错</div>                    <div class="comment-btns note_grey clearfix">                        <span class="fr">                            <span class="votewrap" style="display:none;"><span class="num">0</span>票，来自<span class="from"></span></span>                            <a class="vote vote-like" href="javascript:void(0);" id="vecof373794_vote" title="顶一下"> </a>                            <a href="javascript:void(0);" class="more more_close" id="vecof373794_more" style="display:none;">更多</a>                            <span style="display:inline-block; width:12px;"></span>                            <span class="dislike_count" title="被踩了1票">1票</span>                            <a class="vote vote-dislike" href="javascript:void 0" id="vecof373794_vote_dislike" title="踩一下"> </a>                             <a class="reply_comments" href="javascript:void(0);">回复</a>                        </span>                    </div>                    <div class="vote_user " style="display:none;"></div>                    <div class="reply_reply" style="display:none;">                        <textarea class="reply_box" placeholder="有什么感想，你也来说说吧！" name="" rows="3"></textarea>                        <div class="reply_submit note_grey clearfix">                            <div class="fr"><input id="vecof373794_btn" value="回复" type="submit" class="reply_btn"></div>                        </div>                    </div>                </dd>            </dl>        </div><div lang="373791" class="reply parentId_0">            <dl>                <dt class="user_img"><a target="_blank" href="http://my.csdn.net/la123456666"><img src="./深入浅出数据仓库中SQL性能优化之Hive篇-CSDN.NET_files/3_la123456666.jpg"></a></dt>                <dd>                    <div class="note_grey"><a target="_blank" href="http://my.csdn.net/la123456666" class="user_name" realname="la123456666">la123456666</a>   <span class="time">2015-01-13 14:24</span>   <span class="from from0"></span></div>                                        <div class="reply_content">很好很强大</div>                    <div class="comment-btns note_grey clearfix">                        <span class="fr">                            <span class="votewrap" style="display:none;"><span class="num">0</span>票，来自<span class="from"></span></span>                            <a class="vote vote-like" href="javascript:void(0);" id="la123456666373791_vote" title="顶一下"> </a>                            <a href="javascript:void(0);" class="more more_close" id="la123456666373791_more" style="display:none;">更多</a>                            <span style="display:inline-block; width:12px;"></span>                            <span class="dislike_count" style="display: none" title="被踩了0票">0票</span>                            <a class="vote vote-dislike" href="javascript:void 0" id="la123456666373791_vote_dislike" title="踩一下"> </a>                             <a class="reply_comments" href="javascript:void(0);">回复</a>                        </span>                    </div>                    <div class="vote_user " style="display:none;"></div>                    <div class="reply_reply" style="display:none;">                        <textarea class="reply_box" placeholder="有什么感想，你也来说说吧！" name="" rows="3"></textarea>                        <div class="reply_submit note_grey clearfix">                            <div class="fr"><input id="la123456666373791_btn" value="回复" type="submit" class="reply_btn"></div>                        </div>                    </div>                </dd>            </dl>        </div><div lang="373778" class="reply parentId_0">            <dl>                <dt class="user_img"><a target="_blank" href="http://my.csdn.net/baidu_25290091"><img src="./深入浅出数据仓库中SQL性能优化之Hive篇-CSDN.NET_files/3_baidu_25290091.jpg"></a></dt>                <dd>                    <div class="note_grey"><a target="_blank" href="http://my.csdn.net/baidu_25290091" class="user_name" realname="baidu_25290091">baidu_25290091</a>   <span class="time">2015-01-13 14:11</span>   <span class="from from0"></span></div>                                        <div class="reply_content">不错</div>                    <div class="comment-btns note_grey clearfix">                        <span class="fr">                            <span class="votewrap" style="display:none;"><span class="num">0</span>票，来自<span class="from"></span></span>                            <a class="vote vote-like" href="javascript:void(0);" id="baidu_25290091373778_vote" title="顶一下"> </a>                            <a href="javascript:void(0);" class="more more_close" id="baidu_25290091373778_more" style="display:none;">更多</a>                            <span style="display:inline-block; width:12px;"></span>                            <span class="dislike_count" style="display: none" title="被踩了0票">0票</span>                            <a class="vote vote-dislike" href="javascript:void 0" id="baidu_25290091373778_vote_dislike" title="踩一下"> </a>                             <a class="reply_comments" href="javascript:void(0);">回复</a>                        </span>                    </div>                    <div class="vote_user " style="display:none;"></div>                    <div class="reply_reply" style="display:none;">                        <textarea class="reply_box" placeholder="有什么感想，你也来说说吧！" name="" rows="3"></textarea>                        <div class="reply_submit note_grey clearfix">                            <div class="fr"><input id="baidu_25290091373778_btn" value="回复" type="submit" class="reply_btn"></div>                        </div>                    </div>                </dd>            </dl>        </div><div lang="373772" class="reply parentId_0">            <dl>                <dt class="user_img"><a target="_blank" href="http://my.csdn.net/qq_25289953"><img src="./深入浅出数据仓库中SQL性能优化之Hive篇-CSDN.NET_files/3_qq_25289953.jpg"></a></dt>                <dd>                    <div class="note_grey"><a target="_blank" href="http://my.csdn.net/qq_25289953" class="user_name" realname="qq_25289953">qq_25289953</a>   <span class="time">2015-01-13 14:06</span>   <span class="from from0"></span></div>                                        <div class="reply_content">很好。</div>                    <div class="comment-btns note_grey clearfix">                        <span class="fr">                            <span class="votewrap" style="display:none;"><span class="num">0</span>票，来自<span class="from"></span></span>                            <a class="vote vote-like" href="javascript:void(0);" id="qq_25289953373772_vote" title="顶一下"> </a>                            <a href="javascript:void(0);" class="more more_close" id="qq_25289953373772_more" style="display:none;">更多</a>                            <span style="display:inline-block; width:12px;"></span>                            <span class="dislike_count" style="display: none" title="被踩了0票">0票</span>                            <a class="vote vote-dislike" href="javascript:void 0" id="qq_25289953373772_vote_dislike" title="踩一下"> </a>                             <a class="reply_comments" href="javascript:void(0);">回复</a>                        </span>                    </div>                    <div class="vote_user " style="display:none;"></div>                    <div class="reply_reply" style="display:none;">                        <textarea class="reply_box" placeholder="有什么感想，你也来说说吧！" name="" rows="3"></textarea>                        <div class="reply_submit note_grey clearfix">                            <div class="fr"><input id="qq_25289953373772_btn" value="回复" type="submit" class="reply_btn"></div>                        </div>                    </div>                </dd>            </dl>        </div><div lang="373753" class="reply parentId_0">            <dl>                <dt class="user_img"><a target="_blank" href="http://my.csdn.net/srw11"><img src="./深入浅出数据仓库中SQL性能优化之Hive篇-CSDN.NET_files/3_srw11.jpg"></a></dt>                <dd>                    <div class="note_grey"><a target="_blank" href="http://my.csdn.net/srw11" class="user_name" realname="srw11">srw11</a>   <span class="time">2015-01-13 13:26</span>   <span class="from from0"></span></div>                                        <div class="reply_content">mark</div>                    <div class="comment-btns note_grey clearfix">                        <span class="fr">                            <span class="votewrap" style="display:none;"><span class="num">0</span>票，来自<span class="from"></span></span>                            <a class="vote vote-like" href="javascript:void(0);" id="srw11373753_vote" title="顶一下"> </a>                            <a href="javascript:void(0);" class="more more_close" id="srw11373753_more" style="display:none;">更多</a>                            <span style="display:inline-block; width:12px;"></span>                            <span class="dislike_count" style="display: none" title="被踩了0票">0票</span>                            <a class="vote vote-dislike" href="javascript:void 0" id="srw11373753_vote_dislike" title="踩一下"> </a>                             <a class="reply_comments" href="javascript:void(0);">回复</a>                        </span>                    </div>                    <div class="vote_user " style="display:none;"></div>                    <div class="reply_reply" style="display:none;">                        <textarea class="reply_box" placeholder="有什么感想，你也来说说吧！" name="" rows="3"></textarea>                        <div class="reply_submit note_grey clearfix">                            <div class="fr"><input id="srw11373753_btn" value="回复" type="submit" class="reply_btn"></div>                        </div>                    </div>                </dd>            </dl>        </div><div lang="373751" class="reply parentId_0">            <dl>                <dt class="user_img"><a target="_blank" href="http://my.csdn.net/fenger0888"><img src="./深入浅出数据仓库中SQL性能优化之Hive篇-CSDN.NET_files/3_fenger0888.jpg"></a></dt>                <dd>                    <div class="note_grey"><a target="_blank" href="http://my.csdn.net/fenger0888" class="user_name" realname="fenger0888">fenger0888</a>   <span class="time">2015-01-13 13:20</span>   <span class="from from0"></span></div>                                        <div class="reply_content">留着，下班看</div>                    <div class="comment-btns note_grey clearfix">                        <span class="fr">                            <span class="votewrap" style="display:none;"><span class="num">0</span>票，来自<span class="from"></span></span>                            <a class="vote vote-like" href="javascript:void(0);" id="fenger0888373751_vote" title="顶一下"> </a>                            <a href="javascript:void(0);" class="more more_close" id="fenger0888373751_more" style="display:none;">更多</a>                            <span style="display:inline-block; width:12px;"></span>                            <span class="dislike_count" style="display: none" title="被踩了0票">0票</span>                            <a class="vote vote-dislike" href="javascript:void 0" id="fenger0888373751_vote_dislike" title="踩一下"> </a>                             <a class="reply_comments" href="javascript:void(0);">回复</a>                        </span>                    </div>                    <div class="vote_user " style="display:none;"></div>                    <div class="reply_reply" style="display:none;">                        <textarea class="reply_box" placeholder="有什么感想，你也来说说吧！" name="" rows="3"></textarea>                        <div class="reply_submit note_grey clearfix">                            <div class="fr"><input id="fenger0888373751_btn" value="回复" type="submit" class="reply_btn"></div>                        </div>                    </div>                </dd>            </dl>        </div><div lang="373744" class="reply parentId_0">            <dl>                <dt class="user_img"><a target="_blank" href="http://my.csdn.net/candytel"><img src="./深入浅出数据仓库中SQL性能优化之Hive篇-CSDN.NET_files/3_candytel.jpg"></a></dt>                <dd>                    <div class="note_grey"><a target="_blank" href="http://my.csdn.net/candytel" class="user_name" realname="candytel">candytel</a>   <span class="time">2015-01-13 13:01</span>   <span class="from from0"></span></div>                                        <div class="reply_content">很好的文章</div>                    <div class="comment-btns note_grey clearfix">                        <span class="fr">                            <span class="votewrap" style="display:none;"><span class="num">0</span>票，来自<span class="from"></span></span>                            <a class="vote vote-like" href="javascript:void(0);" id="candytel373744_vote" title="顶一下"> </a>                            <a href="javascript:void(0);" class="more more_close" id="candytel373744_more" style="display:none;">更多</a>                            <span style="display:inline-block; width:12px;"></span>                            <span class="dislike_count" style="display: none" title="被踩了0票">0票</span>                            <a class="vote vote-dislike" href="javascript:void 0" id="candytel373744_vote_dislike" title="踩一下"> </a>                             <a class="reply_comments" href="javascript:void(0);">回复</a>                        </span>                    </div>                    <div class="vote_user " style="display:none;"></div>                    <div class="reply_reply" style="display:none;">                        <textarea class="reply_box" placeholder="有什么感想，你也来说说吧！" name="" rows="3"></textarea>                        <div class="reply_submit note_grey clearfix">                            <div class="fr"><input id="candytel373744_btn" value="回复" type="submit" class="reply_btn"></div>                        </div>                    </div>                </dd>            </dl>        </div><div lang="373737" class="reply parentId_0">            <dl>                <dt class="user_img"><a target="_blank" href="http://my.csdn.net/james0757"><img src="./深入浅出数据仓库中SQL性能优化之Hive篇-CSDN.NET_files/3_james0757.jpg"></a></dt>                <dd>                    <div class="note_grey"><a target="_blank" href="http://my.csdn.net/james0757" class="user_name" realname="james0757">james0757</a>   <span class="time">2015-01-13 12:48</span>   <span class="from from0"></span></div>                                        <div class="reply_content">多岁的方式</div>                    <div class="comment-btns note_grey clearfix">                        <span class="fr">                            <span class="votewrap" style="display:none;"><span class="num">0</span>票，来自<span class="from"></span></span>                            <a class="vote vote-like" href="javascript:void(0);" id="james0757373737_vote" title="顶一下"> </a>                            <a href="javascript:void(0);" class="more more_close" id="james0757373737_more" style="display:none;">更多</a>                            <span style="display:inline-block; width:12px;"></span>                            <span class="dislike_count" style="display: none" title="被踩了0票">0票</span>                            <a class="vote vote-dislike" href="javascript:void 0" id="james0757373737_vote_dislike" title="踩一下"> </a>                             <a class="reply_comments" href="javascript:void(0);">回复</a>                        </span>                    </div>                    <div class="vote_user " style="display:none;"></div>                    <div class="reply_reply" style="display:none;">                        <textarea class="reply_box" placeholder="有什么感想，你也来说说吧！" name="" rows="3"></textarea>                        <div class="reply_submit note_grey clearfix">                            <div class="fr"><input id="james0757373737_btn" value="回复" type="submit" class="reply_btn"></div>                        </div>                    </div>                </dd>            </dl>        </div><div lang="373727" class="reply parentId_0">            <dl>                <dt class="user_img"><a target="_blank" href="http://my.csdn.net/qq_25287121"><img src="./深入浅出数据仓库中SQL性能优化之Hive篇-CSDN.NET_files/3_qq_25287121.jpg"></a></dt>                <dd>                    <div class="note_grey"><a target="_blank" href="http://my.csdn.net/qq_25287121" class="user_name" realname="qq_25287121">qq_25287121</a>   <span class="time">2015-01-13 12:26</span>   <span class="from from0"></span></div>                                        <div class="reply_content">111</div>                    <div class="comment-btns note_grey clearfix">                        <span class="fr">                            <span class="votewrap" style="display:none;"><span class="num">0</span>票，来自<span class="from"></span></span>                            <a class="vote vote-like" href="javascript:void(0);" id="qq_25287121373727_vote" title="顶一下"> </a>                            <a href="javascript:void(0);" class="more more_close" id="qq_25287121373727_more" style="display:none;">更多</a>                            <span style="display:inline-block; width:12px;"></span>                            <span class="dislike_count" style="display: none" title="被踩了0票">0票</span>                            <a class="vote vote-dislike" href="javascript:void 0" id="qq_25287121373727_vote_dislike" title="踩一下"> </a>                             <a class="reply_comments" href="javascript:void(0);">回复</a>                        </span>                    </div>                    <div class="vote_user " style="display:none;"></div>                    <div class="reply_reply" style="display:none;">                        <textarea class="reply_box" placeholder="有什么感想，你也来说说吧！" name="" rows="3"></textarea>                        <div class="reply_submit note_grey clearfix">                            <div class="fr"><input id="qq_25287121373727_btn" value="回复" type="submit" class="reply_btn"></div>                        </div>                    </div>                </dd>            </dl>        </div><div id="page_nav" class="page_nav"><span style="display:none;">共<span class="num">26</span>个 </span>共<span class="total">1</span>页 <a class="homepage" href="javascript:void(0);">首页</a>&nbsp;&nbsp;<a class="prev" href="javascript:void(0);">上一页</a>&nbsp;<a class="pages on" href="javascript:void(0);" lang="1">1</a>&nbsp;<a class="next" href="javascript:void(0);">下一页</a>&nbsp;&nbsp;<a class="endpage" href="javascript:void(0);">末页</a></div></div>        <div class="con hot" style="display:none"><div class="empty-placeholder">                <div class="empty-tip">还没有评论，赶快来抢沙发吧。</div>            </div></div>        <div>请您注意        <ul class="note_grey">            <li>·自觉遵守：爱国、守法、自律、真实、文明的原则</li>            <li>·尊重网上道德，遵守《全国人大常委会关于维护互联网安全的决定》及中华人民共和国其他各项有关法律法规</li>             <li>·严禁发表危害国家安全，破坏民族团结、国家宗教政策和社会稳定，含侮辱、诽谤、教唆、淫秽等内容的作品</li>             <li>·承担一切因您的行为而直接或间接导致的民事或刑事法律责任</li>             <li>·您在CSDN新闻评论发表的作品，CSDN有权在网站内保留、转载、引用或者删除</li>             <li>·参与本评论即表明您已经阅读并接受上述条款</li>        </ul>        </div>    </div></div>
+                    <script type="text/javascript" src="./深入浅出数据仓库中SQL性能优化之Hive篇-CSDN.NET_files/cnick.js.下载"></script>
+					<script src="./深入浅出数据仓库中SQL性能优化之Hive篇-CSDN.NET_files/comments.js.下载" type="text/javascript"></script>
+					<script src="./深入浅出数据仓库中SQL性能优化之Hive篇-CSDN.NET_files/comment_atsuggest.js.下载" type="text/javascript"></script>
+					<!--script src="js/https://passport.csdn.net/scripts/login.js?v=1.2" type="text/javascript"></script-->
+					<script type="text/javascript">
+					    //var path = location.protocol +"//"+ location.host+"/comments/";                 //本地测试需要配置一个csdn.net的子域名，以便登录，例:http://comments.csdn.net
+					    var path = "http://ptcms.csdn.net/comment";
+					    csdn.comments = new csdn.comments({
+					        id:"comments",                                                                  //容器ID
+					        path:path,
+					        datapath:"http://ptcms.csdn.net",                                          //数据接口host
+					        cssUrl:path+"/css/comments.css",                                                 //css地址
+					        //loginUrl:path+"/js/login.js",                  //login.js地址
+					        loginUrl:"https://passport.csdn.net/content/loginbox/login.js",
+					        articleURL:"http://www.csdn.net/article/2015-01-13/2823530",
+					        title:"%E6%B7%B1%E5%85%A5%E6%B5%85%E5%87%BA%E6%95%B0%E6%8D%AE%E4%BB%93%E5%BA%93%E4%B8%ADSQL%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96%E4%B9%8BHive%E7%AF%87",
+					        md5:"http://static.blog.csdn.net/scripts/md5.js",                               //用于计算用户头像的md5.js地址
+					        componentsUrl:path+"/js/componet.js",              //CSDN通用组件地址
+					        toolkitUrl:path+"/js/toolkit.js",                  //CSDN工具包地址
+					        tab:{                                                                           //【通用组件】tab
+					            id:"csdnTab",                                                               //容器ID
+					            highlight:"hover"                                                           //表示当前选择的CSS样式名
+					        },
+					        pagination:{                                                                    //【通用组件】AJAX分页组件
+					            pagesize:50,                                                                //每页多少条数据
+					            showpages:10                                                                //显示多少页
+					        },
+                            oncountchange:function(count){                                                  //评论数chagnge回调
+                                var el = document.getElementById('remark_count1');
+                                if(el){el.innerHTML=count}
+                            }
+					    });
+					</script>
+								<!-- //comments -->
+			</div>
+			
+			
+		</div>
+		
+		<div class="right">	
+						
+			<div class="ad_300_250">
+				<ins data-revive-zoneid="97" data-revive-id="8c38e720de1c90a6f6ff52f3f89c4d57" id="revive-0-2"></ins>
+			</div>
+			
+			
+			<div style="border: 1px #ccc solid; font-size:14px; padding:10px; margin-bottom:20px;">
+            	 <ul style=" float:right; width: 160px; padding:5px;">
+                    <li style="font-size:16px; font-weight:bold;">CSDN官方微信</li>
+                    <li style="float:left;">扫描二维码,向CSDN吐槽</li>
+                    <li>微信号：CSDNnews</li>
+                </ul>
+                <img src="./深入浅出数据仓库中SQL性能优化之Hive篇-CSDN.NET_files/28_121116100507_1.jpg" width="100" height="100">
+            </div>
+			
+			
+			<div style="border: 1px #ccc solid; font-size:14px; padding:3px; margin-bottom:20px; font-weight:bold;"><img style="vertical-align:middle; margin-right:10px;" src="./深入浅出数据仓库中SQL性能优化之Hive篇-CSDN.NET_files/icon_ipad.png"><a href="http://dingyue.programmer.com.cn/" target="_blank">程序员移动端订阅下载</a></div>
+			
+			<div class="sitemap"><a href="http://www.csdn.net/article/lastnews" target="_blank">每日资讯快速浏览 </a></div>	
+						<!-- 订阅和关注 -->
+			<div class="report">
+				<h2 class="tit_2"><p>微博关注</p></h2>
+								<iframe width="100%" height="300" class="share_self" frameborder="0" scrolling="no" src="./深入浅出数据仓库中SQL性能优化之Hive篇-CSDN.NET_files/index.html"></iframe>
+								
+			</div>
+ 	
+			
+			<div class="rtbrill" id="digestComment"></div>		
+			<div class="ad_300_250">
+				<ins data-revive-zoneid="98" data-revive-id="8c38e720de1c90a6f6ff52f3f89c4d57" id="revive-0-3"></ins>
+			</div>
+			<!-- recommend and hot weekly -->			
+			<div id="Tab2" class="hot_weekly">
+				<h2 class="tit_2"><p>相关热门文章</p></h2>
+				<div class="con Contentbox">
+					<div id="con_two_2">
+						<ul class="list_1 ">
+													<li><a href="http://www.csdn.net/article/2017-11-03/2826773" title="SmartX 亮相全球系统顶会 SOSP  详解超融合架构下分布式存储挑战与技术突破" target="_blank">SmartX 亮相全球系统顶会 SOSP  详解超融合架构下分布式存储挑战与技术突破</a></li>
+												</ul>
+					</div>
+				</div>
+			</div>
+			  
+			  <!-- hot tag -->
+			<div class="hot_tag">
+				<h2 class="tit_2"><p><a href="http://www.csdn.net/tag">热门标签</a></p></h2>
+				<ul class="list_1">
+				 
+									 
+										<li><a href="http://www.csdn.net/tag/hadoop" title="Hadoop" target="_blank">Hadoop</a></li>
+									 
+										<li><a href="http://www.csdn.net/tag/aws" title="AWS" target="_blank">AWS</a></li>
+									 
+										<li><a href="http://www.csdn.net/tag/%E7%A7%BB%E5%8A%A8%E6%B8%B8%E6%88%8F" title="移动游戏" target="_blank">移动游戏</a></li>
+									 
+										<li><a href="http://www.csdn.net/tag/java" title="Java" target="_blank">Java</a></li>
+									 
+										<li><a href="http://www.csdn.net/tag/android" title="Android" target="_blank">Android</a></li>
+									 
+										<li><a href="http://www.csdn.net/tag/ios" title="iOS" target="_blank">iOS</a></li>
+									 
+										<li><a href="http://www.csdn.net/tag/swift" title="Swift" target="_blank">Swift</a></li>
+									 
+										<li><a href="http://www.csdn.net/tag/%E6%99%BA%E8%83%BD%E7%A1%AC%E4%BB%B6" title="智能硬件" target="_blank">智能硬件</a></li>
+									 
+										<li><a href="http://www.csdn.net/tag/docker" title="Docker" target="_blank">Docker</a></li>
+									 
+										<li><a href="http://www.csdn.net/tag/openstack" title="OpenStack" target="_blank">OpenStack</a></li>
+									 
+										<li><a href="http://www.csdn.net/tag/vpn" title="VPN" target="_blank">VPN</a></li>
+									 
+										<li><a href="http://www.csdn.net/tag/spark" title="Spark" target="_blank">Spark</a></li>
+									 
+										<li><a href="http://www.csdn.net/tag/erp" title="ERP" target="_blank">ERP</a></li>
+									 
+										<li><a href="http://www.csdn.net/tag/ie10" title="IE10" target="_blank">IE10</a></li>
+									 
+										<li><a href="http://www.csdn.net/tag/eclipse" title="Eclipse" target="_blank">Eclipse</a></li>
+									 
+										<li><a href="http://www.csdn.net/tag/crm" title="CRM" target="_blank">CRM</a></li>
+									 
+										<li><a href="http://www.csdn.net/tag/javascript" title="JavaScript" target="_blank">JavaScript</a></li>
+									 
+										<li><a href="http://www.csdn.net/tag/%E6%95%B0%E6%8D%AE%E5%BA%93" title="数据库" target="_blank">数据库</a></li>
+									 
+										<li><a href="http://www.csdn.net/tag/ubuntu" title="Ubuntu" target="_blank">Ubuntu</a></li>
+									 
+										<li><a href="http://www.csdn.net/tag/nfc" title="NFC" target="_blank">NFC</a></li>
+									 
+										<li><a href="http://www.csdn.net/tag/wap" title="WAP" target="_blank">WAP</a></li>
+									 
+									 
+									 
+									 
+									 
+									 
+									 
+									 
+									 
+									 
+									 
+									 
+									 
+									 
+									 
+									 
+									 
+									 
+									 
+									 
+									 
+									 
+									 
+									 
+									 
+									 
+									 
+									 
+									 
+									 
+									 
+									 
+									 
+									 
+									 
+									 
+									 
+									 
+									 
+									 
+									 
+									 
+									 
+									 
+									 
+									 
+									 
+									 
+									 
+									 
+											
+				</ul>
+			</div>
+			<!-- //hot tag -->
+			
+			<!-- share -->
+			<style>
+.box{ margin-bottom:20px;}
+.box h2{ color:#c00;font:normal 18px/30px "Microsoft YaHei";border-bottom:2px #333 solid;margin-bottom:15px;}
+.box h2 a{ color:#c00;}
+</style>
+<div class="box share">
+      <h2><a target="_blank" href="http://download.csdn.net/album/list" onclick="LogClickCount(this,342);">下载专辑</a></h2>
+      <dl>
+                  <dt class="clearfix">
+                        <a title="elk5.6.3 日志集中收集管理" href="http://download.csdn.net/album/detail/4130" target="_blank" onclick="LogClickCount(this,342);"><img style="height:75px;width:75px;" src="./深入浅出数据仓库中SQL性能优化之Hive篇-CSDN.NET_files/3.jpg"></a>
+                        <a title="elk5.6.3 日志集中收集管理" href="http://download.csdn.net/album/detail/4130" target="_blank" onclick="LogClickCount(this,342);">
+            elk5.6.3 日志集中收集管理            </a></dt>
+                  <dt class="clearfix">
+                        <a title="Cheat Sheet" href="http://download.csdn.net/album/detail/3395" target="_blank" onclick="LogClickCount(this,342);"><img style="height:75px;width:75px;" src="./深入浅出数据仓库中SQL性能优化之Hive篇-CSDN.NET_files/2.jpg"></a>
+                        <a title="Cheat Sheet" href="http://download.csdn.net/album/detail/3395" target="_blank" onclick="LogClickCount(this,342);">
+            Cheat Sheet            </a></dt>
+                  <dt class="clearfix">
+                        <a title="第七届中国云计算大会资料分享" href="http://download.csdn.net/album/detail/1855" target="_blank" onclick="LogClickCount(this,342);"><img style="height:75px;width:75px;" src="./深入浅出数据仓库中SQL性能优化之Hive篇-CSDN.NET_files/1.jpg"></a>
+                        <a title="第七届中国云计算大会资料分享" href="http://download.csdn.net/album/detail/1855" target="_blank" onclick="LogClickCount(this,342);">
+            第七届中国云计算大会资料分享            </a></dt>
+                  <dt class="clearfix">
+                        <a title="Java 各大主流框架案例" href="http://download.csdn.net/album/detail/4037" target="_blank" onclick="LogClickCount(this,342);"><img style="height:75px;width:75px;" src="./深入浅出数据仓库中SQL性能优化之Hive篇-CSDN.NET_files/3(1).jpg"></a>
+                        <a title="Java 各大主流框架案例" href="http://download.csdn.net/album/detail/4037" target="_blank" onclick="LogClickCount(this,342);">
+            Java 各大主流框架案例            </a></dt>
+                  <dt class="clearfix">
+                        <a title="Head First_深入浅出全系列(中文版)" href="http://download.csdn.net/album/detail/4128" target="_blank" onclick="LogClickCount(this,342);"><img style="height:75px;width:75px;" src="./深入浅出数据仓库中SQL性能优化之Hive篇-CSDN.NET_files/2(1).jpg"></a>
+                        <a title="Head First_深入浅出全系列(中文版)" href="http://download.csdn.net/album/detail/4128" target="_blank" onclick="LogClickCount(this,342);">
+            Head First_深入浅出全系列(中文版)            </a></dt>
+              </dl>
+    </div>
+			<!-- //share -->
+			
+					</div>
+	</div>
+			<div class="hot_topic">
+			<ins data-revive-zoneid="96" data-revive-id="8c38e720de1c90a6f6ff52f3f89c4d57" id="revive-0-4"></ins>
+		</div>
+		<script type="text/javascript" src="./深入浅出数据仓库中SQL性能优化之Hive篇-CSDN.NET_files/like.js.下载"></script>
+	
+	<script>
+	/*
+  window.WebSocket = window.WebSocket || window.MozWebSocket;
+  if( window.WebSocket ) {
+    var  wsServer = 'ws://geektest.csdn.net/'; 
+    var websocket = new window.WebSocket(wsServer, 'cmslike');
+
+    websocket.onopen = function (evt) { onOpen(evt) }; 
+    websocket.onclose = function (evt) { onClose(evt) }; 
+    websocket.onmessage = function (evt) { onMessage(evt) }; 
+    websocket.onerror = function (evt) { onError(evt) }; 
+    function onOpen(evt) {
+    } 
+    function onClose(evt) { 
+    } 
+    function onMessage(evt) {
+      var data = JSON.parse(evt.data);
+      var ding = $('.support dd').text();
+      if(ding != '' && data.support > ding){
+        $('.support dd').text(data.support);
+      };
+      var cai = $('.oppose dd').text();
+      if (cai != '' && data.oppose > cai) {
+        $('.oppose dd').text(data.oppose);
+      };
+    } 
+    function onError(evt) { 
+    }
+  }
+  */
+		$(document).ready(function(){
+			var digg_id=$("#digg_id").val();
+			$('.digg').like({
+				article_id: digg_id, // 文章id
+				ding_class: 'support', // 顶的class
+				cai_class: 'oppose', // 踩的class
+        domain: 'news.csdn.net',
+				callback: function(data) //处理数据方法
+				{
+          if(data.succ == 1)
+          {
+            $('.support dd').text(data.info.ding);
+            $('.oppose dd').text(data.info.ding);
+          }
+					if(data.succ == -2)
+					{
+						if(confirm(data.msg)){
+							window.location.href = "https://passport.csdn.net/UserLogin.aspx?from=http://news.csdn.net%2Farticle%2F2015-01-13%2F2823530";
+							return false;
+						}
+					}
+					if(data.succ == -1)
+					{
+						alert(data.msg);
+					}
+				}
+			});
+		});
+	</script>
+	
+	<script type="text/javascript">
+		$(document).ready(function(){ 
+			var href=document.location.href;	
+
+			if(href.split("/")[6] == undefined){
+				$("#click_"+1).addClass("on");
+			}else{
+				var hrefpageno=href.split("/")[6];		
+				$("#click_"+hrefpageno).addClass("on");
+			}	
+
+			new $.AutoScroll({
+				wrap:$('#job_ul'),scrollCount:1,interval:1500
+			});
+		expandcontent('sc3', tabobjlinks[2]);
+		$.getJSON('http://ptcms.csdn.net/article/service/article_count?preview=1&aid=2823530&jsonpcallback=?',function(data){
+				$('.view_time').html(data+'次阅读');
+			});
+
+		});
+		function linkfirst(arcid){
+			$("#linkfirst").attr("href","article.html?arcid="+arcid+"&pageno=1");			
+		}
+		function preclick(arcid){
+			var href=window.location.href;		
+			var hrefpageno=href.split("&")[1];		
+			var pageno=hrefpageno.split("=")[1];
+			var hrefno=pageno-1;
+			if(hrefno <1){
+				hrefno = 1;
+			}
+			$("#preclick").attr("href","article.html?arcid="+arcid+"&pageno="+hrefno);
+		}
+	
+		function nextclick(total,arcid){
+			var href=window.location.href;		
+			var hrefpageno=href.split("&")[1];		
+			var pageno=hrefpageno.split("=")[1];
+			var hrefno=parseInt(pageno)+1;
+			if(hrefno >total){
+				hrefno = total;
+			}
+			$("#nextclick").attr("href","article.html?arcid="+arcid+"&pageno="+hrefno);
+		}
+	
+		function firstclick(arcid){
+			$("#firstclick").attr("href","article.html?arcid="+arcid+"&pageno=1");	
+		}
+		
+		function lastclick(total,arcid){
+			$("#lastclick").attr("href","article.html?arcid="+arcid+"&pageno="+total);
+		}
+		function linktitle(num,arcid){
+			var numid=parseInt(num)+1;
+			$("#linktitle_"+num).attr("href","article.html?arcid="+arcid+"&pageno="+numid);
+		}
+	</script>
+
+
+	<script>
+	   $(function () {
+	    var wrap = function () {
+	        var elems = document.getElementsByClassName('syntaxhighlighter');
+	        for (var j = 0; j < elems.length; ++j) {
+	            var sh = elems[j];
+	            var gLines = sh.getElementsByClassName('gutter')[0].getElementsByClassName('line');
+	            var cLines = sh.getElementsByClassName('code')[0].getElementsByClassName('line');
+	            var stand = 15;
+	            for (var i = 0; i < gLines.length; ++i) {
+	                var h = $(cLines[i]).height();
+	                if (h != stand) {
+	                    //console.log(i);
+	                    gLines[i].setAttribute('style', 'height: ' + h + 'px !important;');
+	                }
+	            }
+	        }
+	     };
+	    var whenReady = function () {
+	        if ($('.syntaxhighlighter').length === 0) {
+	            setTimeout(whenReady, 0);
+	        } else {
+	            wrap();
+	        }
+	    };
+	    whenReady();
+	});
+	</script>
+
+	<script type="text/javascript">
+ 	 document.write('<script src="http' + (/^https/.test(location.href) ? 's' : '') + '://c.csdnimg.cn/public/highlighter/js/highlighter.js?' + (new Date()/300000|0) + '"></'+'script>');
+	</script><script src="./深入浅出数据仓库中SQL性能优化之Hive篇-CSDN.NET_files/highlighter.js.下载"></script>
+	
+	<!-- 广告位：富媒体广告 -->
+	<script type="text/javascript">BAIDU_CLB_fillSlot("119835");</script><div id="BAIDU_SSP__wrapper_119835_0"></div><script charset="utf-8" src="./深入浅出数据仓库中SQL性能优化之Hive篇-CSDN.NET_files/kcjm"></script>
+  <script language="javascript" type="text/javascript" src="./深入浅出数据仓库中SQL性能优化之Hive篇-CSDN.NET_files/async_new.js.下载"></script>
+	<!-- public footer -->
+      <script type="text/javascript">
+      document.write('<script type="text/javascript" src="http://c.csdnimg.cn/pubfooter/js/publib_footer.js?' + Math.floor(new Date()/120000).toString(36) + '="></'+'script>');
+      </script><script type="text/javascript" src="./深入浅出数据仓库中SQL性能优化之Hive篇-CSDN.NET_files/publib_footer.js.下载"></script><link rel="stylesheet" type="text/css" href="./深入浅出数据仓库中SQL性能优化之Hive篇-CSDN.NET_files/pub_footer_2014.css"><div class="pub_fo"><div id="pub_footerall" class="pub_footer_new"><dl><dt></dt> <dd class="foot_sub_menu"><a href="http://www.csdn.net/company/about.html" target="_blank">公司简介</a><span>|</span><a href="http://www.csdn.net/company/recruit.html" target="_blank">招贤纳士</a><span>|</span><a href="http://www.csdn.net/company/marketing.html" target="_blank">广告服务</a><span>|</span><a href="http://www.csdn.net/company/contact.html" target="_blank">联系方式</a><span>|</span><a href="http://www.csdn.net/company/statement.html" target="_blank">版权声明</a><span>|</span><a href="http://www.csdn.net/company/layer.html" target="_blank">法律顾问</a><span>|</span><a href="mailto:webmaster@csdn.net">问题报告</a><span>|</span><a target="_blank" href="http://www.csdn.net/friendlink.html">合作伙伴</a><span>|</span><a href="http://bbs.csdn.net/forums/Service" target="_blank">论坛反馈</a></dd><dd class="foot_contact"><a href="http://www.csdn.net/article/2015-01-13/2823530#" target="_blank" class="qq qqcustomer_s">网站客服</a><a href="http://wpa.qq.com/msgrd?v=3&amp;uin=2251809102&amp;site=qq&amp;menu=yes" target="_blank" class="qq">杂志客服</a><a href="http://e.weibo.com/csdnsupport/profile" target="_blank" class="weibo">微博客服</a><a href="mailto:webmaster@csdn.net" class="email" title="联系邮箱">webmaster@csdn.net</a><span class="phone" title="服务热线">400-660-0108</span><span class="interval">|</span><span>北京创新乐知信息技术有限公司 版权所有</span><span class="interval">|</span><span>江苏知之为计算机有限公司</span><span class="interval">|</span><span>江苏乐知网络技术有限公司</span></dd><dd class="foot_copyright"><span>京&nbsp;ICP&nbsp;证&nbsp;09002463&nbsp;号</span><span class="interval">|</span><span>Copyright © 1999-2016, CSDN.NET, All Rights Reserved&nbsp;</span><a href="http://www.hd315.gov.cn/beian/view.asp?bianhao=010202001032100010" target="_blank"><img src="./深入浅出数据仓库中SQL性能优化之Hive篇-CSDN.NET_files/gongshang_logos.gif" alt="GongshangLogo" title=""></a></dd></dl></div></div><div id="note1" class="csdn_note" style="display:none; position:absolute; z-index:9999; width:440px">  <span class="notice_top_arrow"><span class="inner"></span></span>  <div class="box"></div></div><div class="csdn_notice_tip" style="display:none; position:absolute; z-index:9990; width:170px">  <iframe src="./深入浅出数据仓库中SQL性能优化之Hive篇-CSDN.NET_files/saved_resource(1).html" frameborder="0" scrolling="no" style="z-index:-1;position:absolute;top:0;left:0;width:100%;height:100%;background:transparent"></iframe>  <div class="tip_text">您有<strong>0</strong>条新通知</div>  <a href="javascript:void 0" class="close2"></a></div><script id="noticeScript" type="text/javascript" btnid="header_notice_num" wrapid="note1" count="5" subcount="5" src="./深入浅出数据仓库中SQL性能优化之Hive篇-CSDN.NET_files/notify.js.下载"></script>
+	<!-- //public footer -->
+</div><div id="l_a_pop_win" style="display:none ;position: absolute; z-index: 10000; border: 1px solid rgb(220, 220, 220); top: 222.5px; left: 630px; opacity: 1; background: none 0px 0px repeat scroll rgb(255, 255, 255);"></div><div id="l_a_popup_mask" style="display: none;position: absolute;width: 100%;height: 100%;background: #000;z-index: 9999;left: 0px;top: 0px;opacity: 0.3;filter: alpha(opacity=30);"></div><input type="hidden" id="aa_g_data_ids">
+<!-- tab js -->
+<script type="text/javascript">
+<!--
+/*第一种形式 第二种形式 更换显示样式*/
+function setTab(name,cursel,n){
+	for(i=1;i<=n;i++){
+		var menu=document.getElementById(name+i);
+		var con=document.getElementById("con_"+name+"_"+i);
+		menu.className=i==cursel?"hover":"";
+		con.style.display=i==cursel?"block":"none";
+	}
+}
+//-->
+</script>
+<script type="text/javascript" src="./深入浅出数据仓库中SQL性能优化之Hive篇-CSDN.NET_files/counter.js.下载"></script><script type="text/javascript" charset="UTF-8" src="./深入浅出数据仓库中SQL性能优化之Hive篇-CSDN.NET_files/msg.popup.js.下载"></script>
+<script id="csdn-toolbar-id" btnid="header_notice_num" wrapid="note1" count="5" subcount="5" type="text/javascript" src="./深入浅出数据仓库中SQL性能优化之Hive篇-CSDN.NET_files/toolbar.js.下载"></script>
+
+<!-- ask 全局悬浮按钮  -->
+<link href="./深入浅出数据仓库中SQL性能优化之Hive篇-CSDN.NET_files/ask_float_block.css" rel="stylesheet" type="text/css">
+<script type="text/javascript" src="./深入浅出数据仓库中SQL性能优化之Hive篇-CSDN.NET_files/wmd.js.下载"></script>
+<script type="text/javascript" src="./深入浅出数据仓库中SQL性能优化之Hive篇-CSDN.NET_files/showdown.js.下载"></script>
+<script type="text/javascript" src="./深入浅出数据仓库中SQL性能优化之Hive篇-CSDN.NET_files/prettify.js.下载"></script>
+<script type="text/javascript" src="./深入浅出数据仓库中SQL性能优化之Hive篇-CSDN.NET_files/ask_float_block.js.下载"></script>
+
+ 
+
+
+
+<div style="position:fixed; top:0; left:0; overflow:hidden;"><input style="position:absolute; left:-300px;" type="text" value="" id="focus_retriever" readonly="true"></div><link rel="stylesheet" type="text/css" media="screen" href="./深入浅出数据仓库中SQL性能优化之Hive篇-CSDN.NET_files/ask_float_fonts_css-6b30a53970eb5c3a2a045e3df585b475.css"><div data-mod="popu_64" class="csdn-tracking-statistics" chg-blk="0"><a id="com-d-top-a" style="top: 404px; display: inline;" title="返回顶部" onclick=""></a></div><div class="pop_edit ask_second comm_ask_second"><h3>提问</h3><span class="ask_float_span">您的问题将会被发布在“<a class="ask_float_channel" href="http://ask.csdn.net/" target="_blank" style="cursor:pointer">技术问答</a>”频道</span><a href="http://www.csdn.net/article/2015-01-13/2823530#" nodetype="close" class="close">×</a><div class="context"><div class="err_div"><span class="err_ico"></span><span class="err_txt">该问题已存在，请勿重复提问</span></div><div class="input_div"><input id="askInputSecond" type="text" style="font-size:14px;" placeholder="问题标题"></div><div class="cm_box"><div class="cm_dialog"></div> <div class="pop_cm cm_add_link"><input type="text" placeholder="链接内容" id="af_cm_link_txt"><input type="text" placeholder="链接地址" id="af_cm_link_url"><input type="text" placeholder="链接提示" id="af_cm_link_tit"><div class="text-right"><span class="btn btn-default btn-sm" id="add_link_btn">插入链接</span> </div> </div><div class="pop_cm cm_add_img"><div class="nav-tabs"><a class="img_tab active" href="http://www.csdn.net/article/2015-01-13/2823530#tab_upload">本地上传</a><a class="img_tab" href="http://www.csdn.net/article/2015-01-13/2823530#tab_weburl">网络图片</a></div><div class="tab_panel active" id="tab_upload"><div class="set_img"></div></div><div class="tab_panel" id="tab_weburl"><input type="text" placeholder="图片地址" id="af_cm_img_url"><input type="text" placeholder="图片说明" id="af_cm_img_alt"><div class="text-right"><span class="btn btn-default btn-sm" id="add_img_btn">插入图片</span> </div></div> </div></div> <textarea id="editor_all" rows="8" style="display: none;"></textarea><div class="editor-toolbar"><i class="separator">|</i><a class="icon-headline" title="标题一（Ctrl+Alt+1）"></a><a class="icon-heading" title="标题二（Ctrl+Alt+2）"></a><a class="icon-bold" title="粗体（Ctrl+B）"></a><a class="icon-italic" title="斜体（Ctrl+I）"></a><i class="separator">|</i><a class="icon-quote-left" title="引用（Ctrl+’）"></a><a class="icon-code" title="插入代码片（Ctrl+,）"></a><a class="icon-list-ul" title="无序列表（Ctrl+L）"></a><a class="icon-list-ol" title="有序列表（Ctrl+Alt+L）"></a><i class="separator">|</i><a class="icon-link" title="添加链接（Ctrl+K）"></a><a class="icon-picture" title="添加图片（Ctrl+Alt+I）"></a><i class="separator">|</i><a class="icon-reply" title="撤退（Ctrl+Z）"></a><a class="icon-share-alt" title="前进（Ctrl+Shift+Z）"></a><i class="separator">|</i><a class="icon-info" href="http://ask.csdn.net/pages/markdown" target="_blank" title="markdown语法参考"></a><a class="icon-preview" title="预览"></a><i class="separator">|</i></div><div class="CodeMirror cm-s-paper CodeMirror-focused"><div style="overflow: hidden; position: relative; width: 3px; height: 0px;"><textarea autocorrect="off" autocapitalize="off" spellcheck="false" style="position: absolute; padding: 0px; width: 1000px; height: 1em; outline: none; font-size: 4px;" tabindex="0"></textarea></div><div class="CodeMirror-hscrollbar"><div style="height: 1px;"></div></div><div class="CodeMirror-vscrollbar"><div style="width: 1px;"></div></div><div class="CodeMirror-scrollbar-filler"></div><div class="CodeMirror-gutter-filler"></div><div class="CodeMirror-scroll" tabindex="-1"><div class="CodeMirror-sizer" style="min-width: 33px;"><div style="position: relative;"><div class="CodeMirror-lines"><div style="position: relative; outline: none;"><div class="CodeMirror-measure"><pre>&nbsp;<span style="display: inline-block; width: 1px; margin-right: -1px;">&nbsp;</span></pre></div><div style="position: relative; z-index: 1;"></div><div class="CodeMirror-code"></div><div class="CodeMirror-cursor" style="">&nbsp;</div><div class="CodeMirror-cursor CodeMirror-secondarycursor" style="">&nbsp;</div></div></div></div></div><div style="position: absolute; height: 30px; width: 1px;"></div><div class="CodeMirror-gutters" style="display: none;"></div></div></div><div class="editor-statusbar"><span class="lines">0</span><span class="words">0</span><span class="cursor">0:0</span></div><div class="div_tags clearfix"><div id="divSearchTags" class="tags_con"><input type="text"></div><input type="hidden" name="txtSearchTags"></div><div id="ask2_tagRecomm_div" class="drt_tagRecomm tracking-ad" data-mod="popu_73"><span class="drt_tit">推荐标签：</span></div></div><div class="success"><div class="left_area"><input id="chk_cb" type="checkbox"><span class="wyxs">我要悬赏</span><input id="cb_num" class="cb_num" readonly="true"><span class="phib_rii"><span> 币</span></span></div><a href="http://www.csdn.net/article/2015-01-13/2823530#" nodetype="cancel" class="cancel">取消</a><a href="http://www.csdn.net/article/2015-01-13/2823530#" nodetype="ok" class="ok">发布</a></div></div><div id="common_ask_div_sc" class="searchContainer"><div class="sTitle">可能存在类似的问题：</div><div class="sFooter"><a class="sFirstNewAsk">我想提一个新问题</a></div></div></body></html>
