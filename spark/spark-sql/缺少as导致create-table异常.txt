@@ -1,0 +1,31 @@
+1、异常：
+Error in query: org.apache.hadoop.hive.ql.metadata.HiveException: java.lang.RuntimeException: MetaException(message:org.apache.hadoop.hive.serde2.SerDeException org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe: columns has 7 elements while columns.types has 6 elements!);
+2、sql 语句：
+   create table rpt_qukan.telephone_recall_Register_result
+	as 
+	select
+		date_add(a.thedate,1) ,
+		count(distinct a.telephone) as phonecnt,
+		count(distinct b.id) as usecnt,
+		count(distinct case when datediff(b.create_time,a.thedate)=1 then b.id else null end ) as reg1d,
+		count(distinct case when datediff(b.create_time,a.thedate)=2 then b.id else null end ) as reg2d,
+		count(distinct case when datediff(b.create_time,a.thedate)=3 then b.id else null end ) as reg3d
+	from 
+	(
+		SELECT 
+			thedate,telephone
+		from rpt_qukan.telephone_recall_Register
+		where thedate>='2017-11-07'
+	) a
+	left join 
+	(select
+		telephone,id,to_date(create_time) as create_time
+		--,to_date(get_json_object(info,'$.firstLogin') ) as firstLogin
+		FROM gobblin.qukan_p_member a
+		where day='${YESTERDAY}' 
+	)b 
+	on a.telephone=b.telephone
+	group by date_add(a.thedate,1);
+3、该sql语句在hive可以正常执行，spark-sql抛出上述异常
+	
+4、异常原因：date_add(a.thedate,1) , 后面缺少as 

@@ -1,0 +1,1235 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<!-- saved from url=(0083)http://dongxicheng.org/mapreduce-nextgen/hadoop-yarn-configurations-fair-scheduler/ -->
+<html xmlns="http://www.w3.org/1999/xhtml"><head profile="http://gmpg.org/xfn/11"><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+	
+
+
+
+	
+	<meta name="keywords" content="Fair Scheduler, Hadoop YARN, 公平调度器, 配置参数, ">
+
+	<meta name="description" content="Hadoop YARN配置参数剖析(4)—Fair Scheduler相关参数">
+
+	<title>董的博客 » Hadoop YARN配置参数剖析(4)—Fair Scheduler相关参数</title>
+
+	<link rel="alternate" type="application/rss+xml" title="RSS 2.0 - 所有文章" href="http://dongxicheng.org/feed/">
+
+	<link rel="alternate" type="application/rss+xml" title="RSS 2.0 - 所有评论" href="http://dongxicheng.org/comments/feed/">
+
+	<link rel="pingback" href="http://dongxicheng.org/xmlrpc.php">
+
+	<link rel="shortcut icon" href="http://dongxicheng.org/mapreduce-nextgen/hadoop-yarn-configurations-fair-scheduler/favicon.ico" type="image/x-icon">
+        <link rel="Bookmark" href="http://dongxicheng.org/mapreduce-nextgen/hadoop-yarn-configurations-fair-scheduler/favicon.ico">
+
+	<!--default style -->
+
+	<link rel="stylesheet" href="./董的博客 » Hadoop YARN配置参数剖析(4)—Fair Scheduler相关参数_files/style.css" type="text/css" media="screen">
+
+	<!-- script -->
+
+	<script type="text/javascript" src="./董的博客 » Hadoop YARN配置参数剖析(4)—Fair Scheduler相关参数_files/jquery.js.下载"></script>
+
+	<script type="text/javascript" src="./董的博客 » Hadoop YARN配置参数剖析(4)—Fair Scheduler相关参数_files/tab.js.下载"></script>
+
+	<script type="text/javascript" src="./董的博客 » Hadoop YARN配置参数剖析(4)—Fair Scheduler相关参数_files/util.js.下载"></script>
+
+     
+
+	<link rel="alternate" type="application/rss+xml" title="董的博客 » Hadoop YARN配置参数剖析(4)—Fair Scheduler相关参数评论Feed" href="http://dongxicheng.org/mapreduce-nextgen/hadoop-yarn-configurations-fair-scheduler/feed/">
+<link rel="stylesheet" id="wp-pagenavi-css" href="./董的博客 » Hadoop YARN配置参数剖析(4)—Fair Scheduler相关参数_files/pagenavi-css.css" type="text/css" media="all">
+<script type="text/javascript" src="./董的博客 » Hadoop YARN配置参数剖析(4)—Fair Scheduler相关参数_files/l10n.js.下载"></script>
+<script type="text/javascript" src="./董的博客 » Hadoop YARN配置参数剖析(4)—Fair Scheduler相关参数_files/jquery.js(1).下载"></script>
+<script type="text/javascript" src="./董的博客 » Hadoop YARN配置参数剖析(4)—Fair Scheduler相关参数_files/collapsFunctions.js.下载"></script>
+<script type="text/javascript" src="./董的博客 » Hadoop YARN配置参数剖析(4)—Fair Scheduler相关参数_files/comment-reply.js.下载"></script>
+<link rel="EditURI" type="application/rsd+xml" title="RSD" href="http://dongxicheng.org/xmlrpc.php?rsd">
+<link rel="wlwmanifest" type="application/wlwmanifest+xml" href="http://dongxicheng.org/wp-includes/wlwmanifest.xml"> 
+<link rel="index" title="董的博客" href="http://dongxicheng.org/">
+<link rel="start" title="Hello world！" href="http://dongxicheng.org/default/hello-world/">
+<link rel="prev" title="Hadoop YARN配置参数剖析(3)—MapReduce相关参数" href="http://dongxicheng.org/mapreduce-nextgen/hadoop-yarn-configurations-mapreduce/">
+<link rel="next" title="Hadoop YARN配置参数剖析(5)—Capacity Scheduler相关参数" href="http://dongxicheng.org/mapreduce-nextgen/hadoop-yarn-configurations-capacity-scheduler/">
+<meta name="generator" content="WordPress 3.1">
+<link rel="shortlink" href="http://dongxicheng.org/?p=2840">
+
+<!-- All in One SEO Pack 1.6.13.2 by Michael Torbert of Semper Fi Web Designob_start_detected [-1,-1] -->
+<meta name="description" content="Fair Scheduler的配置选项包括两部分，其中一部分在yarn-site.xml中，主要用于配置调度器级别的参数，另外一部分在一个自定义配置文件（默认是fair-scheduler.xml）中，主要用于配置各个队列的资源量、权重等信息。">
+<meta name="keywords" content="hadoop yarn, 配置参数,fair scheduler,公平调度器,配置参数,hadoop 2.0之yarn">
+<link rel="canonical" href="http://dongxicheng.org/mapreduce-nextgen/hadoop-yarn-configurations-fair-scheduler/">
+<!-- /all in one seo pack -->
+<style type="text/css">
+    #sidebar span.collapsing.archives {
+        border:0;
+        padding:0; 
+        margin:0; 
+        cursor:pointer;
+} 
+
+#sidebar span.monthCount, span.yearCount {text-decoration:none; color:#333}
+#sidebar li.collapsing.archives a.self {font-weight:bold}
+#sidebar ul.collapsing.archives.list ul.collapsing.archives.list:before {content:'';} 
+#sidebar ul.collapsing.archives.list li.collapsing.archives:before {content:'';} 
+#sidebar ul.collapsing.archives.list li.collapsing.archives {list-style-type:none}
+#sidebar ul.collapsing.archives.list li {
+       margin:0 0 0 .8em;
+       text-indent:-1em}
+#sidebar ul.collapsing.archives.list li.collapsing.archives.item:before {content: '\00BB \00A0' !important;} 
+#sidebar ul.collapsing.archives.list li.collapsing.archives .sym {
+   font-size:1.2em;
+   font-family:Monaco, 'Andale Mono', 'FreeMono', 'Courier new', 'Courier', monospace;
+   cursor:pointer;
+    padding-right:5px;}
+    </style>
+<link rel="stylesheet" type="text/css" href="./董的博客 » Hadoop YARN配置参数剖析(4)—Fair Scheduler相关参数_files/shCore.css"><link rel="stylesheet" type="text/css" href="./董的博客 » Hadoop YARN配置参数剖析(4)—Fair Scheduler相关参数_files/shThemeDefault.css"><meta id="syntaxhighlighteranchor" name="syntaxhighlighter-version" content="3.1.1">
+<!-- wp thread comment 1.4.9.4.002 -->
+<style type="text/css" media="screen">
+.editComment, .editableComment, .textComment{
+	display: inline;
+}
+.comment-childs{
+	border: 1px solid #999;
+	margin: 5px 2px 2px 4px;
+	padding: 4px 2px 2px 4px;
+	background-color: white;
+}
+.chalt{
+	background-color: #E2E2E2;
+}
+#newcomment{
+	border:1px dashed #777;width:90%;
+}
+#newcommentsubmit{
+	color:red;
+}
+.adminreplycomment{
+	border:1px dashed #777;
+	width:99%;
+	margin:4px;
+	padding:4px;
+}
+.mvccls{
+	color: #999;
+}
+			
+</style>
+
+</head>
+
+<body>
+
+ <div id="wrapper">
+
+   <!-- Begin header -->
+<div id="header">
+<div id="topbar">
+<div id="logo">
+<h1><a href="http://dongxicheng.org/" title="董的博客">董的博客</a></h1>
+<p>{关注大规模数据处理，包括Hadoop，YARN，MapReduce，Spark，Mesos等}</p>
+</div>
+<div id="toptool">
+ <!-- begin showcase-->
+  <!-- end showcase-->
+</div>
+</div>
+<div id="menu">
+<em><a href="http://dongxicheng.org/feed/" title="">订阅</a></em>
+<ul>
+<li class="current_page_item page_item">
+<a title="首页" href="http://dongxicheng.org/"><span>首页</span></a>
+</li>
+<li class="page_item page-item-2464"><a href="http://dongxicheng.org/hadoop-internals-mapreduce/" title="Hadoop-MR"><span>Hadoop-MR</span></a></li>
+<li class="page_item page-item-2878"><a href="http://dongxicheng.org/hadoop-internals-yarn/" title="Hadoop技术内幕,yarn"><span>Hadoop-YARN</span></a></li>
+<li class="page_item page-item-1201"><a href="http://dongxicheng.org/knowledges-carding/" title="基础知识整理"><span>基础知识整理</span></a></li>
+<li class="page_item page-item-861"><a href="http://dongxicheng.org/recommend/" title="推荐"><span>推荐</span></a></li>
+<li class="page_item page-item-2"><a href="http://dongxicheng.org/about/" title="Corona, Mesos, MRv2, yarn， MRv1"><span>关于我</span></a></li>
+</ul>
+</div>
+</div>
+<!-- End header -->
+
+<div id="container">
+
+ <div id="content">
+
+ <div id="content-inner">
+
+   
+   <p>当前位置: <a href="http://dongxicheng.org/" title="首页">首页</a>&gt;&gt;<a href="http://dongxicheng.org/category/mapreduce-nextgen/" title="View all posts in hadoop 2.0之YARN">hadoop 2.0之YARN</a>&gt;&gt; 阅读正文</p>
+
+   <div class="topic-post">
+
+   <div class="topic-content">
+
+   <dl id="post-2840">
+
+   <dt>
+
+   <div class="post-date"><small>13-11</small><span>08</span></div>
+
+   <div class="post-title">
+
+   <h1><a href="http://dongxicheng.org/mapreduce-nextgen/hadoop-yarn-configurations-fair-scheduler/" rel="bookmark">Hadoop YARN配置参数剖析(4)—Fair Scheduler相关参数</a></h1>
+
+   <em>
+
+   <span class="cat">Category: <a href="http://dongxicheng.org/category/mapreduce-nextgen/" title="View all posts in hadoop 2.0之YARN" rel="category tag">hadoop 2.0之YARN</a></span>
+
+   <span class="views">View: 17,235</span>
+   <span class="author">Author: Dong</span>
+
+   </em>
+
+   </div>
+
+   </dt>
+
+   <dd class="post-info">
+
+   <div class="asset-copyright">
+作者:<strong><a href="http://dongxicheng.org/about/"><span style="text-decoration: underline; color: #ff0000;">Dong</span></a></strong><span class="separator"> | </span>新浪微博：<a href="http://weibo.com/clseer"><span style="text-decoration: underline; color: #ff0000;">西成懂</span></a><span class="separator"> | </span>可以转载, 但必须以超链接形式标明文章原始出处和作者信息及<a href="http://creativecommons.org/licenses/by/2.5/cn/">版权声明</a><br>网址:<a class="permalink" href="http://dongxicheng.org/mapreduce-nextgen/hadoop-yarn-configurations-fair-scheduler/">http://dongxicheng.org/mapreduce-nextgen/hadoop-yarn-configurations-fair-scheduler/</a><br>本博客的文章集合:<a class="permalink" href="http://dongxicheng.org/recommend/">http://dongxicheng.org/recommend/</a></div>
+<p></p>
+<hr size="1">
+<p><span style="color: #ff0000;"><strong>本博客微信公共账号：hadoop123（微信号为：hadoop-123），分享hadoop技术内幕，hadoop最新技术进展，发布hadoop相关职位和求职信息，hadoop技术交流聚会、讲座以及会议等。二维码如下：</strong></span><br>
+<img class="aligncenter size-thumbnail wp-image-2804" title="hadoop123" src="./董的博客 » Hadoop YARN配置参数剖析(4)—Fair Scheduler相关参数_files/hadoop123-150x150.jpg" alt="" width="150" height="150"></p>
+<hr size="1">-<p></p>
+<p>首先在yarn-site.xml中，将配置参数<tt>yarn.resourcemanager.scheduler.class</tt><tt>设置为</tt><tt>org.apache.hadoop.yarn.server.resourcemanager.scheduler.fair.FairScheduler</tt><tt>。</tt></p>
+<p><a href="http://dongxicheng.org/mapreduce/hadoop-fair-scheduler/" target="_blank">Fair Scheduler</a>的配置选项包括两部分，其中一部分在yarn-site.xml中，主要用于配置调度器级别的参数，另外一部分在一个自定义配置文件（默认是fair-scheduler.xml）中，主要用于配置各个队列的资源量、权重等信息。</p>
+<p>想要了解Fair Scheduler是什么，可阅读我的这篇文章<a href="http://dongxicheng.org/mapreduce/hadoop-fair-scheduler/" target="_blank">“Hadoop公平调度器分析”</a>。</p>
+<p><strong style="font-size: 13px; line-height: 19px;">1. </strong><strong style="font-size: 13px; line-height: 19px;">配置文件yarn-site.xml</strong></p>
+<p><strong style="font-size: 13px; line-height: 19px;"> </strong><span style="font-size: 13px; line-height: 19px;">（1） </span><strong style="font-size: 13px; line-height: 19px;">yarn.scheduler.fair.allocation.file</strong><span style="font-size: 13px; line-height: 19px;"> ：自定义XML配置文件所在位置，该文件主要用于描述各个队列的属性，比如资源量、权重等，具体配置格式将在后面介绍。</span></p>
+<p>（2） &nbsp;<strong>yarn.scheduler.fair.user-as-default-queue</strong>：当应用程序未指定队列名时，是否指定用户名作为应用程序所在的队列名。如果设置为false或者未设置，所有未知队列的应用程序将被提交到default队列中，默认值为true。</p>
+<p>（3） &nbsp;<strong>yarn.scheduler.fair.preemption</strong>：是否启用抢占机制，默认值是false。</p>
+<p>（4） &nbsp;<strong>yarn.scheduler.fair.sizebasedweight</strong>：在一个队列内部分配资源时，默认情况下，采用公平轮询的方法将资源分配各各个应用程序，而该参数则提供了另外一种资源分配方式：按照应用程序资源需求数目分配资源，即需求资源数量越多，分配的资源越多。默认情况下，该参数值为false。</p>
+<p>（5） &nbsp;<strong>yarn.scheduler.assignmultiple</strong><strong>：</strong>是否启动批量分配功能。当一个节点出现大量资源时，可以一次分配完成，也可以多次分配完成。默认情况下，该参数值为false。</p>
+<p>（6） &nbsp;<strong>yarn.scheduler.fair.max.assign</strong>：如果开启批量分配功能，可指定一次分配的container数目。默认情况下，该参数值为-1，表示不限制。</p>
+<p>（7） &nbsp;<strong>yarn.scheduler.fair.locality.threshold.node</strong>：当应用程序请求某个节点上资源时，它可以接受的可跳过的最大资源调度机会。当按照分配策略，可将一个节点上的资源分配给某个应用程序时，如果该节点不是应用程序期望的节点，可选择跳过该分配机会暂时将资源分配给其他应用程序，直到出现满足该应用程序需的节点资源出现。通常而言，一次心跳代表一次调度机会，而该参数则表示跳过调度机会占节点总数的比例，默认情况下，该值为-1.0，表示不跳过任何调度机会。</p>
+<p>（8） &nbsp;<strong>yarn.scheduler.fair.locality.threshold.rack</strong>：当应用程序请求某个机架上资源时，它可以接受的可跳过的最大资源调度机会。</p>
+<p>（9） &nbsp;<strong>yarn.scheduler.increment-allocation-mb</strong>：内存规整化单位，默认是1024，这意味着，如果一个Container请求资源是1.5GB，则将被调度器规整化为ceiling(1.5 GB / 1GB) * 1G=2GB。</p>
+<p>（10） &nbsp;<strong>yarn.scheduler.increment-allocation-vcores</strong>：虚拟CPU规整化单位，默认是1，含义与内存规整化单位类似。</p>
+<p><strong><span style="font-size: 13px; line-height: 19px;">2. 自定义配置文件</span></strong></p>
+<p>Fair Scheduler允许用户将队列信息专门放到一个配置文件（默认是fair-scheduler.xml），对于每个队列，管理员可配置以下几个选项：</p>
+<p>（1） &nbsp;<strong>minResources</strong> ：最少资源保证量，设置格式为“X mb, Y vcores”，当一个队列的最少资源保证量未满足时，它将优先于其他同级队列获得资源，对于不同的调度策略（后面会详细介绍），最少资源保证量的含义不同，对于fair策略，则只考虑内存资源，即如果一个队列使用的内存资源超过了它的最少资源量，则认为它已得到了满足；对于drf策略，则考虑主资源使用的资源量，即如果一个队列的主资源量超过它的最少资源量，则认为它已得到了满足。</p>
+<p>（2） &nbsp;<strong>maxResources</strong><strong>：</strong>最多可以使用的资源量，fair scheduler会保证每个队列使用的资源量不会超过该队列的最多可使用资源量。</p>
+<p>（3） &nbsp;<strong>maxRunningApp</strong><strong>s</strong><strong>：</strong>最多同时运行的应用程序数目。通过限制该数目，可防止超量Map Task同时运行时产生的中间输出结果撑爆磁盘。</p>
+<p>（4） &nbsp;<strong>minSharePreemptionTimeout</strong><strong>：</strong>最小共享量抢占时间。如果一个资源池在该时间内使用的资源量一直低于最小资源量，则开始抢占资源。</p>
+<p>（5） &nbsp;<strong>schedulingMode/schedulingPolicy</strong>：队列采用的调度模式，可以是fifo、fair或者drf。</p>
+<p>（6） &nbsp;<strong>aclSubmitApps</strong><strong>：</strong>可向队列中提交应用程序的Linux用户或用户组列表，默认情况下为“*”，表示任何用户均可以向该队列提交应用程序。需要注意的是，该属性具有继承性，即子队列的列表会继承父队列的列表。<span style="color: #ff0000;">配置该属性时，用户之间或用户组之间用“，”分割，用户和用户组之间用空格分割，比如“user1, user2 group1,group2”。</span></p>
+<p>（7） &nbsp;<strong>aclAdministerApps</strong>：该队列的管理员列表。一个队列的管理员可管理该队列中的资源和应用程序，比如可杀死任意应用程序。</p>
+<p>管理员也可为单个用户添加maxRunningJobs属性限制其最多同时运行的应用程序数目。此外，管理员也可通过以下参数设置以上属性的默认值：</p>
+<p>（1） &nbsp;<strong>userMaxJobsDefault</strong>：用户的maxRunningJobs属性的默认值。</p>
+<p>（2）&nbsp;<strong>defaultMinSharePreemptionTimeout</strong> ：队列的minSharePreemptionTimeout属性的默认值。</p>
+<p>（3） &nbsp;<strong>defaultPoolSchedulingMode</strong>：队列的schedulingMode属性的默认值。</p>
+<p>（4） &nbsp;<strong>fairSharePreemptionTimeout</strong>：公平共享量抢占时间。如果一个资源池在该时间内使用资源量一直低于公平共享量的一半，则开始抢占资源。</p>
+<p>【<strong>实</strong><strong> </strong><strong>例</strong>】假设要为一个Hadoop集群设置三个队列queueA、queueB和queueC，其中，queueB和queueC为queueA的子队列，且规定普通用户最多可同时运行40个应用程序，但用户userA最多可同时运行400个应用程序，那么可在自定义配置文件中进行如下设置：</p>
+<div><div id="highlighter_656121" class="syntaxhighlighter  xml"><table border="0" cellpadding="0" cellspacing="0"><tbody><tr><td class="gutter"><div class="line number1 index0 alt2">1</div><div class="line number2 index1 alt1">2</div><div class="line number3 index2 alt2">3</div><div class="line number4 index3 alt1">4</div><div class="line number5 index4 alt2">5</div><div class="line number6 index5 alt1">6</div><div class="line number7 index6 alt2">7</div><div class="line number8 index7 alt1">8</div><div class="line number9 index8 alt2">9</div><div class="line number10 index9 alt1">10</div><div class="line number11 index10 alt2">11</div><div class="line number12 index11 alt1">12</div><div class="line number13 index12 alt2">13</div><div class="line number14 index13 alt1">14</div><div class="line number15 index14 alt2">15</div><div class="line number16 index15 alt1">16</div><div class="line number17 index16 alt2">17</div><div class="line number18 index17 alt1">18</div><div class="line number19 index18 alt2">19</div><div class="line number20 index19 alt1">20</div><div class="line number21 index20 alt2">21</div><div class="line number22 index21 alt1">22</div></td><td class="code"><div class="container"><div class="line number1 index0 alt2"><code class="xml plain">&lt;</code><code class="xml keyword">allocations</code><code class="xml plain">&gt;</code></div><div class="line number2 index1 alt1"><code class="xml spaces">&nbsp;&nbsp;</code><code class="xml plain">&lt;</code><code class="xml keyword">queue</code> <code class="xml plain">name=”queueA”&gt;</code></div><div class="line number3 index2 alt2"><code class="xml spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="xml plain">&lt;</code><code class="xml keyword">minResources</code><code class="xml plain">&gt;100 mb, 100 vcores&lt;/</code><code class="xml keyword">minResources</code><code class="xml plain">&gt;</code></div><div class="line number4 index3 alt1"><code class="xml spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="xml plain">&lt;</code><code class="xml keyword">maxResources</code><code class="xml plain">&gt;150 mb, 150 vcores&lt;/</code><code class="xml keyword">maxResources</code><code class="xml plain">&gt;</code></div><div class="line number5 index4 alt2"><code class="xml spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="xml plain">&lt;</code><code class="xml keyword">maxRunningApps</code><code class="xml plain">&gt;200&lt;/</code><code class="xml keyword">maxRunningApps</code><code class="xml plain">&gt;</code></div><div class="line number6 index5 alt1"><code class="xml spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="xml plain">&lt;</code><code class="xml keyword">minSharePreemptionTimeout</code><code class="xml plain">&gt;300&lt;/</code><code class="xml keyword">minSharePreemptionTimeout</code><code class="xml plain">&gt;</code></div><div class="line number7 index6 alt2"><code class="xml spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="xml plain">&lt;</code><code class="xml keyword">weight</code><code class="xml plain">&gt;1.0&lt;/</code><code class="xml keyword">weight</code><code class="xml plain">&gt;</code></div><div class="line number8 index7 alt1"><code class="xml spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="xml plain">&lt;</code><code class="xml keyword">queue</code> <code class="xml plain">name=”queueB”&gt;</code></div><div class="line number9 index8 alt2"><code class="xml spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="xml plain">&lt;</code><code class="xml keyword">minResources</code><code class="xml plain">&gt;30 mb, 30 vcores&lt;/</code><code class="xml keyword">minResources</code><code class="xml plain">&gt;</code></div><div class="line number10 index9 alt1"><code class="xml spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="xml plain">&lt;</code><code class="xml keyword">maxResources</code><code class="xml plain">&gt;50 mb, 50 vcores&lt;/</code><code class="xml keyword">maxResources</code><code class="xml plain">&gt;</code></div><div class="line number11 index10 alt2"><code class="xml spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="xml plain">&lt;/</code><code class="xml keyword">queue</code><code class="xml plain">&gt;</code></div><div class="line number12 index11 alt1"><code class="xml spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="xml plain">&lt;</code><code class="xml keyword">queue</code> <code class="xml plain">name=”queueC”&gt;</code></div><div class="line number13 index12 alt2"><code class="xml spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="xml plain">&lt;</code><code class="xml keyword">minResources</code><code class="xml plain">&gt;50 mb, 50 vcores&lt;/</code><code class="xml keyword">minResources</code><code class="xml plain">&gt;</code></div><div class="line number14 index13 alt1"><code class="xml spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="xml plain">&lt;</code><code class="xml keyword">maxResources</code><code class="xml plain">&gt;50 mb, 50 vcores&lt;/</code><code class="xml keyword">maxResources</code><code class="xml plain">&gt;</code></div><div class="line number15 index14 alt2"><code class="xml spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="xml plain">&lt;/</code><code class="xml keyword">queue</code><code class="xml plain">&gt;</code></div><div class="line number16 index15 alt1"><code class="xml spaces">&nbsp;&nbsp;</code><code class="xml plain">&lt;/</code><code class="xml keyword">queue</code><code class="xml plain">&gt;</code></div><div class="line number17 index16 alt2"><code class="xml spaces">&nbsp;&nbsp;</code><code class="xml plain">&lt;</code><code class="xml keyword">user</code> <code class="xml plain">name=”userA”&gt;</code></div><div class="line number18 index17 alt1"><code class="xml spaces">&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="xml plain">&lt;</code><code class="xml keyword">maxRunningApps</code><code class="xml plain">&gt;400&lt;/</code><code class="xml keyword">maxRunningApps</code><code class="xml plain">&gt;</code></div><div class="line number19 index18 alt2"><code class="xml spaces">&nbsp;&nbsp;</code><code class="xml plain">&lt;/</code><code class="xml keyword">user</code><code class="xml plain">&gt;</code></div><div class="line number20 index19 alt1"><code class="xml spaces">&nbsp;&nbsp;</code><code class="xml plain">&lt;</code><code class="xml keyword">userMaxAppsDefault</code><code class="xml plain">&gt;40&lt;/</code><code class="xml keyword">userMaxAppsDefault</code><code class="xml plain">&gt;</code></div><div class="line number21 index20 alt2"><code class="xml spaces">&nbsp;&nbsp;</code><code class="xml plain">&lt;</code><code class="xml keyword">fairSharePreemptionTimeout</code><code class="xml plain">&gt;6000&lt;/</code><code class="xml keyword">fairSharePreemptionTimeout</code><code class="xml plain">&gt;</code></div><div class="line number22 index21 alt1"><code class="xml plain">&lt;/</code><code class="xml keyword">allocations</code><code class="xml plain">&gt;</code></div></div></td></tr></tbody></table></div></div>
+<div style="margin-top: 15px; font-style: italic">
+<p><strong>原创文章，转载请注明：</strong> 转载自<a href="http://dongxicheng.org/">董的博客</a></p>
+<p><strong>本文链接地址:</strong> <a href="http://dongxicheng.org/mapreduce-nextgen/hadoop-yarn-configurations-fair-scheduler/">http://dongxicheng.org/mapreduce-nextgen/hadoop-yarn-configurations-fair-scheduler/</a></p>
+</div>
+<p><strong>作者：<a href="http://dongxicheng.org/about/"><span style="text-decoration: underline; color: #ff0000;">Dong</span></a></strong>，作者介绍：<a href="http://dongxicheng.org/about/">http://dongxicheng.org/about/</a></p>
+<p><strong><span style="color: #ff0000;">本博客的文章集合:</span></strong><a class="permalink" href="http://dongxicheng.org/recommend/" target="_blank">http://dongxicheng.org/recommend/</a></p>
+
+   </dd>
+
+   <dd class="the-comment-tags">
+
+   <em><a href="http://dongxicheng.org/tag/fair-scheduler/" rel="tag">Fair Scheduler</a>, <a href="http://dongxicheng.org/tag/hadoop-yarn/" rel="tag">Hadoop YARN</a>, <a href="http://dongxicheng.org/tag/%e5%85%ac%e5%b9%b3%e8%b0%83%e5%ba%a6%e5%99%a8/" rel="tag">公平调度器</a>, <a href="http://dongxicheng.org/tag/%e9%85%8d%e7%bd%ae%e5%8f%82%e6%95%b0/" rel="tag">配置参数</a></em>
+   </dd>
+
+   </dl>
+
+   </div>
+
+   </div>
+
+   <!--end topic post-->
+
+   
+   <!--end related post-->
+
+   
+
+
+
+
+
+
+
+
+
+<div id="comments">
+
+ <div class="comment-title">
+
+ <h3>
+
+ <ul>
+
+ <li id="tabcomment1" onclick="setTab(&#39;tabcomment&#39;,1,2)" class="current">评论 (4)
+ </li>
+
+ <li id="tabcomment2" onclick="setTab(&#39;tabcomment&#39;,2,2)">引用通告 (2)</li>
+
+ </ul>
+
+ 
+ <span id="gotocomment"><a href="http://dongxicheng.org/mapreduce-nextgen/hadoop-yarn-configurations-fair-scheduler/#respond">发表评论</a></span>
+
+ 
+ 
+ <span id="gotoaddtrackback"><a href="http://dongxicheng.org/mapreduce-nextgen/hadoop-yarn-configurations-fair-scheduler/trackback/">发起引用</a></span>
+
+ 
+ </h3>   
+
+ </div>
+
+ <!-- end comment title -->
+
+  <div id="contabcomment1">
+
+  
+  <div id="comment-list">
+
+  <ul class="parents">
+
+  
+<li id="comment-18216" class="comment even thread-even depth-1 comment reader odd">
+
+ <dl>
+
+ <dt><img alt="" src="./董的博客 » Hadoop YARN配置参数剖析(4)—Fair Scheduler相关参数_files/b161ad7b21f72202b3514fcfab0c2c05" class="avatar avatar-36 photo" height="36" width="36"></dt>
+
+ <dd>
+
+ <h3>
+
+ <span class="num">1楼</span><cite>一步一脚印</cite>
+
+ <em>
+
+ <span class="comment-reply-link"><a class="comment-reply-link" href="http://dongxicheng.org/mapreduce-nextgen/hadoop-yarn-configurations-fair-scheduler/?replytocom=18216#respond" onclick="return addComment.moveForm(&quot;comment-18216&quot;, &quot;18216&quot;, &quot;respond&quot;, &quot;2840&quot;)">回复</a></span>
+ 
+ </em>
+
+ </h3>
+
+ <h4>Post: 2013-12-02 07:17</h4>
+
+ <div class="comment-text">
+
+ 
+ <div id="comment-msg-18216"><p>你好，请教个问题，当用户通过mapreduce.job.queuename参数指定作业队列启动作业，若该队列不存在，Fair Scheduler会自动创建一个该队列，如何禁止此项操作？否则关于其他队列的配置就没有意义了，谢谢！</p>
+<p class="thdrpy">[<a href="javascript:void(0)" onclick="movecfm(event,18216,1,&#39;一步一脚印&#39;);">回复</a>]</p><div class="comment-childs chalt" id="comment-18224"><img alt="" src="./董的博客 » Hadoop YARN配置参数剖析(4)—Fair Scheduler相关参数_files/d7e37125fa344c3cbd99759123e0e98f" class="avatar avatar-32 photo" height="32" width="32"><p><cite>Dong</cite> 回复:<br><small class="commentmetadata">十二月 2nd, 2013 at 上午 8:08</small></p><p>这个没法禁掉，这是fair scheduler长期存在的一个问题，目前不能控制，我们自己改了代码修复了这个问题。另外，capacity scheduler不存在这个问题。</p>
+<p class="thdrpy">[<a href="javascript:void(0)" onclick="movecfm(event,18224,2,&#39;Dong&#39;);">回复</a>]</p><div class="comment-childs" id="comment-18326"><img alt="" src="./董的博客 » Hadoop YARN配置参数剖析(4)—Fair Scheduler相关参数_files/b161ad7b21f72202b3514fcfab0c2c05(1)" class="avatar avatar-32 photo" height="32" width="32"><p><cite>一步一脚印</cite> 回复:<br><small class="commentmetadata">十二月 3rd, 2013 at 上午 12:35</small></p><p>明白了，非常感谢。你的2本大作，我都已购买，收益匪浅！</p>
+<p class="thdrpy">[<a href="javascript:void(0)" onclick="movecfm(event,18326,3,&#39;一步一脚印&#39;);">回复</a>]</p><div class="comment-childs chalt" id="comment-18618"><img alt="" src="./董的博客 » Hadoop YARN配置参数剖析(4)—Fair Scheduler相关参数_files/b161ad7b21f72202b3514fcfab0c2c05(1)" class="avatar avatar-32 photo" height="32" width="32"><p><cite>一步一脚印</cite> 回复:<br><small class="commentmetadata">十二月 4th, 2013 at 上午 2:00</small></p><p>我用的2.2.0版本，本来打算修改下FairScheduler的源码，看了后，发现这个是有开关的，只是可能没在官方文档公布，这个开关默认打开，通过配置参数allow-undeclared-pools，该功能可关闭。</p>
+<p class="thdrpy">[<a href="javascript:void(0)" onclick="movecfm(event,18618,4,&#39;一步一脚印&#39;);">回复</a>]</p><div class="comment-childs" id="comment-18621"><img alt="" src="./董的博客 » Hadoop YARN配置参数剖析(4)—Fair Scheduler相关参数_files/d7e37125fa344c3cbd99759123e0e98f" class="avatar avatar-32 photo" height="32" width="32"><p><cite>Dong</cite> 回复:<br><small class="commentmetadata">十二月 4th, 2013 at 上午 3:06</small></p><p>嗯，这个没注意，是2.2.0新加的。</p>
+<p class="thdrpy">[<a href="javascript:void(0)" onclick="movecfm(event,18621,5,&#39;Dong&#39;);">回复</a>]</p></div></div></div></div><div class="comment-childs chalt" id="comment-37673"><img alt="" src="./董的博客 » Hadoop YARN配置参数剖析(4)—Fair Scheduler相关参数_files/24e6eb329c505aa81d4e61127f09192e" class="avatar avatar-32 photo" height="32" width="32"><p><cite>lanbo</cite> 回复:<br><small class="commentmetadata">一月 23rd, 2015 at 上午 8:45</small></p><p>在新版本里解决这个问题了，yarn.scheduler.fair.allow-undeclared-pools 参数即可</p>
+<p class="thdrpy">[<a href="javascript:void(0)" onclick="movecfm(event,37673,2,&#39;lanbo&#39;);">回复</a>]</p></div></div>
+
+ </div>
+
+ </dd>
+
+ </dl>
+
+</li>
+<li id="comment-32187" class="comment odd alt thread-odd thread-alt depth-1 comment reader even alt">
+
+ <dl>
+
+ <dt><img alt="" src="./董的博客 » Hadoop YARN配置参数剖析(4)—Fair Scheduler相关参数_files/f744f5e52dcb85288f0e816ef96c098d" class="avatar avatar-36 photo" height="36" width="36"></dt>
+
+ <dd>
+
+ <h3>
+
+ <span class="num">2楼</span><cite>dg</cite>
+
+ <em>
+
+ <span class="comment-reply-link"><a class="comment-reply-link" href="http://dongxicheng.org/mapreduce-nextgen/hadoop-yarn-configurations-fair-scheduler/?replytocom=32187#respond" onclick="return addComment.moveForm(&quot;comment-32187&quot;, &quot;32187&quot;, &quot;respond&quot;, &quot;2840&quot;)">回复</a></span>
+ 
+ </em>
+
+ </h3>
+
+ <h4>Post: 2014-05-23 07:15</h4>
+
+ <div class="comment-text">
+
+ 
+ <div id="comment-msg-32187"><p>1.0 是表什么啥意思</p>
+<p class="thdrpy">[<a href="javascript:void(0)" onclick="movecfm(event,32187,1,&#39;dg&#39;);">回复</a>]</p></div>
+
+ </div>
+
+ </dd>
+
+ </dl>
+
+</li>
+<li id="comment-33837" class="comment even thread-even depth-1 comment reader odd">
+
+ <dl>
+
+ <dt><img alt="" src="./董的博客 » Hadoop YARN配置参数剖析(4)—Fair Scheduler相关参数_files/00c0cef85a3b058cdb691f3e0bdc37e9" class="avatar avatar-36 photo" height="36" width="36"></dt>
+
+ <dd>
+
+ <h3>
+
+ <span class="num">3楼</span><cite>llcode</cite>
+
+ <em>
+
+ <span class="comment-reply-link"><a class="comment-reply-link" href="http://dongxicheng.org/mapreduce-nextgen/hadoop-yarn-configurations-fair-scheduler/?replytocom=33837#respond" onclick="return addComment.moveForm(&quot;comment-33837&quot;, &quot;33837&quot;, &quot;respond&quot;, &quot;2840&quot;)">回复</a></span>
+ 
+ </em>
+
+ </h3>
+
+ <h4>Post: 2014-07-01 16:50</h4>
+
+ <div class="comment-text">
+
+ 
+ <div id="comment-msg-33837"><p>你好，请教个问题:<br>
+1、fair-scheduler.xml中的weight的作用是什么？怎么样能测出来weight的作用？<br>
+2、使用fair调度策略，会不会出现负载不均衡的现象？网上说：默认批处理会出现负载不均衡，但每次都是均衡的， 涉及到yarn.scheduler.fair.max.assign 和yarn.scheduler.assignmultiple 两个配置项。这块到底是什么样的？</p>
+<p class="thdrpy">[<a href="javascript:void(0)" onclick="movecfm(event,33837,1,&#39;llcode&#39;);">回复</a>]</p><div class="comment-childs chalt" id="comment-33869"><img alt="" src="./董的博客 » Hadoop YARN配置参数剖析(4)—Fair Scheduler相关参数_files/d7e37125fa344c3cbd99759123e0e98f" class="avatar avatar-32 photo" height="32" width="32"><p><cite>Dong</cite> 回复:<br><small class="commentmetadata">七月 3rd, 2014 at 上午 12:38</small></p><p>(1) weight主要用在资源共享之时，weight越大，拿到的资源越多。比如一个pool中有20GB内存用不了，这时候可以共享给其他pool，其他每个pool拿多少，就是由权重决定的<br>
+（2）fair也会出现，均衡不均衡是相对的，只不多这两个参数可以缓解。</p>
+<p class="thdrpy">[<a href="javascript:void(0)" onclick="movecfm(event,33869,2,&#39;Dong&#39;);">回复</a>]</p></div></div>
+
+ </div>
+
+ </dd>
+
+ </dl>
+
+</li>
+<li id="comment-37796" class="comment odd alt thread-odd thread-alt depth-1 comment reader even alt">
+
+ <dl>
+
+ <dt><img alt="" src="./董的博客 » Hadoop YARN配置参数剖析(4)—Fair Scheduler相关参数_files/8335b6685f953124c7f8f3a86bd40aef" class="avatar avatar-36 photo" height="36" width="36"></dt>
+
+ <dd>
+
+ <h3>
+
+ <span class="num">4楼</span><cite>robin</cite>
+
+ <em>
+
+ <span class="comment-reply-link"><a class="comment-reply-link" href="http://dongxicheng.org/mapreduce-nextgen/hadoop-yarn-configurations-fair-scheduler/?replytocom=37796#respond" onclick="return addComment.moveForm(&quot;comment-37796&quot;, &quot;37796&quot;, &quot;respond&quot;, &quot;2840&quot;)">回复</a></span>
+ 
+ </em>
+
+ </h3>
+
+ <h4>Post: 2015-01-28 01:55</h4>
+
+ <div class="comment-text">
+
+ 
+ <div id="comment-msg-37796"><p>请问这个具体怎么使用啊？我配置了这些之后发现老是使用的是默认的队列，而没有使用我设置的队列。</p>
+<p class="thdrpy">[<a href="javascript:void(0)" onclick="movecfm(event,37796,1,&#39;robin&#39;);">回复</a>]</p></div>
+
+ </div>
+
+ </dd>
+
+ </dl>
+
+</li>
+  </ul>
+
+  </div>
+
+
+
+  
+
+
+<!-- end commentpages -->
+
+  
+  </div>
+
+<!-- end commentlist -->
+
+<div id="contabcomment2" class="nodis">
+
+
+<div id="trackback-list">
+
+<ul>
+
+
+<li id="comment-15905">
+
+<span><a href="http://www.multiprocess.net/archives/21" rel="external nofollow" class="url">Hadoop YARN配置参数剖析(4)—Fair Scheduler相关参数 | Multiprocess</a></span>2013-11-11
+</li>
+
+
+<li id="comment-16746">
+
+<span><a href="http://www.multiprocess.net/archives/1894" rel="external nofollow" class="url">Hadoop YARN中内存和CPU资源的调度和隔离 | Multiprocess</a></span>2013-11-16
+</li>
+
+
+</ul>
+
+</div>
+
+
+</div>
+
+<!-- end trackbacklist -->
+
+</div>
+
+
+<!-- end comments -->
+
+
+
+<!-- begin postcomment -->
+
+
+
+
+<div id="respond" class="post-comment">
+
+ <div id="post-comment-title">
+
+	<span id="comment-reply">发表评论</span>
+
+    <span id="cancel-comment-reply"><a rel="nofollow" id="cancel-comment-reply-link" href="http://dongxicheng.org/mapreduce-nextgen/hadoop-yarn-configurations-fair-scheduler/#respond" style="display:none;">点击取消评论</a></span>
+
+ </div>
+
+ <div id="post-comment-body">
+
+	<form action="http://dongxicheng.org/wp-comments-post.php" method="post" id="commentform">
+
+	 
+	
+
+
+	<div id="author_info">
+
+	<div class="user-info">
+
+	<ul>
+
+	<li>
+
+	<input type="text" name="author" id="author" class="text-field" value="" size="24" tabindex="1">
+
+	<label for="author" class="small">昵称 (必填)</label>
+
+	</li>
+
+	<li>
+
+	<input type="text" name="email" id="email" class="text-field" value="" size="24" tabindex="2">
+
+	<label for="email" class="small">电子邮箱 (我们会为您保密) (必填)</label>
+
+	</li>
+
+	<li>
+
+	<input type="text" name="url" id="url" class="text-field" value="" size="24" tabindex="3">
+
+	<label for="url" class="small">网址</label>
+
+	</li>
+
+	</ul>
+
+	</div>
+
+	</div>
+
+
+
+	
+
+
+	
+
+
+	<!-- comment input -->
+
+	<div id="post-comment-text">
+
+		<textarea name="comment" id="comment" tabindex="4" rows="8"></textarea>
+
+	</div>
+
+
+
+	<!-- comment submit and rss -->
+
+	<div id="submit-box">
+
+	<span>
+
+	<input name="submit" type="submit" id="submit" class="post-comment-button" tabindex="5" value="提交评论">
+
+	<input type="hidden" name="comment_post_ID" value="2840">
+
+	<input type="hidden" name="comment_post_ID" value="2840" id="comment_post_ID">
+<input type="hidden" name="comment_parent" id="comment_parent" value="0">
+
+	</span>
+
+	<a class="feed" href="http://dongxicheng.org/comments/feed/">订阅评论</a>
+
+	</div>
+
+	<p style="display: none;"><input type="hidden" id="akismet_comment_nonce" name="akismet_comment_nonce" value="3b3f660aba"></p><p><input type="hidden" id="comment_reply_ID" name="comment_reply_ID" value="0"><input type="hidden" id="comment_reply_dp" name="comment_reply_dp" value="0"></p><div id="cancel_reply" style="display:none;"><a href="javascript:void(0)" onclick="movecfm(null,0,1,null);" style="color:red;">点击取消回复</a></div><script type="text/javascript">
+/* <![CDATA[ */
+var commentformid = "commentform";
+var USERINFO = false;
+var atreply = "none";
+/* ]]> */
+</script>
+<script type="text/javascript" src="./董的博客 » Hadoop YARN配置参数剖析(4)—Fair Scheduler相关参数_files/wp-thread-comment.js.php"></script>
+
+ </form>
+
+ </div>
+
+</div>
+
+
+<!-- end postcomment -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   
+
+ </div>
+
+ </div>
+
+    
+<!-- Begin sidebar -->
+
+<div id="sidebar">
+
+<div id="sidebar-inner">
+     <dl class="widget widget_categories">
+
+<dd><h3>日志分类</h3></dd>
+
+<dt>
+
+<ul>
+
+	<li class="cat-item cat-item-10"><a href="http://dongxicheng.org/category/cpp/" title="View all posts filed under C/C++语言">C/C++语言</a> (16)
+</li>
+	<li class="cat-item cat-item-367"><a href="http://dongxicheng.org/category/framework-on-yarn/" title="View all posts filed under Frameworks (Spark) On YARN">Frameworks (Spark) On YARN</a> (11)
+</li>
+	<li class="cat-item cat-item-4"><a href="http://dongxicheng.org/category/mapreduce/" title="Focus on systems such as Hadoop、sector/sphere and so on......">hadoop 1.0</a> (39)
+</li>
+	<li class="cat-item cat-item-300"><a href="http://dongxicheng.org/category/hadoop-corona/" title="View all posts filed under Hadoop 2.0之Corona">Hadoop 2.0之Corona</a> (5)
+</li>
+	<li class="cat-item cat-item-283"><a href="http://dongxicheng.org/category/mapreduce-nextgen/" title="View all posts filed under hadoop 2.0之YARN">hadoop 2.0之YARN</a> (112)
+</li>
+	<li class="cat-item cat-item-372"><a href="http://dongxicheng.org/category/hadoop-hdfs/" title="View all posts filed under Hadoop HDFS">Hadoop HDFS</a> (3)
+</li>
+	<li class="cat-item cat-item-382"><a href="http://dongxicheng.org/category/hadoop-internals/" title="View all posts filed under Hadoop技术内幕（YARN）">Hadoop技术内幕（YARN）</a> (9)
+</li>
+	<li class="cat-item cat-item-116"><a href="http://dongxicheng.org/category/os/" title="View all posts filed under Linux操作系统">Linux操作系统</a> (1)
+</li>
+	<li class="cat-item cat-item-7"><a href="http://dongxicheng.org/category/nosql/" title="View all posts filed under NoSQL数据库">NoSQL数据库</a> (9)
+</li>
+	<li class="cat-item cat-item-65"><a href="http://dongxicheng.org/category/big-data/" title="View all posts filed under 大规模数据处理">大规模数据处理</a> (1)
+</li>
+	<li class="cat-item cat-item-16"><a href="http://dongxicheng.org/category/search-engine/" title="View all posts filed under 搜索引擎">搜索引擎</a> (11)
+</li>
+	<li class="cat-item cat-item-105"><a href="http://dongxicheng.org/category/data-mining/" title="View all posts filed under 数据挖掘">数据挖掘</a> (2)
+</li>
+	<li class="cat-item cat-item-8"><a href="http://dongxicheng.org/category/structure/" title="View all posts filed under 数据结构与算法">数据结构与算法</a> (19)
+</li>
+	<li class="cat-item cat-item-11"><a href="http://dongxicheng.org/category/brain/" title="View all posts filed under 智力题">智力题</a> (2)
+</li>
+	<li class="cat-item cat-item-1"><a href="http://dongxicheng.org/category/default/" title="View all posts filed under 未分类">未分类</a> (1)
+</li>
+	<li class="cat-item cat-item-281"><a href="http://dongxicheng.org/category/network/" title="View all posts filed under 网络编程">网络编程</a> (1)
+</li>
+	<li class="cat-item cat-item-70"><a href="http://dongxicheng.org/category/script/" title="View all posts filed under 脚本语言">脚本语言</a> (2)
+</li>
+	<li class="cat-item cat-item-294"><a href="http://dongxicheng.org/category/apache-mesos/" title="View all posts filed under 资源管理系统Apache Mesos">资源管理系统Apache Mesos</a> (10)
+</li>
+	<li class="cat-item cat-item-56"><a href="http://dongxicheng.org/category/cluster-managemant/" title="View all posts filed under 集群管理">集群管理</a> (1)
+</li>
+
+</ul>
+
+</dt>
+
+</dl>
+
+<!-- end categories -->
+	<dl class="widget cloud-tags">
+
+	<dd><h3>标签云</h3></dd>
+
+        <!-- SWFObject embed by Geoff Stearns geoff@deconcept.com http://blog.deconcept.com/swfobject/ --><script type="text/javascript" src="./董的博客 » Hadoop YARN配置参数剖析(4)—Fair Scheduler相关参数_files/swfobject.js.下载"></script><div id="wpcumuluscontent5179779"><p><a href="http://dongxicheng.org/tag/nodemanager/" class="tag-link-306" title="7个话题" style="font-size: 10pt;">NodeManager</a>
+<a href="http://dongxicheng.org/tag/thrift/" class="tag-link-12" title="7个话题" style="font-size: 10pt;">thrift</a>
+<a href="http://dongxicheng.org/tag/mrappmaster/" class="tag-link-326" title="7个话题" style="font-size: 10pt;">MRAppMaster</a>
+<a href="http://dongxicheng.org/tag/corona/" class="tag-link-309" title="7个话题" style="font-size: 10pt;">Corona</a>
+<a href="http://dongxicheng.org/tag/tez/" class="tag-link-341" title="7个话题" style="font-size: 10pt;">Tez</a>
+<a href="http://dongxicheng.org/tag/hadoop-yarn/" class="tag-link-345" title="7个话题" style="font-size: 10pt;">Hadoop YARN</a>
+<a href="http://dongxicheng.org/tag/hdfs/" class="tag-link-32" title="9个话题" style="font-size: 13.508771929825pt;">HDFS</a>
+<a href="http://dongxicheng.org/tag/resourcemanager/" class="tag-link-330" title="10个话题" style="font-size: 14.912280701754pt;">ResourceManager</a>
+<a href="http://dongxicheng.org/tag/hadoop%e6%8a%80%e6%9c%af%e5%86%85%e5%b9%95/" class="tag-link-347" title="10个话题" style="font-size: 14.912280701754pt;">Hadoop技术内幕</a>
+<a href="http://dongxicheng.org/tag/%e4%b8%8b%e4%b8%80%e4%bb%a3mapreduce/" class="tag-link-301" title="10个话题" style="font-size: 14.912280701754pt;">下一代MapReduce</a>
+<a href="http://dongxicheng.org/tag/%e6%95%b0%e6%8d%ae%e7%bb%93%e6%9e%84/" class="tag-link-132" title="11个话题" style="font-size: 16.315789473684pt;">数据结构</a>
+<a href="http://dongxicheng.org/tag/spark/" class="tag-link-353" title="13个话题" style="font-size: 18.771929824561pt;">Spark</a>
+<a href="http://dongxicheng.org/tag/%e6%ba%90%e4%bb%a3%e7%a0%81%e7%a0%94%e7%a9%b6/" class="tag-link-119" title="15个话题" style="font-size: 20.526315789474pt;">源代码研究</a>
+<a href="http://dongxicheng.org/tag/mesos/" class="tag-link-293" title="16个话题" style="font-size: 21.578947368421pt;">Mesos</a>
+<a href="http://dongxicheng.org/tag/mapreduce/" class="tag-link-4" title="17个话题" style="font-size: 22.631578947368pt;">hadoop 1.0</a>
+<a href="http://dongxicheng.org/tag/hadoop-2-0/" class="tag-link-359" title="21个话题" style="font-size: 25.438596491228pt;">Hadoop 2.0</a>
+<a href="http://dongxicheng.org/tag/nextgen-mapreduce/" class="tag-link-284" title="24个话题" style="font-size: 27.543859649123pt;">nextgen-mapreduce</a>
+<a href="http://dongxicheng.org/tag/mrv2/" class="tag-link-308" title="46个话题" style="font-size: 37.017543859649pt;">MRv2</a>
+<a href="http://dongxicheng.org/tag/hadoop/" class="tag-link-5" title="101个话题" style="font-size: 48.947368421053pt;">Hadoop</a>
+<a href="http://dongxicheng.org/tag/yarn/" class="tag-link-285" title="108个话题" style="font-size: 50pt;">yarn</a>	<a href="http://dongxicheng.org/category/cpp/" title="View all posts filed under C/C++语言">C/C++语言</a> (16)<br>
+	<a href="http://dongxicheng.org/category/framework-on-yarn/" title="View all posts filed under Frameworks (Spark) On YARN">Frameworks (Spark) On YARN</a> (11)<br>
+	<a href="http://dongxicheng.org/category/mapreduce/" title="Focus on systems such as Hadoop、sector/sphere and so on......">hadoop 1.0</a> (39)<br>
+	<a href="http://dongxicheng.org/category/hadoop-corona/" title="View all posts filed under Hadoop 2.0之Corona">Hadoop 2.0之Corona</a> (5)<br>
+	<a href="http://dongxicheng.org/category/mapreduce-nextgen/" title="View all posts filed under hadoop 2.0之YARN">hadoop 2.0之YARN</a> (112)<br>
+	<a href="http://dongxicheng.org/category/hadoop-hdfs/" title="View all posts filed under Hadoop HDFS">Hadoop HDFS</a> (3)<br>
+	<a href="http://dongxicheng.org/category/hadoop-internals/" title="View all posts filed under Hadoop技术内幕（YARN）">Hadoop技术内幕（YARN）</a> (9)<br>
+	<a href="http://dongxicheng.org/category/os/" title="View all posts filed under Linux操作系统">Linux操作系统</a> (1)<br>
+	<a href="http://dongxicheng.org/category/nosql/" title="View all posts filed under NoSQL数据库">NoSQL数据库</a> (9)<br>
+	<a href="http://dongxicheng.org/category/big-data/" title="View all posts filed under 大规模数据处理">大规模数据处理</a> (1)<br>
+	<a href="http://dongxicheng.org/category/search-engine/" title="View all posts filed under 搜索引擎">搜索引擎</a> (11)<br>
+	<a href="http://dongxicheng.org/category/data-mining/" title="View all posts filed under 数据挖掘">数据挖掘</a> (2)<br>
+	<a href="http://dongxicheng.org/category/structure/" title="View all posts filed under 数据结构与算法">数据结构与算法</a> (19)<br>
+	<a href="http://dongxicheng.org/category/brain/" title="View all posts filed under 智力题">智力题</a> (2)<br>
+	<a href="http://dongxicheng.org/category/default/" title="View all posts filed under 未分类">未分类</a> (1)<br>
+	<a href="http://dongxicheng.org/category/network/" title="View all posts filed under 网络编程">网络编程</a> (1)<br>
+	<a href="http://dongxicheng.org/category/script/" title="View all posts filed under 脚本语言">脚本语言</a> (2)<br>
+	<a href="http://dongxicheng.org/category/apache-mesos/" title="View all posts filed under 资源管理系统Apache Mesos">资源管理系统Apache Mesos</a> (10)<br>
+	<a href="http://dongxicheng.org/category/cluster-managemant/" title="View all posts filed under 集群管理">集群管理</a> (1)<br>
+</p><p>WP Cumulus Flash tag cloud by <a href="http://www.roytanck.com/" rel="nofollow">Roy Tanck</a> requires <a href="http://www.macromedia.com/go/getflashplayer">Flash Player</a> 9 or better.</p></div><script type="text/javascript">var so4418460 = new SWFObject("http://dongxicheng.org/wp-content/plugins/wp-cumulus/tagcloud.swf?r=946741", "tagcloudflash", "250", "200", "9", "#F0F8FF");so4418460.addParam("allowScriptAccess", "always");so4418460.addVariable("tcolor", "0x006400");so4418460.addVariable("tcolor2", "0x0000FF");so4418460.addVariable("hicolor", "0xDC143C");so4418460.addVariable("tspeed", "100");so4418460.addVariable("distr", "true");so4418460.addVariable("mode", "both");so4418460.addVariable("tagcloud", "%3Ctags%3E%3Ca+href%3D%27http%3A%2F%2Fdongxicheng.org%2Ftag%2Fnodemanager%2F%27+class%3D%27tag-link-306%27+title%3D%277%E4%B8%AA%E8%AF%9D%E9%A2%98%27+style%3D%27font-size%3A+10pt%3B%27%3ENodeManager%3C%2Fa%3E%0A%3Ca+href%3D%27http%3A%2F%2Fdongxicheng.org%2Ftag%2Fthrift%2F%27+class%3D%27tag-link-12%27+title%3D%277%E4%B8%AA%E8%AF%9D%E9%A2%98%27+style%3D%27font-size%3A+10pt%3B%27%3Ethrift%3C%2Fa%3E%0A%3Ca+href%3D%27http%3A%2F%2Fdongxicheng.org%2Ftag%2Fmrappmaster%2F%27+class%3D%27tag-link-326%27+title%3D%277%E4%B8%AA%E8%AF%9D%E9%A2%98%27+style%3D%27font-size%3A+10pt%3B%27%3EMRAppMaster%3C%2Fa%3E%0A%3Ca+href%3D%27http%3A%2F%2Fdongxicheng.org%2Ftag%2Fcorona%2F%27+class%3D%27tag-link-309%27+title%3D%277%E4%B8%AA%E8%AF%9D%E9%A2%98%27+style%3D%27font-size%3A+10pt%3B%27%3ECorona%3C%2Fa%3E%0A%3Ca+href%3D%27http%3A%2F%2Fdongxicheng.org%2Ftag%2Ftez%2F%27+class%3D%27tag-link-341%27+title%3D%277%E4%B8%AA%E8%AF%9D%E9%A2%98%27+style%3D%27font-size%3A+10pt%3B%27%3ETez%3C%2Fa%3E%0A%3Ca+href%3D%27http%3A%2F%2Fdongxicheng.org%2Ftag%2Fhadoop-yarn%2F%27+class%3D%27tag-link-345%27+title%3D%277%E4%B8%AA%E8%AF%9D%E9%A2%98%27+style%3D%27font-size%3A+10pt%3B%27%3EHadoop+YARN%3C%2Fa%3E%0A%3Ca+href%3D%27http%3A%2F%2Fdongxicheng.org%2Ftag%2Fhdfs%2F%27+class%3D%27tag-link-32%27+title%3D%279%E4%B8%AA%E8%AF%9D%E9%A2%98%27+style%3D%27font-size%3A+13.508771929825pt%3B%27%3EHDFS%3C%2Fa%3E%0A%3Ca+href%3D%27http%3A%2F%2Fdongxicheng.org%2Ftag%2Fresourcemanager%2F%27+class%3D%27tag-link-330%27+title%3D%2710%E4%B8%AA%E8%AF%9D%E9%A2%98%27+style%3D%27font-size%3A+14.912280701754pt%3B%27%3EResourceManager%3C%2Fa%3E%0A%3Ca+href%3D%27http%3A%2F%2Fdongxicheng.org%2Ftag%2Fhadoop%25e6%258a%2580%25e6%259c%25af%25e5%2586%2585%25e5%25b9%2595%2F%27+class%3D%27tag-link-347%27+title%3D%2710%E4%B8%AA%E8%AF%9D%E9%A2%98%27+style%3D%27font-size%3A+14.912280701754pt%3B%27%3EHadoop%E6%8A%80%E6%9C%AF%E5%86%85%E5%B9%95%3C%2Fa%3E%0A%3Ca+href%3D%27http%3A%2F%2Fdongxicheng.org%2Ftag%2F%25e4%25b8%258b%25e4%25b8%2580%25e4%25bb%25a3mapreduce%2F%27+class%3D%27tag-link-301%27+title%3D%2710%E4%B8%AA%E8%AF%9D%E9%A2%98%27+style%3D%27font-size%3A+14.912280701754pt%3B%27%3E%E4%B8%8B%E4%B8%80%E4%BB%A3MapReduce%3C%2Fa%3E%0A%3Ca+href%3D%27http%3A%2F%2Fdongxicheng.org%2Ftag%2F%25e6%2595%25b0%25e6%258d%25ae%25e7%25bb%2593%25e6%259e%2584%2F%27+class%3D%27tag-link-132%27+title%3D%2711%E4%B8%AA%E8%AF%9D%E9%A2%98%27+style%3D%27font-size%3A+16.315789473684pt%3B%27%3E%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%3C%2Fa%3E%0A%3Ca+href%3D%27http%3A%2F%2Fdongxicheng.org%2Ftag%2Fspark%2F%27+class%3D%27tag-link-353%27+title%3D%2713%E4%B8%AA%E8%AF%9D%E9%A2%98%27+style%3D%27font-size%3A+18.771929824561pt%3B%27%3ESpark%3C%2Fa%3E%0A%3Ca+href%3D%27http%3A%2F%2Fdongxicheng.org%2Ftag%2F%25e6%25ba%2590%25e4%25bb%25a3%25e7%25a0%2581%25e7%25a0%2594%25e7%25a9%25b6%2F%27+class%3D%27tag-link-119%27+title%3D%2715%E4%B8%AA%E8%AF%9D%E9%A2%98%27+style%3D%27font-size%3A+20.526315789474pt%3B%27%3E%E6%BA%90%E4%BB%A3%E7%A0%81%E7%A0%94%E7%A9%B6%3C%2Fa%3E%0A%3Ca+href%3D%27http%3A%2F%2Fdongxicheng.org%2Ftag%2Fmesos%2F%27+class%3D%27tag-link-293%27+title%3D%2716%E4%B8%AA%E8%AF%9D%E9%A2%98%27+style%3D%27font-size%3A+21.578947368421pt%3B%27%3EMesos%3C%2Fa%3E%0A%3Ca+href%3D%27http%3A%2F%2Fdongxicheng.org%2Ftag%2Fmapreduce%2F%27+class%3D%27tag-link-4%27+title%3D%2717%E4%B8%AA%E8%AF%9D%E9%A2%98%27+style%3D%27font-size%3A+22.631578947368pt%3B%27%3Ehadoop+1.0%3C%2Fa%3E%0A%3Ca+href%3D%27http%3A%2F%2Fdongxicheng.org%2Ftag%2Fhadoop-2-0%2F%27+class%3D%27tag-link-359%27+title%3D%2721%E4%B8%AA%E8%AF%9D%E9%A2%98%27+style%3D%27font-size%3A+25.438596491228pt%3B%27%3EHadoop+2.0%3C%2Fa%3E%0A%3Ca+href%3D%27http%3A%2F%2Fdongxicheng.org%2Ftag%2Fnextgen-mapreduce%2F%27+class%3D%27tag-link-284%27+title%3D%2724%E4%B8%AA%E8%AF%9D%E9%A2%98%27+style%3D%27font-size%3A+27.543859649123pt%3B%27%3Enextgen-mapreduce%3C%2Fa%3E%0A%3Ca+href%3D%27http%3A%2F%2Fdongxicheng.org%2Ftag%2Fmrv2%2F%27+class%3D%27tag-link-308%27+title%3D%2746%E4%B8%AA%E8%AF%9D%E9%A2%98%27+style%3D%27font-size%3A+37.017543859649pt%3B%27%3EMRv2%3C%2Fa%3E%0A%3Ca+href%3D%27http%3A%2F%2Fdongxicheng.org%2Ftag%2Fhadoop%2F%27+class%3D%27tag-link-5%27+title%3D%27101%E4%B8%AA%E8%AF%9D%E9%A2%98%27+style%3D%27font-size%3A+48.947368421053pt%3B%27%3EHadoop%3C%2Fa%3E%0A%3Ca+href%3D%27http%3A%2F%2Fdongxicheng.org%2Ftag%2Fyarn%2F%27+class%3D%27tag-link-285%27+title%3D%27108%E4%B8%AA%E8%AF%9D%E9%A2%98%27+style%3D%27font-size%3A+50pt%3B%27%3Eyarn%3C%2Fa%3E%3C%2Ftags%3E");so4418460.addVariable("categories", "%09%3Ca+href%3D%22http%3A%2F%2Fdongxicheng.org%2Fcategory%2Fcpp%2F%22+title%3D%22View+all+posts+filed+under+C%2FC%2B%2B%E8%AF%AD%E8%A8%80%22%3EC%2FC%2B%2B%E8%AF%AD%E8%A8%80%3C%2Fa%3E+%2816%29%3Cbr+%2F%3E%0A%09%3Ca+href%3D%22http%3A%2F%2Fdongxicheng.org%2Fcategory%2Fframework-on-yarn%2F%22+title%3D%22View+all+posts+filed+under+Frameworks+%28Spark%29+On+YARN%22%3EFrameworks+%28Spark%29+On+YARN%3C%2Fa%3E+%2811%29%3Cbr+%2F%3E%0A%09%3Ca+href%3D%22http%3A%2F%2Fdongxicheng.org%2Fcategory%2Fmapreduce%2F%22+title%3D%22Focus+on+systems+such+as+Hadoop%E3%80%81sector%2Fsphere+and+so+on......%22%3Ehadoop+1.0%3C%2Fa%3E+%2839%29%3Cbr+%2F%3E%0A%09%3Ca+href%3D%22http%3A%2F%2Fdongxicheng.org%2Fcategory%2Fhadoop-corona%2F%22+title%3D%22View+all+posts+filed+under+Hadoop+2.0%E4%B9%8BCorona%22%3EHadoop+2.0%E4%B9%8BCorona%3C%2Fa%3E+%285%29%3Cbr+%2F%3E%0A%09%3Ca+href%3D%22http%3A%2F%2Fdongxicheng.org%2Fcategory%2Fmapreduce-nextgen%2F%22+title%3D%22View+all+posts+filed+under+hadoop+2.0%E4%B9%8BYARN%22%3Ehadoop+2.0%E4%B9%8BYARN%3C%2Fa%3E+%28112%29%3Cbr+%2F%3E%0A%09%3Ca+href%3D%22http%3A%2F%2Fdongxicheng.org%2Fcategory%2Fhadoop-hdfs%2F%22+title%3D%22View+all+posts+filed+under+Hadoop+HDFS%22%3EHadoop+HDFS%3C%2Fa%3E+%283%29%3Cbr+%2F%3E%0A%09%3Ca+href%3D%22http%3A%2F%2Fdongxicheng.org%2Fcategory%2Fhadoop-internals%2F%22+title%3D%22View+all+posts+filed+under+Hadoop%E6%8A%80%E6%9C%AF%E5%86%85%E5%B9%95%EF%BC%88YARN%EF%BC%89%22%3EHadoop%E6%8A%80%E6%9C%AF%E5%86%85%E5%B9%95%EF%BC%88YARN%EF%BC%89%3C%2Fa%3E+%289%29%3Cbr+%2F%3E%0A%09%3Ca+href%3D%22http%3A%2F%2Fdongxicheng.org%2Fcategory%2Fos%2F%22+title%3D%22View+all+posts+filed+under+Linux%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%22%3ELinux%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%3C%2Fa%3E+%281%29%3Cbr+%2F%3E%0A%09%3Ca+href%3D%22http%3A%2F%2Fdongxicheng.org%2Fcategory%2Fnosql%2F%22+title%3D%22View+all+posts+filed+under+NoSQL%E6%95%B0%E6%8D%AE%E5%BA%93%22%3ENoSQL%E6%95%B0%E6%8D%AE%E5%BA%93%3C%2Fa%3E+%289%29%3Cbr+%2F%3E%0A%09%3Ca+href%3D%22http%3A%2F%2Fdongxicheng.org%2Fcategory%2Fbig-data%2F%22+title%3D%22View+all+posts+filed+under+%E5%A4%A7%E8%A7%84%E6%A8%A1%E6%95%B0%E6%8D%AE%E5%A4%84%E7%90%86%22%3E%E5%A4%A7%E8%A7%84%E6%A8%A1%E6%95%B0%E6%8D%AE%E5%A4%84%E7%90%86%3C%2Fa%3E+%281%29%3Cbr+%2F%3E%0A%09%3Ca+href%3D%22http%3A%2F%2Fdongxicheng.org%2Fcategory%2Fsearch-engine%2F%22+title%3D%22View+all+posts+filed+under+%E6%90%9C%E7%B4%A2%E5%BC%95%E6%93%8E%22%3E%E6%90%9C%E7%B4%A2%E5%BC%95%E6%93%8E%3C%2Fa%3E+%2811%29%3Cbr+%2F%3E%0A%09%3Ca+href%3D%22http%3A%2F%2Fdongxicheng.org%2Fcategory%2Fdata-mining%2F%22+title%3D%22View+all+posts+filed+under+%E6%95%B0%E6%8D%AE%E6%8C%96%E6%8E%98%22%3E%E6%95%B0%E6%8D%AE%E6%8C%96%E6%8E%98%3C%2Fa%3E+%282%29%3Cbr+%2F%3E%0A%09%3Ca+href%3D%22http%3A%2F%2Fdongxicheng.org%2Fcategory%2Fstructure%2F%22+title%3D%22View+all+posts+filed+under+%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%22%3E%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95%3C%2Fa%3E+%2819%29%3Cbr+%2F%3E%0A%09%3Ca+href%3D%22http%3A%2F%2Fdongxicheng.org%2Fcategory%2Fbrain%2F%22+title%3D%22View+all+posts+filed+under+%E6%99%BA%E5%8A%9B%E9%A2%98%22%3E%E6%99%BA%E5%8A%9B%E9%A2%98%3C%2Fa%3E+%282%29%3Cbr+%2F%3E%0A%09%3Ca+href%3D%22http%3A%2F%2Fdongxicheng.org%2Fcategory%2Fdefault%2F%22+title%3D%22View+all+posts+filed+under+%E6%9C%AA%E5%88%86%E7%B1%BB%22%3E%E6%9C%AA%E5%88%86%E7%B1%BB%3C%2Fa%3E+%281%29%3Cbr+%2F%3E%0A%09%3Ca+href%3D%22http%3A%2F%2Fdongxicheng.org%2Fcategory%2Fnetwork%2F%22+title%3D%22View+all+posts+filed+under+%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B%22%3E%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B%3C%2Fa%3E+%281%29%3Cbr+%2F%3E%0A%09%3Ca+href%3D%22http%3A%2F%2Fdongxicheng.org%2Fcategory%2Fscript%2F%22+title%3D%22View+all+posts+filed+under+%E8%84%9A%E6%9C%AC%E8%AF%AD%E8%A8%80%22%3E%E8%84%9A%E6%9C%AC%E8%AF%AD%E8%A8%80%3C%2Fa%3E+%282%29%3Cbr+%2F%3E%0A%09%3Ca+href%3D%22http%3A%2F%2Fdongxicheng.org%2Fcategory%2Fapache-mesos%2F%22+title%3D%22View+all+posts+filed+under+%E8%B5%84%E6%BA%90%E7%AE%A1%E7%90%86%E7%B3%BB%E7%BB%9FApache+Mesos%22%3E%E8%B5%84%E6%BA%90%E7%AE%A1%E7%90%86%E7%B3%BB%E7%BB%9FApache+Mesos%3C%2Fa%3E+%2810%29%3Cbr+%2F%3E%0A%09%3Ca+href%3D%22http%3A%2F%2Fdongxicheng.org%2Fcategory%2Fcluster-managemant%2F%22+title%3D%22View+all+posts+filed+under+%E9%9B%86%E7%BE%A4%E7%AE%A1%E7%90%86%22%3E%E9%9B%86%E7%BE%A4%E7%AE%A1%E7%90%86%3C%2Fa%3E+%281%29%3Cbr+%2F%3E%0A");so4418460.write("wpcumuluscontent5179779");</script>
+        </dl>
+
+	 
+<dl class="widget popular-posts">
+
+<dd><h3>热门文章</h3></dd>
+
+<dt>
+
+<ul><li><a href="http://dongxicheng.org/structure/heap/" title="数据结构之堆">数据结构之堆</a> - 359,967 阅</li><li><a href="http://dongxicheng.org/mapreduce/hadoop-streaming-programming/" title="Hadoop Streaming 编程">Hadoop Streaming 编程</a> - 273,614 阅</li><li><a href="http://dongxicheng.org/cpp/cpp-rtti/" title="《C++ Primer plus》学习笔记之”RTTI”">《C++ Primer plus》学习笔记之”RTTI”</a> - 261,862 阅</li><li><a href="http://dongxicheng.org/cluster-managemant/puppet/" title="Puppet使用方法总结">Puppet使用方法总结</a> - 247,109 阅</li><li><a href="http://dongxicheng.org/nosql/cassandra-sql/" title="Cassandra中实现SQL操作">Cassandra中实现SQL操作</a> - 245,229 阅</li><li><a href="http://dongxicheng.org/mapreduce-nextgen/hadoop-internals-mapreduce-reference/" title="《Hadoop技术内幕:深入解析MapReduce架构设计与实现原理》一书的参考资料">《Hadoop技术内幕:深入解析MapReduce架构设计与实现原理》一书的参考资料</a> - 243,154 阅</li><li><a href="http://dongxicheng.org/structure/segment-tree/" title="数据结构之线段树">数据结构之线段树</a> - 223,098 阅</li><li><a href="http://dongxicheng.org/mapreduce-nextgen/yarnmrv2-resource-manager-nm-manager/" title="YARN/MRv2 Resource Manager深入剖析—NM管理">YARN/MRv2 Resource Manager深入剖析—NM管理</a> - 214,592 阅</li><li><a href="http://dongxicheng.org/mapreduce/hadoop-mapreduce-failure-tolerance/" title="Hadoop MapReduce容错性分析">Hadoop MapReduce容错性分析</a> - 211,833 阅</li><li><a href="http://dongxicheng.org/search-engine/log-systems/" title="开源日志系统比较">开源日志系统比较</a> - 204,386 阅</li></ul>
+
+</dt>
+
+</dl>
+
+
+<!-- end popular posts -->
+
+
+
+
+
+  
+
+
+
+
+	 <dl class="widget recent-posts">
+
+<dd><h3>最新日志</h3></dd>
+
+<dt>
+
+<ul>
+
+	
+	 <li><a href="http://dongxicheng.org/mapreduce-nextgen/voidbox-docker-on-hadoop-hulu/">Voidbox: Docker on Hadoop在hulu的实战</a></li>
+
+	 
+	 <li><a href="http://dongxicheng.org/mapreduce-nextgen/yarn-mesos-borg/">Apache YARN/Mesos与Google Borg差距多远？</a></li>
+
+	 
+	 <li><a href="http://dongxicheng.org/framework-on-yarn/hadoop-spark-common-parameters/">Hadoop与Spark常用配置参数总结</a></li>
+
+	 
+	 <li><a href="http://dongxicheng.org/mapreduce-nextgen/voidbox-docker-on-yarn/">Voidbox: Docker on YARN在Hulu的实现</a></li>
+
+	 
+	 <li><a href="http://dongxicheng.org/mapreduce-nextgen/columnar-storage-parquet-and-orc/">大数据开源列式存储引擎Parquet和ORC</a></li>
+
+	 
+	 <li><a href="http://dongxicheng.org/mapreduce-nextgen/hadoop-2-7-0-release/">吊炸天：hadoop 2.7.0版本发布</a></li>
+
+	 
+	 <li><a href="http://dongxicheng.org/apache-mesos/mesos-and-yarn/">Mesos：一个开源的分布式弹性资源管理系统</a></li>
+
+	 
+	 <li><a href="http://dongxicheng.org/mapreduce-nextgen/quality-of-hadoop-code/">hadoop的源代码写的怎么样?</a></li>
+
+	 
+	 <li><a href="http://dongxicheng.org/mapreduce-nextgen/how-to-read-hadoop-code-effectively/">如何高效的阅读hadoop源代码？</a></li>
+
+	 
+	 <li><a href="http://dongxicheng.org/mapreduce-nextgen/hadoop-yarn-label-based-scheduling/">Hadoop YARN新特性—label based scheduling</a></li>
+
+	 
+	</ul>
+
+</dt>
+
+</dl>
+
+<!-- end posts -->
+
+
+
+
+
+
+
+
+	 <dl class="widget recent-comments">
+
+<dd><h3>最新评论</h3></dd>
+
+<dt>
+
+<ul>
+
+<li> <img alt="" src="./董的博客 » Hadoop YARN配置参数剖析(4)—Fair Scheduler相关参数_files/4d2a306092249f19acd132172e3a41d4" class="avatar avatar-16 photo" height="16" width="16">aitanjupt:<a href="http://dongxicheng.org/mapreduce-nextgen/hadoop-distribution-selection/#comment-43676" title="on Hadoop发行版选择">OOM是hadoop版本的问题导致的，与这个无关。</a></li><li> <img alt="" src="./董的博客 » Hadoop YARN配置参数剖析(4)—Fair Scheduler相关参数_files/4d2a306092249f19acd132172e3a41d4" class="avatar avatar-16 photo" height="16" width="16">aitanjupt:<a href="http://dongxicheng.org/mapreduce-nextgen/hadoop-distribution-selection/#comment-43675" title="on Hadoop发行版选择">CDH版本安装有限制，不提供el7系统上的安装包，而且需要超级权</a></li><li> <img alt="" src="./董的博客 » Hadoop YARN配置参数剖析(4)—Fair Scheduler相关参数_files/00d48286247d7c7bdbca955a6594800c" class="avatar avatar-16 photo" height="16" width="16">DonBear:<a href="http://dongxicheng.org/framework-on-yarn/hadoop-spark-common-parameters/#comment-43674" title="on Hadoop与Spark常用配置参数总结">您好，请问Hadoop 支不支持将map/reduce任务运行到</a></li><li> <img alt="" src="./董的博客 » Hadoop YARN配置参数剖析(4)—Fair Scheduler相关参数_files/c2dae4334f4eb54f8bbab29a18529721" class="avatar avatar-16 photo" height="16" width="16">神奇的伊万:<a href="http://dongxicheng.org/framework-on-yarn/apache-spark-comparing-three-deploying-ways/#comment-43671" title="on Apache Spark探秘：三种分布式部署方式比较">standalone模式里，文件存储是谁来解决的？我了解的情况是</a></li><li> <img alt="" src="./董的博客 » Hadoop YARN配置参数剖析(4)—Fair Scheduler相关参数_files/2777294f6be35bfb7b97ed58249c1dc7" class="avatar avatar-16 photo" height="16" width="16">tiger:<a href="http://dongxicheng.org/mapreduce-nextgen/voidbox-docker-on-yarn/#comment-43286" title="on Voidbox: Docker on YARN在Hulu的实现">不错。将YARN和docker结合起来，这是我看到的第一例。</a></li><li> <img alt="" src="./董的博客 » Hadoop YARN配置参数剖析(4)—Fair Scheduler相关参数_files/3fec4543172efdd7d5cdcc03f37845af" class="avatar avatar-16 photo" height="16" width="16">mr.ray:<a href="http://dongxicheng.org/framework-on-yarn/hadoop-spark-common-parameters/#comment-43262" title="on Hadoop与Spark常用配置参数总结">hbase.regionserver.lease.period </a></li><li> <img alt="" src="./董的博客 » Hadoop YARN配置参数剖析(4)—Fair Scheduler相关参数_files/56274bc560fb0ddcf54b6f2322b39e17" class="avatar avatar-16 photo" height="16" width="16">青鸟:<a href="http://dongxicheng.org/search-engine/thrift-guide/#comment-43221" title="on Thrift使用指南">"Thrift的网络栈如下所示：" 这个图弄错了吧，Transp</a></li><li> <img alt="" src="./董的博客 » Hadoop YARN配置参数剖析(4)—Fair Scheduler相关参数_files/a47edd7a7cce8c583c3fb69d81c82b0c" class="avatar avatar-16 photo" height="16" width="16">stark_summer:<a href="http://dongxicheng.org/framework-on-yarn/hadoop-spark-common-parameters/#comment-43217" title="on Hadoop与Spark常用配置参数总结">(6) mapreduce.map.cpu.vcores: 每个</a></li>
+</ul>
+
+</dt>
+
+</dl>
+
+<!-- end comments -->
+
+
+
+  
+
+
+
+
+	 <dl class="widget link-list">
+
+<dd><h3>左邻右舍</h3></dd>
+
+<dt>
+
+<ul>
+
+<li><a href="http://www.atyue.com/" target="_blank">Coolbohr's Blog</a></li>
+<li><a href="http://fengshenwu.com/blog/" target="_blank">阿里封神</a></li>
+<li><a href="http://yaronspace.cn/blog/">李阳光的博客</a></li>
+<li><a href="http://www.chinahadoop.cn/" target="_blank">小象学院</a></li>
+<li><a href="http://binospace.com/">姜冰的博客</a></li>
+<li><a href="http://blog.nosqlfan.com/">nosqlfan</a></li>
+<li><a href="http://hadoop123.com/" rel="me" target="_blank">Hadoop技术内幕</a></li>
+<li><a href="http://amplab.cs.berkeley.edu/">伯克利amp实验室</a></li>
+<li><a href="http://www.cs.duke.edu/starfish/">starfish</a></li>
+
+</ul>
+
+</dt>
+
+</dl>
+
+<!-- end links -->
+
+
+
+  
+
+
+
+
+	 <dl class="widget archives">
+         <dd><h3>文章归档</h3></dd>
+           <li class="collapsing archives"><span title="click to collapse" class="collapsing archives collapse" onclick="expandCollapse(event, &quot;▶&quot;, &quot;▼&quot;, 0,&quot;collapsing archives&quot;); return false"><span class="sym">▼</span></span><a href="http://dongxicheng.org/2015/">2015  <span class="yearCount">(10)</span>
+</a>
+    <ul id="collapsArch-2015:1">
+      <li class="collapsing archives"><span title="click to collapse" class="collapsing archives collapse" onclick="expandCollapse(event, &quot;▶&quot;, &quot;▼&quot;, 0, &quot;collapsing archives&quot;); return false"><span class="sym">▼</span></span><a href="http://dongxicheng.org/2015/09/" title="九月">九月  <span class="monthCount">(1)</span>
+</a>
+        <ul id="collapsArch-2015-9:1">
+          <li class="collapsing archives item"><a href="http://dongxicheng.org/mapreduce-nextgen/voidbox-docker-on-hadoop-hulu/" title="Voidbox: Docker on Hadoop在hulu的实战">Voidbox: Docker on Hadoop在hulu的实战</a></li>
+        </ul>
+      </li> <!-- close expanded month --> 
+      <li class="collapsing archives"><span title="click to expand" class="collapsing archives expand" onclick="expandCollapse(event, &quot;▶&quot;, &quot;▼&quot;, 0, &quot;collapsing archives&quot;); return false"><span class="sym">▶</span></span><a href="http://dongxicheng.org/2015/08/" title="八月">八月  <span class="monthCount">(3)</span>
+</a>
+        <ul style="display:none" id="collapsArch-2015-8:1">
+        </ul>
+      </li> <!-- close expanded month --> 
+      <li class="collapsing archives"><span title="click to expand" class="collapsing archives expand" onclick="expandCollapse(event, &quot;▶&quot;, &quot;▼&quot;, 0, &quot;collapsing archives&quot;); return false"><span class="sym">▶</span></span><a href="http://dongxicheng.org/2015/05/" title="五月">五月  <span class="monthCount">(3)</span>
+</a>
+        <ul style="display:none" id="collapsArch-2015-5:1">
+        </ul>
+      </li> <!-- close expanded month --> 
+      <li class="collapsing archives"><span title="click to expand" class="collapsing archives expand" onclick="expandCollapse(event, &quot;▶&quot;, &quot;▼&quot;, 0, &quot;collapsing archives&quot;); return false"><span class="sym">▶</span></span><a href="http://dongxicheng.org/2015/04/" title="四月">四月  <span class="monthCount">(2)</span>
+</a>
+        <ul style="display:none" id="collapsArch-2015-4:1">
+        </ul>
+      </li> <!-- close expanded month --> 
+      <li class="collapsing archives"><span title="click to expand" class="collapsing archives expand" onclick="expandCollapse(event, &quot;▶&quot;, &quot;▼&quot;, 0, &quot;collapsing archives&quot;); return false"><span class="sym">▶</span></span><a href="http://dongxicheng.org/2015/03/" title="三月">三月  <span class="monthCount">(1)</span>
+</a>
+        <ul style="display:none" id="collapsArch-2015-3:1">
+        </ul>
+      </li> <!-- close expanded month --> 
+    </ul>
+  </li> <!-- end year -->
+  <li class="collapsing archives"><span title="click to expand" class="collapsing archives expand" onclick="expandCollapse(event, &quot;▶&quot;, &quot;▼&quot;, 0,&quot;collapsing archives&quot;); return false"><span class="sym">▶</span></span><a href="http://dongxicheng.org/2014/">2014  <span class="yearCount">(18)</span>
+</a>
+    <ul style="display:none" id="collapsArch-2014:1">
+      <li class="collapsing archives"><span title="click to expand" class="collapsing archives expand" onclick="expandCollapse(event, &quot;▶&quot;, &quot;▼&quot;, 0, &quot;collapsing archives&quot;); return false"><span class="sym">▶</span></span><a href="http://dongxicheng.org/2014/12/" title="十二月">十二月  <span class="monthCount">(1)</span>
+</a>
+        <ul style="display:none" id="collapsArch-2014-12:1">
+        </ul>
+      </li> <!-- close expanded month --> 
+      <li class="collapsing archives"><span title="click to expand" class="collapsing archives expand" onclick="expandCollapse(event, &quot;▶&quot;, &quot;▼&quot;, 0, &quot;collapsing archives&quot;); return false"><span class="sym">▶</span></span><a href="http://dongxicheng.org/2014/08/" title="八月">八月  <span class="monthCount">(1)</span>
+</a>
+        <ul style="display:none" id="collapsArch-2014-8:1">
+        </ul>
+      </li> <!-- close expanded month --> 
+      <li class="collapsing archives"><span title="click to expand" class="collapsing archives expand" onclick="expandCollapse(event, &quot;▶&quot;, &quot;▼&quot;, 0, &quot;collapsing archives&quot;); return false"><span class="sym">▶</span></span><a href="http://dongxicheng.org/2014/07/" title="七月">七月  <span class="monthCount">(2)</span>
+</a>
+        <ul style="display:none" id="collapsArch-2014-7:1">
+        </ul>
+      </li> <!-- close expanded month --> 
+      <li class="collapsing archives"><span title="click to expand" class="collapsing archives expand" onclick="expandCollapse(event, &quot;▶&quot;, &quot;▼&quot;, 0, &quot;collapsing archives&quot;); return false"><span class="sym">▶</span></span><a href="http://dongxicheng.org/2014/06/" title="六月">六月  <span class="monthCount">(1)</span>
+</a>
+        <ul style="display:none" id="collapsArch-2014-6:1">
+        </ul>
+      </li> <!-- close expanded month --> 
+      <li class="collapsing archives"><span title="click to expand" class="collapsing archives expand" onclick="expandCollapse(event, &quot;▶&quot;, &quot;▼&quot;, 0, &quot;collapsing archives&quot;); return false"><span class="sym">▶</span></span><a href="http://dongxicheng.org/2014/04/" title="四月">四月  <span class="monthCount">(3)</span>
+</a>
+        <ul style="display:none" id="collapsArch-2014-4:1">
+        </ul>
+      </li> <!-- close expanded month --> 
+      <li class="collapsing archives"><span title="click to expand" class="collapsing archives expand" onclick="expandCollapse(event, &quot;▶&quot;, &quot;▼&quot;, 0, &quot;collapsing archives&quot;); return false"><span class="sym">▶</span></span><a href="http://dongxicheng.org/2014/03/" title="三月">三月  <span class="monthCount">(7)</span>
+</a>
+        <ul style="display:none" id="collapsArch-2014-3:1">
+        </ul>
+      </li> <!-- close expanded month --> 
+      <li class="collapsing archives"><span title="click to expand" class="collapsing archives expand" onclick="expandCollapse(event, &quot;▶&quot;, &quot;▼&quot;, 0, &quot;collapsing archives&quot;); return false"><span class="sym">▶</span></span><a href="http://dongxicheng.org/2014/02/" title="二月">二月  <span class="monthCount">(2)</span>
+</a>
+        <ul style="display:none" id="collapsArch-2014-2:1">
+        </ul>
+      </li> <!-- close expanded month --> 
+      <li class="collapsing archives"><span title="click to expand" class="collapsing archives expand" onclick="expandCollapse(event, &quot;▶&quot;, &quot;▼&quot;, 0, &quot;collapsing archives&quot;); return false"><span class="sym">▶</span></span><a href="http://dongxicheng.org/2014/01/" title="一月">一月  <span class="monthCount">(1)</span>
+</a>
+        <ul style="display:none" id="collapsArch-2014-1:1">
+        </ul>
+      </li> <!-- close expanded month --> 
+    </ul>
+  </li> <!-- end year -->
+  <li class="collapsing archives"><span title="click to expand" class="collapsing archives expand" onclick="expandCollapse(event, &quot;▶&quot;, &quot;▼&quot;, 0,&quot;collapsing archives&quot;); return false"><span class="sym">▶</span></span><a href="http://dongxicheng.org/2013/">2013  <span class="yearCount">(106)</span>
+</a>
+    <ul style="display:none" id="collapsArch-2013:1">
+      <li class="collapsing archives"><span title="click to expand" class="collapsing archives expand" onclick="expandCollapse(event, &quot;▶&quot;, &quot;▼&quot;, 0, &quot;collapsing archives&quot;); return false"><span class="sym">▶</span></span><a href="http://dongxicheng.org/2013/12/" title="十二月">十二月  <span class="monthCount">(9)</span>
+</a>
+        <ul style="display:none" id="collapsArch-2013-12:1">
+        </ul>
+      </li> <!-- close expanded month --> 
+      <li class="collapsing archives"><span title="click to expand" class="collapsing archives expand" onclick="expandCollapse(event, &quot;▶&quot;, &quot;▼&quot;, 0, &quot;collapsing archives&quot;); return false"><span class="sym">▶</span></span><a href="http://dongxicheng.org/2013/11/" title="十一月">十一月  <span class="monthCount">(16)</span>
+</a>
+        <ul style="display:none" id="collapsArch-2013-11:1">
+        </ul>
+      </li> <!-- close expanded month --> 
+      <li class="collapsing archives"><span title="click to expand" class="collapsing archives expand" onclick="expandCollapse(event, &quot;▶&quot;, &quot;▼&quot;, 0, &quot;collapsing archives&quot;); return false"><span class="sym">▶</span></span><a href="http://dongxicheng.org/2013/10/" title="十月">十月  <span class="monthCount">(8)</span>
+</a>
+        <ul style="display:none" id="collapsArch-2013-10:1">
+        </ul>
+      </li> <!-- close expanded month --> 
+      <li class="collapsing archives"><span title="click to expand" class="collapsing archives expand" onclick="expandCollapse(event, &quot;▶&quot;, &quot;▼&quot;, 0, &quot;collapsing archives&quot;); return false"><span class="sym">▶</span></span><a href="http://dongxicheng.org/2013/09/" title="九月">九月  <span class="monthCount">(1)</span>
+</a>
+        <ul style="display:none" id="collapsArch-2013-9:1">
+        </ul>
+      </li> <!-- close expanded month --> 
+      <li class="collapsing archives"><span title="click to expand" class="collapsing archives expand" onclick="expandCollapse(event, &quot;▶&quot;, &quot;▼&quot;, 0, &quot;collapsing archives&quot;); return false"><span class="sym">▶</span></span><a href="http://dongxicheng.org/2013/08/" title="八月">八月  <span class="monthCount">(9)</span>
+</a>
+        <ul style="display:none" id="collapsArch-2013-8:1">
+        </ul>
+      </li> <!-- close expanded month --> 
+      <li class="collapsing archives"><span title="click to expand" class="collapsing archives expand" onclick="expandCollapse(event, &quot;▶&quot;, &quot;▼&quot;, 0, &quot;collapsing archives&quot;); return false"><span class="sym">▶</span></span><a href="http://dongxicheng.org/2013/07/" title="七月">七月  <span class="monthCount">(3)</span>
+</a>
+        <ul style="display:none" id="collapsArch-2013-7:1">
+        </ul>
+      </li> <!-- close expanded month --> 
+      <li class="collapsing archives"><span title="click to expand" class="collapsing archives expand" onclick="expandCollapse(event, &quot;▶&quot;, &quot;▼&quot;, 0, &quot;collapsing archives&quot;); return false"><span class="sym">▶</span></span><a href="http://dongxicheng.org/2013/06/" title="六月">六月  <span class="monthCount">(9)</span>
+</a>
+        <ul style="display:none" id="collapsArch-2013-6:1">
+        </ul>
+      </li> <!-- close expanded month --> 
+      <li class="collapsing archives"><span title="click to expand" class="collapsing archives expand" onclick="expandCollapse(event, &quot;▶&quot;, &quot;▼&quot;, 0, &quot;collapsing archives&quot;); return false"><span class="sym">▶</span></span><a href="http://dongxicheng.org/2013/05/" title="五月">五月  <span class="monthCount">(4)</span>
+</a>
+        <ul style="display:none" id="collapsArch-2013-5:1">
+        </ul>
+      </li> <!-- close expanded month --> 
+      <li class="collapsing archives"><span title="click to expand" class="collapsing archives expand" onclick="expandCollapse(event, &quot;▶&quot;, &quot;▼&quot;, 0, &quot;collapsing archives&quot;); return false"><span class="sym">▶</span></span><a href="http://dongxicheng.org/2013/04/" title="四月">四月  <span class="monthCount">(2)</span>
+</a>
+        <ul style="display:none" id="collapsArch-2013-4:1">
+        </ul>
+      </li> <!-- close expanded month --> 
+      <li class="collapsing archives"><span title="click to expand" class="collapsing archives expand" onclick="expandCollapse(event, &quot;▶&quot;, &quot;▼&quot;, 0, &quot;collapsing archives&quot;); return false"><span class="sym">▶</span></span><a href="http://dongxicheng.org/2013/03/" title="三月">三月  <span class="monthCount">(10)</span>
+</a>
+        <ul style="display:none" id="collapsArch-2013-3:1">
+        </ul>
+      </li> <!-- close expanded month --> 
+      <li class="collapsing archives"><span title="click to expand" class="collapsing archives expand" onclick="expandCollapse(event, &quot;▶&quot;, &quot;▼&quot;, 0, &quot;collapsing archives&quot;); return false"><span class="sym">▶</span></span><a href="http://dongxicheng.org/2013/02/" title="二月">二月  <span class="monthCount">(21)</span>
+</a>
+        <ul style="display:none" id="collapsArch-2013-2:1">
+        </ul>
+      </li> <!-- close expanded month --> 
+      <li class="collapsing archives"><span title="click to expand" class="collapsing archives expand" onclick="expandCollapse(event, &quot;▶&quot;, &quot;▼&quot;, 0, &quot;collapsing archives&quot;); return false"><span class="sym">▶</span></span><a href="http://dongxicheng.org/2013/01/" title="一月">一月  <span class="monthCount">(14)</span>
+</a>
+        <ul style="display:none" id="collapsArch-2013-1:1">
+        </ul>
+      </li> <!-- close expanded month --> 
+    </ul>
+  </li> <!-- end year -->
+  <li class="collapsing archives"><span title="click to expand" class="collapsing archives expand" onclick="expandCollapse(event, &quot;▶&quot;, &quot;▼&quot;, 0,&quot;collapsing archives&quot;); return false"><span class="sym">▶</span></span><a href="http://dongxicheng.org/2012/">2012  <span class="yearCount">(31)</span>
+</a>
+    <ul style="display:none" id="collapsArch-2012:1">
+      <li class="collapsing archives"><span title="click to expand" class="collapsing archives expand" onclick="expandCollapse(event, &quot;▶&quot;, &quot;▼&quot;, 0, &quot;collapsing archives&quot;); return false"><span class="sym">▶</span></span><a href="http://dongxicheng.org/2012/12/" title="十二月">十二月  <span class="monthCount">(8)</span>
+</a>
+        <ul style="display:none" id="collapsArch-2012-12:1">
+        </ul>
+      </li> <!-- close expanded month --> 
+      <li class="collapsing archives"><span title="click to expand" class="collapsing archives expand" onclick="expandCollapse(event, &quot;▶&quot;, &quot;▼&quot;, 0, &quot;collapsing archives&quot;); return false"><span class="sym">▶</span></span><a href="http://dongxicheng.org/2012/11/" title="十一月">十一月  <span class="monthCount">(1)</span>
+</a>
+        <ul style="display:none" id="collapsArch-2012-11:1">
+        </ul>
+      </li> <!-- close expanded month --> 
+      <li class="collapsing archives"><span title="click to expand" class="collapsing archives expand" onclick="expandCollapse(event, &quot;▶&quot;, &quot;▼&quot;, 0, &quot;collapsing archives&quot;); return false"><span class="sym">▶</span></span><a href="http://dongxicheng.org/2012/05/" title="五月">五月  <span class="monthCount">(1)</span>
+</a>
+        <ul style="display:none" id="collapsArch-2012-5:1">
+        </ul>
+      </li> <!-- close expanded month --> 
+      <li class="collapsing archives"><span title="click to expand" class="collapsing archives expand" onclick="expandCollapse(event, &quot;▶&quot;, &quot;▼&quot;, 0, &quot;collapsing archives&quot;); return false"><span class="sym">▶</span></span><a href="http://dongxicheng.org/2012/04/" title="四月">四月  <span class="monthCount">(9)</span>
+</a>
+        <ul style="display:none" id="collapsArch-2012-4:1">
+        </ul>
+      </li> <!-- close expanded month --> 
+      <li class="collapsing archives"><span title="click to expand" class="collapsing archives expand" onclick="expandCollapse(event, &quot;▶&quot;, &quot;▼&quot;, 0, &quot;collapsing archives&quot;); return false"><span class="sym">▶</span></span><a href="http://dongxicheng.org/2012/03/" title="三月">三月  <span class="monthCount">(5)</span>
+</a>
+        <ul style="display:none" id="collapsArch-2012-3:1">
+        </ul>
+      </li> <!-- close expanded month --> 
+      <li class="collapsing archives"><span title="click to expand" class="collapsing archives expand" onclick="expandCollapse(event, &quot;▶&quot;, &quot;▼&quot;, 0, &quot;collapsing archives&quot;); return false"><span class="sym">▶</span></span><a href="http://dongxicheng.org/2012/02/" title="二月">二月  <span class="monthCount">(7)</span>
+</a>
+        <ul style="display:none" id="collapsArch-2012-2:1">
+        </ul>
+      </li> <!-- close expanded month --> 
+    </ul>
+  </li> <!-- end year -->
+  <li class="collapsing archives"><span title="click to expand" class="collapsing archives expand" onclick="expandCollapse(event, &quot;▶&quot;, &quot;▼&quot;, 0,&quot;collapsing archives&quot;); return false"><span class="sym">▶</span></span><a href="http://dongxicheng.org/2011/">2011  <span class="yearCount">(90)</span>
+</a>
+    <ul style="display:none" id="collapsArch-2011:1">
+      <li class="collapsing archives"><span title="click to expand" class="collapsing archives expand" onclick="expandCollapse(event, &quot;▶&quot;, &quot;▼&quot;, 0, &quot;collapsing archives&quot;); return false"><span class="sym">▶</span></span><a href="http://dongxicheng.org/2011/12/" title="十二月">十二月  <span class="monthCount">(8)</span>
+</a>
+        <ul style="display:none" id="collapsArch-2011-12:1">
+        </ul>
+      </li> <!-- close expanded month --> 
+      <li class="collapsing archives"><span title="click to expand" class="collapsing archives expand" onclick="expandCollapse(event, &quot;▶&quot;, &quot;▼&quot;, 0, &quot;collapsing archives&quot;); return false"><span class="sym">▶</span></span><a href="http://dongxicheng.org/2011/11/" title="十一月">十一月  <span class="monthCount">(4)</span>
+</a>
+        <ul style="display:none" id="collapsArch-2011-11:1">
+        </ul>
+      </li> <!-- close expanded month --> 
+      <li class="collapsing archives"><span title="click to expand" class="collapsing archives expand" onclick="expandCollapse(event, &quot;▶&quot;, &quot;▼&quot;, 0, &quot;collapsing archives&quot;); return false"><span class="sym">▶</span></span><a href="http://dongxicheng.org/2011/09/" title="九月">九月  <span class="monthCount">(3)</span>
+</a>
+        <ul style="display:none" id="collapsArch-2011-9:1">
+        </ul>
+      </li> <!-- close expanded month --> 
+      <li class="collapsing archives"><span title="click to expand" class="collapsing archives expand" onclick="expandCollapse(event, &quot;▶&quot;, &quot;▼&quot;, 0, &quot;collapsing archives&quot;); return false"><span class="sym">▶</span></span><a href="http://dongxicheng.org/2011/08/" title="八月">八月  <span class="monthCount">(12)</span>
+</a>
+        <ul style="display:none" id="collapsArch-2011-8:1">
+        </ul>
+      </li> <!-- close expanded month --> 
+      <li class="collapsing archives"><span title="click to expand" class="collapsing archives expand" onclick="expandCollapse(event, &quot;▶&quot;, &quot;▼&quot;, 0, &quot;collapsing archives&quot;); return false"><span class="sym">▶</span></span><a href="http://dongxicheng.org/2011/07/" title="七月">七月  <span class="monthCount">(14)</span>
+</a>
+        <ul style="display:none" id="collapsArch-2011-7:1">
+        </ul>
+      </li> <!-- close expanded month --> 
+      <li class="collapsing archives"><span title="click to expand" class="collapsing archives expand" onclick="expandCollapse(event, &quot;▶&quot;, &quot;▼&quot;, 0, &quot;collapsing archives&quot;); return false"><span class="sym">▶</span></span><a href="http://dongxicheng.org/2011/06/" title="六月">六月  <span class="monthCount">(10)</span>
+</a>
+        <ul style="display:none" id="collapsArch-2011-6:1">
+        </ul>
+      </li> <!-- close expanded month --> 
+      <li class="collapsing archives"><span title="click to expand" class="collapsing archives expand" onclick="expandCollapse(event, &quot;▶&quot;, &quot;▼&quot;, 0, &quot;collapsing archives&quot;); return false"><span class="sym">▶</span></span><a href="http://dongxicheng.org/2011/05/" title="五月">五月  <span class="monthCount">(10)</span>
+</a>
+        <ul style="display:none" id="collapsArch-2011-5:1">
+        </ul>
+      </li> <!-- close expanded month --> 
+      <li class="collapsing archives"><span title="click to expand" class="collapsing archives expand" onclick="expandCollapse(event, &quot;▶&quot;, &quot;▼&quot;, 0, &quot;collapsing archives&quot;); return false"><span class="sym">▶</span></span><a href="http://dongxicheng.org/2011/04/" title="四月">四月  <span class="monthCount">(20)</span>
+</a>
+        <ul style="display:none" id="collapsArch-2011-4:1">
+        </ul>
+      </li> <!-- close expanded month --> 
+      <li class="collapsing archives"><span title="click to expand" class="collapsing archives expand" onclick="expandCollapse(event, &quot;▶&quot;, &quot;▼&quot;, 0, &quot;collapsing archives&quot;); return false"><span class="sym">▶</span></span><a href="http://dongxicheng.org/2011/03/" title="三月">三月  <span class="monthCount">(9)</span>
+</a>
+        <ul style="display:none" id="collapsArch-2011-3:1">
+        </ul>
+      </li> <!-- close month -->
+  </ul></li> <!-- end of collapsing archives --><li style="display:none"><script type="text/javascript">
+// <![CDATA[
+/* These variables are part of the Collapsing Archives Plugin
+   * version: 1.3.2
+   * revision: $Id: collapsArch.php 328345 2011-01-03 18:33:01Z robfelty $
+   * Copyright 2008 Robert Felty (robfelty.com)
+           */
+var expandSym="<img src='/wp-content/plugins/collapsing-archives/img/expand.gif' alt='expand' />";
+var collapseSym="<img src='/wp-content/plugins/collapsing-archives/img/collapse.gif' alt='collapse' />";
+try { collapsItems['catTest'] = 'test'; } catch (err) { collapsItems = new Object(); }
+collapsItems['collapsArch-2015-9:1'] = '';
+collapsItems['collapsArch-2015-8:1'] = '          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce-nextgen/yarn-mesos-borg/\' title=\'Apache YARN/Mesos与Google Borg差距多远？\'>Apache YARN/Mesos与Google Borg差距多远？</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/framework-on-yarn/hadoop-spark-common-parameters/\' title=\'Hadoop与Spark常用配置参数总结\'>Hadoop与Spark常用配置参数总结</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce-nextgen/voidbox-docker-on-yarn/\' title=\'Voidbox: Docker on YARN在Hulu的实现\'>Voidbox: Docker on YARN在Hulu的实现</a></li>';
+collapsItems['collapsArch-2015-5:1'] = '          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce-nextgen/columnar-storage-parquet-and-orc/\' title=\'大数据开源列式存储引擎Parquet和ORC\'>大数据开源列式存储引擎Parquet和ORC</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce-nextgen/hadoop-2-7-0-release/\' title=\'吊炸天：hadoop 2.7.0版本发布\'>吊炸天：hadoop 2.7.0版本发布</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/apache-mesos/mesos-and-yarn/\' title=\'Mesos：一个开源的分布式弹性资源管理系统\'>Mesos：一个开源的分布式弹性资源管理系统</a></li>';
+collapsItems['collapsArch-2015-4:1'] = '          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce-nextgen/quality-of-hadoop-code/\' title=\'hadoop的源代码写的怎么样?\'>hadoop的源代码写的怎么样?</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce-nextgen/how-to-read-hadoop-code-effectively/\' title=\'如何高效的阅读hadoop源代码？\'>如何高效的阅读hadoop源代码？</a></li>';
+collapsItems['collapsArch-2015-3:1'] = '          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce-nextgen/hadoop-yarn-label-based-scheduling/\' title=\'Hadoop YARN新特性—label based scheduling\'>Hadoop YARN新特性—label based scheduling</a></li>';
+collapsItems['collapsArch-2014-12:1'] = '          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce-nextgen/hadoop-configuration-usage/\' title=\'记录一个Hadoop Configuration易产生的误用\'>记录一个Hadoop Configuration易产生的误用</a></li>';
+collapsItems['collapsArch-2014-8:1'] = '          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce-nextgen/hadoop-yarn-resource-isolation/\' title=\'浅谈Hadoop YARN资源隔离机制\'>浅谈Hadoop YARN资源隔离机制</a></li>';
+collapsItems['collapsArch-2014-7:1'] = '          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce-nextgen/apache-twill-for-yarn/\' title=\'Apache Twill—YARN上应用程序开发包\'>Apache Twill—YARN上应用程序开发包</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce-nextgen/apache-slider-for-yarn/\' title=\'Apache Slider—将已有服务或者应用运行在YARN上\'>Apache Slider—将已有服务或者应用运行在YARN上</a></li>';
+collapsItems['collapsArch-2014-6:1'] = '          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/framework-on-yarn/spark-on-yarn-challenge/\' title=\'spark on yarn的技术挑战\'>spark on yarn的技术挑战</a></li>';
+collapsItems['collapsArch-2014-4:1'] = '          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce-nextgen/hadoop-yarn-recently-new-features/\' title=\'Hadoop YARN最近几个新特性\'>Hadoop YARN最近几个新特性</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/framework-on-yarn/apache-spark-intellij-idea/\' title=\'Apache Spark探秘：利用Intellij IDEA构建开发环境\'>Apache Spark探秘：利用Intellij IDEA构建开发环境</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce-nextgen/hadoop-2-4-0-new-features/\' title=\'Hadoop 2.4.0版本发布了\'>Hadoop 2.4.0版本发布了</a></li>';
+collapsItems['collapsArch-2014-3:1'] = '          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/framework-on-yarn/apache-spark-join-two-tables/\' title=\'Apache Spark探秘：实现Map-side Join和Reduce-side Join\'>Apache Spark探秘：实现Map-side Join和Reduce-side Join</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/framework-on-yarn/apache-spark-multi-threads-model/\' title=\'Apache Spark探秘：多进程模型还是多线程模型？\'>Apache Spark探秘：多进程模型还是多线程模型？</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/framework-on-yarn/apache-spark-shuffle-details/\' title=\'Apache Spark探秘：Spark Shuffle实现\'>Apache Spark探秘：Spark Shuffle实现</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/framework-on-yarn/apache-spark-comparing-three-deploying-ways/\' title=\'Apache Spark探秘：三种分布式部署方式比较\'>Apache Spark探秘：三种分布式部署方式比较</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce-nextgen/hadoop-secure-impersonation/\' title=\'Hadoop 2.0中用户安全伪装/模仿机制实现原理\'>Hadoop 2.0中用户安全伪装/模仿机制实现原理</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce-nextgen/hadoop-distributedcache-details/\' title=\'Hadoop DistributedCache详解\'>Hadoop DistributedCache详解</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce-nextgen/hadoop-streaming-process-binary-data/\' title=\'利用Hadoop Streaming处理二进制格式文件\'>利用Hadoop Streaming处理二进制格式文件</a></li>';
+collapsItems['collapsArch-2014-2:1'] = '          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce-nextgen/hadoop-streaming-examples/\' title=\'Hadoop Streaming编程实例\'>Hadoop Streaming编程实例</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce-nextgen/hadoop-2-3-0-new-features/\' title=\'解析Hadoop 2.3.0版本的新特性\'>解析Hadoop 2.3.0版本的新特性</a></li>';
+collapsItems['collapsArch-2014-1:1'] = '          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce-nextgen/hadoop-2-new-feature-and-development/\' title=\'Hadoop 2.0近期的几项进展\'>Hadoop 2.0近期的几项进展</a></li>';
+collapsItems['collapsArch-2013-12:1'] = '          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/framework-on-yarn/spark-scala-writing-application/\' title=\'Apache Spark学习：利用Scala语言开发Spark应用程序\'>Apache Spark学习：利用Scala语言开发Spark应用程序</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/framework-on-yarn/spark-eclipse-ide/\' title=\'Apache Spark学习：利用Eclipse构建Spark集成开发环境\'>Apache Spark学习：利用Eclipse构建Spark集成开发环境</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/framework-on-yarn/build-spark-on-hadoop-2-yarn/\' title=\'Apache Spark学习：将Spark部署到Hadoop 2.2.0上\'>Apache Spark学习：将Spark部署到Hadoop 2.2.0上</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/hadoop-internals/hadoop-yarn-architecture-and-future/\' title=\'Hadoop YARN 基本架构和发展趋势\'>Hadoop YARN 基本架构和发展趋势</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/hadoop-internals/hadoop-internals-yarn/\' title=\'《Hadoop技术内幕：深入解析YARN架构设计与实现原理》（前三章试读）电子版下载\'>《Hadoop技术内幕：深入解析YARN架构设计与实现原理》（前三章试读）电子版下载</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce-nextgen/hadoop-yarn-problems-vs-solutions/\' title=\'Hadoop YARN常见问题以及解决方案\'>Hadoop YARN常见问题以及解决方案</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/hadoop-internals/weixin-hadoop123-notes/\' title=\'微信hadoop123的所有hadoop文章列表\'>微信hadoop123的所有hadoop文章列表</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce-nextgen/hadoop-logs-placement/\' title=\'Hadoop日志到底存在哪里？\'>Hadoop日志到底存在哪里？</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce-nextgen/hadoop-mapreduce-fault-tolerance-analysis/\' title=\'Hadoop MapReduce两种常见的容错场景分析\'>Hadoop MapReduce两种常见的容错场景分析</a></li>';
+collapsItems['collapsArch-2013-11:1'] = '          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/hadoop-hdfs/hdfs-ha-federation-deploy/\' title=\'HDFS HA和Federation安装部署方法\'>HDFS HA和Federation安装部署方法</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce-nextgen/hadoop-yarn-ha-in-cdh5/\' title=\'Hadoop YARN单点故障解决方案（HA）介绍\'>Hadoop YARN单点故障解决方案（HA）介绍</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce-nextgen/hadoop-2-0-jobhistory-log/\' title=\'Hadoop 2.0中作业日志收集原理以及配置方法\'>Hadoop 2.0中作业日志收集原理以及配置方法</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/hadoop-internals/hadoop-internals-yarn-chapter-3/\' title=\'Hadoop技术内幕(YARN)第3章问题讨论\'>Hadoop技术内幕(YARN)第3章问题讨论</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/hadoop-internals/hadoop-internals-yarn-chapter-4/\' title=\'Hadoop技术内幕(YARN)第4章问题讨论\'>Hadoop技术内幕(YARN)第4章问题讨论</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/hadoop-internals/hadoop-internals-yarn-chapter-5/\' title=\'Hadoop技术内幕(YARN)第5章问题讨论\'>Hadoop技术内幕(YARN)第5章问题讨论</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/hadoop-internals/hadoop-internals-yarn-chapter-6/\' title=\'Hadoop技术内幕(YARN)第6章问题讨论\'>Hadoop技术内幕(YARN)第6章问题讨论</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/hadoop-internals/hadoop-internals-yarn-chapter-7/\' title=\'Hadoop技术内幕(YARN)第7章问题讨论\'>Hadoop技术内幕(YARN)第7章问题讨论</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/hadoop-internals/hadoop-internals-yarn-chapter-8/\' title=\'Hadoop技术内幕(YARN)第8章问题讨论\'>Hadoop技术内幕(YARN)第8章问题讨论</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce-nextgen/hadoop-yarn-memory-cpu-scheduling/\' title=\'Hadoop YARN中内存和CPU两种资源的调度和隔离\'>Hadoop YARN中内存和CPU两种资源的调度和隔离</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce-nextgen/hadoop-yarn-configurations-capacity-scheduler/\' title=\'Hadoop YARN配置参数剖析(5)—Capacity Scheduler相关参数\'>Hadoop YARN配置参数剖析(5)—Capacity Scheduler相关参数</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce-nextgen/hadoop-yarn-configurations-fair-scheduler/\' title=\'Hadoop YARN配置参数剖析(4)—Fair Scheduler相关参数\'>Hadoop YARN配置参数剖析(4)—Fair Scheduler相关参数</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce-nextgen/hadoop-yarn-configurations-mapreduce/\' title=\'Hadoop YARN配置参数剖析(3)—MapReduce相关参数\'>Hadoop YARN配置参数剖析(3)—MapReduce相关参数</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce-nextgen/hadoop-yarn-configurations-log-aggregation/\' title=\'Hadoop YARN配置参数剖析(2)—权限与日志聚集相关参数\'>Hadoop YARN配置参数剖析(2)—权限与日志聚集相关参数</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce-nextgen/hadoop-yarn-configurations-resourcemanager-nodemanager/\' title=\'Hadoop YARN配置参数剖析(1)—RM与NM相关参数\'>Hadoop YARN配置参数剖析(1)—RM与NM相关参数</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/hadoop-hdfs/hadoop-hdfs-distcp-fastcopy/\' title=\'浅析Hadoop中的DistCp和FastCopy\'>浅析Hadoop中的DistCp和FastCopy</a></li>';
+collapsItems['collapsArch-2013-10:1'] = '          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce-nextgen/hadoop-2-0-unsolved-problems/\' title=\'Hadoop 2.0还存在哪些问题\'>Hadoop 2.0还存在哪些问题</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/hadoop-hdfs/hdfs-federation-viewfs/\' title=\'HDFS Federation客户端(viewfs)配置攻略\'>HDFS Federation客户端(viewfs)配置攻略</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce-nextgen/hadoop-upgrade-to-version-2-2/\' title=\'Hadoop升级方案（二）：从Hadoop 1.0升级到2.0（2）\'>Hadoop升级方案（二）：从Hadoop 1.0升级到2.0（2）</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce-nextgen/hadoop-upgrade-to-version-2/\' title=\'Hadoop升级方案（二）：从Hadoop 1.0升级到2.0（1）\'>Hadoop升级方案（二）：从Hadoop 1.0升级到2.0（1）</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce-nextgen/hadoop-upgrade-in-version-1/\' title=\'Hadoop升级方案（一）：Hadoop 1.0内部版本升级（初稿）\'>Hadoop升级方案（一）：Hadoop 1.0内部版本升级（初稿）</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce-nextgen/understand-yarn-container-concept/\' title=\'深入理解Hadoop YARN中的Container概念\'>深入理解Hadoop YARN中的Container概念</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce-nextgen/hadoop-2-2-0/\' title=\'Hadoop 2.0稳定版本2.2.0新特性剖析\'>Hadoop 2.0稳定版本2.2.0新特性剖析</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce-nextgen/apache-hadoop-yarn-paper-on-socc2013/\' title=\'论文&quot;Apache Hadoop YARN: Yet Another Resource Negotiator&quot;解析\'>论文&quot;Apache Hadoop YARN: Yet Another Resource Negotiator&quot;解析</a></li>';
+collapsItems['collapsArch-2013-9:1'] = '          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce-nextgen/hadoop-distribution-selection/\' title=\'Hadoop发行版选择\'>Hadoop发行版选择</a></li>';
+collapsItems['collapsArch-2013-8:1'] = '          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce-nextgen/hadoop-yarn-hdfs-material/\' title=\'Hadoop 2.0(YARN/HDFS)学习资料汇总\'>Hadoop 2.0(YARN/HDFS)学习资料汇总</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/framework-on-yarn/distributed-computing-framework-on-yarn/\' title=\'运行在YARN上的计算框架\'>运行在YARN上的计算框架</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce-nextgen/hadoop-yarn-security/\' title=\'Hadoop 2.0 (YARN)中的安全机制概述\'>Hadoop 2.0 (YARN)中的安全机制概述</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce-nextgen/apache-tez-newest-progress/\' title=\'Apache Tez最新进展\'>Apache Tez最新进展</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce-nextgen/hadoop-2-0-ha/\' title=\'Hadoop 2.0中单点故障解决方案总结\'>Hadoop 2.0中单点故障解决方案总结</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce-nextgen/hadoop-1-and-2-resource-manage/\' title=\'Hadoop 1.0与Hadoop 2.0资源管理方案对比\'>Hadoop 1.0与Hadoop 2.0资源管理方案对比</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce-nextgen/mrv1-mrv2-api-compatibility/\' title=\'浅析MRv1与MRv2的API兼容性\'>浅析MRv1与MRv2的API兼容性</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce-nextgen/hadoop-2-1-0-beta/\' title=\'Apache Hadoop 2.1.0-beta已经发布\'>Apache Hadoop 2.1.0-beta已经发布</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce-nextgen/hadoop-2-0-capacity-scheduler-fair-scheduler/\' title=\'Hadoop 2.0中Capacity Scheduler与Fair Scheduler对比\'>Hadoop 2.0中Capacity Scheduler与Fair Scheduler对比</a></li>';
+collapsItems['collapsArch-2013-7:1'] = '          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce-nextgen/tez-yarn-dag/\' title=\'Tez：运行在YARN上的DAG计算框架\'>Tez：运行在YARN上的DAG计算框架</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce-nextgen/hive-tuning/\' title=\'Hive调优以及发展趋势\'>Hive调优以及发展趋势</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce-nextgen/storm-on-yarn/\' title=\'Storm On YARN\'>Storm On YARN</a></li>';
+collapsItems['collapsArch-2013-6:1'] = '          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce-nextgen/hadoop-2-0-yarn-now-and-future/\' title=\'Hadoop 2.0基本架构和发展趋势\'>Hadoop 2.0基本架构和发展趋势</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce-nextgen/run-systems-on-hadoop-yarn/\' title=\'汇总运行在Hadoop YARN上的开源系统\'>汇总运行在Hadoop YARN上的开源系统</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce-nextgen/hadoop-jira-yarn-3/\' title=\'Hadoop 新特性、改进、优化和Bug分析系列5：YARN-3\'>Hadoop 新特性、改进、优化和Bug分析系列5：YARN-3</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce-nextgen/hadoop-jira-yarn-326-yarn-2/\' title=\'Hadoop 新特性、改进、优化和Bug分析系列4：YARN-326, YARN-2\'>Hadoop 新特性、改进、优化和Bug分析系列4：YARN-326, YARN-2</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce-nextgen/hadoop-jira-yarn-392/\' title=\'Hadoop 新特性、改进、优化和Bug分析系列3：YARN-392\'>Hadoop 新特性、改进、优化和Bug分析系列3：YARN-392</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce-nextgen/hadoop-jira-yarn-45/\' title=\'Hadoop 新特性、改进、优化和Bug分析系列2：YARN-45\'>Hadoop 新特性、改进、优化和Bug分析系列2：YARN-45</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce-nextgen/hadoop-jira-yarn-378/\' title=\'Hadoop 新特性、改进、优化和Bug分析系列1：YARN-378\'>Hadoop 新特性、改进、优化和Bug分析系列1：YARN-378</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce-nextgen/understand-hadoop-yarn-from-os-view/\' title=\'从传统操作系统角度理解Hadoop YARN\'>从传统操作系统角度理解Hadoop YARN</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce-nextgen/hadoope-every-day/\' title=\'Hadoop每日一讨论整理版\'>Hadoop每日一讨论整理版</a></li>';
+collapsItems['collapsArch-2013-5:1'] = '          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce-nextgen/use-hadoop-yarn-to-build-a-cloud-system/\' title=\'利用下一代Hadoop YARN构建轻量级弹性计算平台\'>利用下一代Hadoop YARN构建轻量级弹性计算平台</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce-nextgen/rethinking-hadoop-from-problems-solved/\' title=\'从问题域出发认识Hadoop生态系统\'>从问题域出发认识Hadoop生态系统</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce-nextgen/hadoop-internals-mapreduce-reference/\' title=\'《Hadoop技术内幕:深入解析MapReduce架构设计与实现原理》一书的参考资料 \'>《Hadoop技术内幕:深入解析MapReduce架构设计与实现原理》一书的参考资料 </a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce-nextgen/hadoop-internals-mapreduce/\' title=\'《Hadoop技术内幕：深入解析MapReduce架构设计与实现原理》（前三章试读）电子版下载\'>《Hadoop技术内幕：深入解析MapReduce架构设计与实现原理》（前三章试读）电子版下载</a></li>';
+collapsItems['collapsArch-2013-4:1'] = '          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce-nextgen/google-omega/\' title=\'解析Google集群资源管理系统Omega\'>解析Google集群资源管理系统Omega</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce-nextgen/apache-tajo/\' title=\'Apache Tajo：一个运行在YARN上支持SQL的分布式数据仓库\'>Apache Tajo：一个运行在YARN上支持SQL的分布式数据仓库</a></li>';
+collapsItems['collapsArch-2013-3:1'] = '          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce-nextgen/apache-tez-optimizations/\' title=\'浅谈Apache Tez中的优化技术\'>浅谈Apache Tez中的优化技术</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce-nextgen/apache-tez/\' title=\'Apache Tez：一个运行在YARN之上支持DAG作业的计算框架\'>Apache Tez：一个运行在YARN之上支持DAG作业的计算框架</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/search-engine/thrift-internals/\' title=\'浅谈Thrift内部实现原理\'>浅谈Thrift内部实现原理</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce/hadoop-for-windows/\' title=\'Hadoop For Windows\'>Hadoop For Windows</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/apache-mesos/study-mesos-architecture-in-deep/\' title=\'重新认识Mesos的设计架构\'>重新认识Mesos的设计架构</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/search-engine/thrift-bidirectional-async-rpc/\' title=\'让Thrift支持双向通信\'>让Thrift支持双向通信</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce/cdh4-jobtracker-ha/\' title=\'CDH中的JobTracker HA方案介绍\'>CDH中的JobTracker HA方案介绍</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce-nextgen/borg-yarn-mesos-torca-corona/\' title=\'浅谈Borg/YARN/Mesos/Torca/Corona一类系统\'>浅谈Borg/YARN/Mesos/Torca/Corona一类系统</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce-nextgen/multi-clusters-sharing-resources/\' title=\'多集群下资源共享方案介绍\'>多集群下资源共享方案介绍</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce-nextgen/hadoop-yarn-event-driven/\' title=\'浅谈Hadoop YARN中的事件驱动机制\'>浅谈Hadoop YARN中的事件驱动机制</a></li>';
+collapsItems['collapsArch-2013-2:1'] = '          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce/hadoop-hierarchy-queues/\' title=\'Hadoop层级队列组织方式\'>Hadoop层级队列组织方式</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce/hadoop-rumen-introduction/\' title=\'Hadoop Rumen介绍\'>Hadoop Rumen介绍</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce-nextgen/apache-hadoop-2-0-3-published/\' title=\'Apache Hadoop 2.0.3-alpha发布了\'>Apache Hadoop 2.0.3-alpha发布了</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce-nextgen/yarnmrv2-node-manage-localizedresource-state-machine/\' title=\'YARN/MRv2 Node Manager深入剖析—LocalizedResource状态机分析\'>YARN/MRv2 Node Manager深入剖析—LocalizedResource状态机分析</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce-nextgen/yarnmrv2-node-manager-container-state-machine/\' title=\'YARN/MRv2 Node Manager深入剖析—Container状态机分析\'>YARN/MRv2 Node Manager深入剖析—Container状态机分析</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce-nextgen/yarnmrv2-node-manager-application-state-machine/\' title=\'YARN/MRv2 Node Manager深入剖析—Application状态机分析\'>YARN/MRv2 Node Manager深入剖析—Application状态机分析</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce-nextgen/yarnmrv2-node-manager-container-setup-process/\' title=\'YARN/MRv2 Node Manager深入剖析—Container启动过程分析\'>YARN/MRv2 Node Manager深入剖析—Container启动过程分析</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce-nextgen/yarnmrv2-node-manager-node-health-check/\' title=\'YARN/MRv2 Node Manager深入剖析—节点健康状况检测\'>YARN/MRv2 Node Manager深入剖析—节点健康状况检测</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce-nextgen/yarn-unmanaged-am-implemention/\' title=\'YARN编程实例—Unmanaged AM工作原理介绍\'>YARN编程实例—Unmanaged AM工作原理介绍</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce-nextgen/yarnmrv2-resource-manager-resource-manager/\' title=\'YARN/MRv2 Resource Manager深入剖析—资源调度器\'>YARN/MRv2 Resource Manager深入剖析—资源调度器</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce-nextgen/yarnmrv2-resource-manager-rmnode-state-machine/\' title=\'YARN/MRv2 Resource Manager深入剖析—RMNode状态机分析\'>YARN/MRv2 Resource Manager深入剖析—RMNode状态机分析</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce-nextgen/yarnmrv2-resource-manager-rmcontainer-state-machine/\' title=\'YARN/MRv2 Resource Manager深入剖析—RMContainer状态机分析\'>YARN/MRv2 Resource Manager深入剖析—RMContainer状态机分析</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce-nextgen/yarnmrv2-resource-manager-rmappattempt-state-machine/\' title=\'YARN/MRv2 Resource Manager深入剖析—RMAppAttempt状态机分析\'>YARN/MRv2 Resource Manager深入剖析—RMAppAttempt状态机分析</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce-nextgen/yarnmrv2-resource-manager-rmapp-state-machine/\' title=\'YARN/MRv2 Resource Manager深入剖析—RMApp状态机分析\'>YARN/MRv2 Resource Manager深入剖析—RMApp状态机分析</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce-nextgen/yarnmrv2-resource-manager-nm-manager/\' title=\'YARN/MRv2 Resource Manager深入剖析—NM管理\'>YARN/MRv2 Resource Manager深入剖析—NM管理</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce-nextgen/yarnmrv2-resource-manager-am-manager/\' title=\'YARN/MRv2 Resource Manager深入剖析—AM管理\'>YARN/MRv2 Resource Manager深入剖析—AM管理</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce-nextgen/yarnmrv2-resource-manager-services-and-events/\' title=\'YARN/MRv2 Resource Manager深入剖析—服务与事件处理器\'>YARN/MRv2 Resource Manager深入剖析—服务与事件处理器</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce-nextgen/yarnmrv2-resource-manager-user-interactive-module/\' title=\'YARN/MRv2 Resource Manager深入剖析—用户交互相关模块分析\'>YARN/MRv2 Resource Manager深入剖析—用户交互相关模块分析</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce-nextgen/yarnmrv2-resource-manager-infrastructure/\' title=\'YARN/MRv2 Resource Manager深入剖析—RM总体架构\'>YARN/MRv2 Resource Manager深入剖析—RM总体架构</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce-nextgen/yarnmrv2-rpc-protocal-buffer-advantage/\' title=\'YARN/MRv2 RPC框架深入剖析—引入Protocal Buffer的好处\'>YARN/MRv2 RPC框架深入剖析—引入Protocal Buffer的好处</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce-nextgen/how-to-run-distributedshell/\' title=\'如何运行YARN中的DistributedShell程序\'>如何运行YARN中的DistributedShell程序</a></li>';
+collapsItems['collapsArch-2013-1:1'] = '          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce/hadoop-books/\' title=\'Hadoop书籍和网络资源介绍\'>Hadoop书籍和网络资源介绍</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce-nextgen/yarnmrv2-mrappmaster-job-recovery/\' title=\'YARN/MRv2 MRAppMaster深入剖析—作业恢复\'>YARN/MRv2 MRAppMaster深入剖析—作业恢复</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce-nextgen/yarnmrv2-mrappmaster-speculative-execution/\' title=\'YARN/MRv2 MRAppMaster深入剖析—推测执行机制\'>YARN/MRv2 MRAppMaster深入剖析—推测执行机制</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce-nextgen/yarnmrv2-mrappmaster-containerlauncher/\' title=\'YARN/MRv2 MRAppMaster深入剖析—ContainerLauncher分析\'>YARN/MRv2 MRAppMaster深入剖析—ContainerLauncher分析</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce-nextgen/yarnmrv2-mrappmaster-containerallocator/\' title=\'YARN/MRv2 MRAppMaster深入剖析—ContainerAllocator分析\'>YARN/MRv2 MRAppMaster深入剖析—ContainerAllocator分析</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce-nextgen/yarnmrv2-mrappmaster-job-lifetime/\' title=\'YARN/MRv2 MRAppMaster深入剖析—作业生命周期\'>YARN/MRv2 MRAppMaster深入剖析—作业生命周期</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce-nextgen/yarn-mrappmaster-architecture/\' title=\'YARN/MRv2 MRAppMaster深入剖析—整体架构\'>YARN/MRv2 MRAppMaster深入剖析—整体架构</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce-nextgen/yarn-mrappmaster-introduction/\' title=\'YARN/MRv2 MRAppMaster深入剖析—概述\'>YARN/MRv2 MRAppMaster深入剖析—概述</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce-nextgen/yarn-distributed-shell-client-implementation/\' title=\'YARN编程实例—distributedshell源码分析\'>YARN编程实例—distributedshell源码分析</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce-nextgen/how-to-write-an-yarn-applicationmaster/\' title=\'如何编写YARN应用程序\'>如何编写YARN应用程序</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce-nextgen/hadoop-yarn-install/\' title=\'Hadoop YARN安装部署初探\'>Hadoop YARN安装部署初探</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/hadoop-corona/corona-summary/\' title=\'Corona深入剖析系列-Corona总结\'>Corona深入剖析系列-Corona总结</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/hadoop-corona/corona-clustermanager-details/\' title=\'Corona深入剖析系列—ClusterManager实现\'>Corona深入剖析系列—ClusterManager实现</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/hadoop-corona/corona-coronajobtracker-details/\' title=\'Corona深入剖析系列—CoronaJobTracker实现\'>Corona深入剖析系列—CoronaJobTracker实现</a></li>';
+collapsItems['collapsArch-2012-12:1'] = '          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/hadoop-corona/corona-coronatasktracker-details/\' title=\'Corona深入剖析系列—CoronaTaskTracker实现\'>Corona深入剖析系列—CoronaTaskTracker实现</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce/how-to-improve-hadoop-stablility-and-performance/\' title=\'探究提高Hadoop稳定性与性能的方法\'>探究提高Hadoop稳定性与性能的方法</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce-nextgen/how-to-select-hadoop-versions/\' title=\'Hadoop版本选择探讨\'>Hadoop版本选择探讨</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce-nextgen/hadoop-2-0-terms-explained/\' title=\'Hadoop 2.0中的基本术语解释\'>Hadoop 2.0中的基本术语解释</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce-nextgen/what-can-we-benifit-from-yarn/\' title=\'相比于MRv1，YARN带来的优势是什么？\'>相比于MRv1，YARN带来的优势是什么？</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce-nextgen/nodemanager-container-launch-process/\' title=\'YARNMRv2 Node Manager深入剖析—NodeManager启动Container流程分析\'>YARNMRv2 Node Manager深入剖析—NodeManager启动Container流程分析</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce-nextgen/nodemanager-architecture/\' title=\'YARN/MRv2 Node Manager深入剖析—整体架构\'>YARN/MRv2 Node Manager深入剖析—整体架构</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce/hadoop-contrib/\' title=\'Hadoop contrib介绍\'>Hadoop contrib介绍</a></li>';
+collapsItems['collapsArch-2012-11:1'] = '          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/hadoop-corona/hadoop-corona/\' title=\'Corona深入剖析系列—Hadoop Corona概述\'>Corona深入剖析系列—Hadoop Corona概述</a></li>';
+collapsItems['collapsArch-2012-5:1'] = '          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce-nextgen/apache-hadoop-2-0-alpha/\' title=\'Apache Hadoop 2.0 (Alpha)发布了\'>Apache Hadoop 2.0 (Alpha)发布了</a></li>';
+collapsItems['collapsArch-2012-4:1'] = '          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/search-engine/thrift-for-windows/\' title=\'Thrift for windows\'>Thrift for windows</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/apache-mesos/apache-mesos-task-status-update/\' title=\'Apache Mesos的任务状态更新过程分析\'>Apache Mesos的任务状态更新过程分析</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/apache-mesos/apache-mesos-task-assignment/\' title=\'Apache Mesos的任务分配过程分析\'>Apache Mesos的任务分配过程分析</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/apache-mesos/apache-mesos-framework-executor-registering/\' title=\'Apache Mesos的Framework与Executor注册过程分析\'>Apache Mesos的Framework与Executor注册过程分析</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/apache-mesos/apache-mesos-communications/\' title=\'Apache Mesos模块间通信架构\'>Apache Mesos模块间通信架构</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/apache-mesos/mesos-scheduler/\' title=\'Apache Mesos调度机制\'>Apache Mesos调度机制</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/apache-mesos/meso-architecture/\' title=\'Apache Mesos总体架构\'>Apache Mesos总体架构</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/apache-mesos/mesos-base-libarary/\' title=\'Apache Mesos底层基础库\'>Apache Mesos底层基础库</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/apache-mesos/mesos-libprocess/\' title=\'Apache Mesos底层网络通信库libprocess介绍\'>Apache Mesos底层网络通信库libprocess介绍</a></li>';
+collapsItems['collapsArch-2012-3:1'] = '          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce-nextgen/mesos_vs_yarn/\' title=\'统一资源管理与调度平台（系统）介绍\'>统一资源管理与调度平台（系统）介绍</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce/hadoop-mapreduce-failure-tolerance/\' title=\'Hadoop MapReduce容错性分析\'>Hadoop MapReduce容错性分析</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce/hadoop-speculative-task/\' title=\'Hadoop中Speculative Task调度策略\'>Hadoop中Speculative Task调度策略</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce/hadoop-kerberos-introduction/\' title=\'Hadoop Kerberos安全机制介绍\'>Hadoop Kerberos安全机制介绍</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce/hadoop-security/\' title=\'Hadoop安全机制介绍\'>Hadoop安全机制介绍</a></li>';
+collapsItems['collapsArch-2012-2:1'] = '          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce/run-hadoop-job-problems/\' title=\'运行Hadoop作业时一处常见错误以及解决方法\'>运行Hadoop作业时一处常见错误以及解决方法</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce/hadoop-adjust-heartbeat-interval/\' title=\'调整心跳间隔增加Hadoop小集群吞吐率\'>调整心跳间隔增加Hadoop小集群吞吐率</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce/hadoop-upgrade-hardlinks/\' title=\'Hadoop 升级创建硬链接效率优化\'>Hadoop 升级创建硬链接效率优化</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce-nextgen/resourcemanager-code-details/\' title=\'YARN/MRv2 ResourceManager代码分析\'>YARN/MRv2 ResourceManager代码分析</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce-nextgen/resourcemanager-code-structure/\' title=\'YARN/MRv2 ResourceManager代码结构分析\'>YARN/MRv2 ResourceManager代码结构分析</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce-nextgen/client-codes/\' title=\'YARN/MRv2的Client端代码分析\'>YARN/MRv2的Client端代码分析</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce-nextgen/programming-model/\' title=\'YARN/MR2编程模型介绍\'>YARN/MR2编程模型介绍</a></li>';
+collapsItems['collapsArch-2011-12:1'] = '          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce-nextgen/nextgen-mapreduce-introduction/\' title=\'下一代Apache Hadoop MapReduce框架的架构\'>下一代Apache Hadoop MapReduce框架的架构</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce-nextgen/basic-concepts/\' title=\'YARN/MRv2 中基本术语介绍\'>YARN/MRv2 中基本术语介绍</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce/hadoop-0-21-0-fair-scheduler-source-code/\' title=\'Hadoop 0.21.0 公平调度器源代码分析\'>Hadoop 0.21.0 公平调度器源代码分析</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce/hadoop-0-21-0-fair-scheduler/\' title=\'Hadoop-0.21.0公平调度器算法分析\'>Hadoop-0.21.0公平调度器算法分析</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce/hadoop-resource-aware-scheduler/\' title=\'Hadoop资源感知调度器\'>Hadoop资源感知调度器</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/network/non-block-connect-implemention/\' title=\'非阻塞connect编写方法介绍\'>非阻塞connect编写方法介绍</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce/hadoop-job-memory-control/\' title=\'Hadoop-0.20.2 作业内存控制策略分析\'>Hadoop-0.20.2 作业内存控制策略分析</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce/hdfs-federation-introduction/\' title=\'HDFS Federation设计动机与基本原理\'>HDFS Federation设计动机与基本原理</a></li>';
+collapsItems['collapsArch-2011-11:1'] = '          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/nosql/redis-code-hashtable/\' title=\'Redis源码研究—哈希表\'>Redis源码研究—哈希表</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/nosql/redis-code-architecture/\' title=\'Redis源码研究—代码整体架构\'>Redis源码研究—代码整体架构</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/nosql/redis-code-basic-points/\' title=\'Redis源码研究—基础知识\'>Redis源码研究—基础知识</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/search-engine/system-designing-in-finging-jobs/\' title=\'系统设计面试题思路综述\'>系统设计面试题思路综述</a></li>';
+collapsItems['collapsArch-2011-9:1'] = '          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/os/linux-memory-management-basic/\' title=\'Linux内存管理基本概念\'>Linux内存管理基本概念</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce/hadoop-join-two-tables/\' title=\'Hadoop中两表JOIN的处理方法\'>Hadoop中两表JOIN的处理方法</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce/hadoop-permission-management/\' title=\'Hadoop权限管理\'>Hadoop权限管理</a></li>';
+collapsItems['collapsArch-2011-8:1'] = '          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/data-mining/naive-bayes-in-hadoop/\' title=\'Naïve Bayes分类算法在Hadoop上的实现\'>Naïve Bayes分类算法在Hadoop上的实现</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/structure/knapsack-problems/\' title=\'背包问题应用\'>背包问题应用</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/structure/red-black-tree/\' title=\'数据结构之红黑树\'>数据结构之红黑树</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce/how-to-write-hadoop-schedulers/\' title=\'如何编写Hadoop调度器\'>如何编写Hadoop调度器</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce/hadoop-capacity-scheduler/\' title=\'Hadoop计算能力调度器算法解析\'>Hadoop计算能力调度器算法解析</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/data-mining/hadoop-sampling/\' title=\'Hadoop分布式环境下的数据抽样\'>Hadoop分布式环境下的数据抽样</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/cpp/effective-cpp-part2/\' title=\'《Effective C++》读书笔记（第二部分）\'>《Effective C++》读书笔记（第二部分）</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/cpp/effective-cpp-part1/\' title=\'《Effective C++》读书笔记（第一部分）\'>《Effective C++》读书笔记（第一部分）</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/cpp/effective-stl-part1/\' title=\'《Effective STL》学习笔记（第一部分）\'>《Effective STL》学习笔记（第一部分）</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/cpp/effective-stl-part2/\' title=\'《Effective STL》学习笔记（第二部分）\'>《Effective STL》学习笔记（第二部分）</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/cpp/effective-stl-part3/\' title=\'《Effective STL》学习笔记（第三部分）\'>《Effective STL》学习笔记（第三部分）</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/cpp/effective-stl-part4/\' title=\'《Effective STL》学习笔记（第四部分）\'>《Effective STL》学习笔记（第四部分）</a></li>';
+collapsItems['collapsArch-2011-7:1'] = '          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/cpp/cpp-io/\' title=\'《C++ Primer plus》学习笔记之”输入输出库”\'>《C++ Primer plus》学习笔记之”输入输出库”</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/cpp/cpp-stl/\' title=\'《C++ Primer plus》学习笔记之”标准模板库”\'>《C++ Primer plus》学习笔记之”标准模板库”</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce/hadoop-streaming-advanced-programming/\' title=\'Hadoop Streaming高级编程\'>Hadoop Streaming高级编程</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce/hadoop-pipes-programming/\' title=\'Hadoop pipes编程\'>Hadoop pipes编程</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/cpp/cpp-rtti/\' title=\'《C++ Primer plus》学习笔记之”RTTI”\'>《C++ Primer plus》学习笔记之”RTTI”</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/cpp/cpp-exceptions/\' title=\'《C++ Primer plus》学习笔记之”异常”\'>《C++ Primer plus》学习笔记之”异常”</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/cpp/cpp-code-reusing/\' title=\'《C++ Primer plus》学习笔记之”C++中的代码重用”\'>《C++ Primer plus》学习笔记之”C++中的代码重用”</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/cpp/cpp-inheritance/\' title=\'《C++ Primer plus》学习笔记之”类继承”\'>《C++ Primer plus》学习笔记之”类继承”</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/cpp/cpp-class/\' title=\'《C++ Primer plus》学习笔记之”类”\'>《C++ Primer plus》学习笔记之”类”</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce/hadoop-pipes-architecture/\' title=\'Hadoop pipes设计原理\'>Hadoop pipes设计原理</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/search-engine/thrift-rpc/\' title=\'使用Thrift RPC编写程序\'>使用Thrift RPC编写程序</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/cpp/cpp-functions/\' title=\'《C++ Primer plus》学习笔记之“函数探幽”\'>《C++ Primer plus》学习笔记之“函数探幽”</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/brain/intelligence-problems-2/\' title=\'智力题研究（二）\'>智力题研究（二）</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/brain/intelligence-problems-1/\' title=\'智力题研究（一）\'>智力题研究（一）</a></li>';
+collapsItems['collapsArch-2011-6:1'] = '          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/structure/prime/\' title=\'素数判定算法\'>素数判定算法</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/script/awk-usage/\' title=\'awk使用总结\'>awk使用总结</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/structure/basic-graph-search/\' title=\'算法之图搜索算法(一)\'>算法之图搜索算法(一)</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/structure/permutation-combination/\' title=\'算法之排列与组合算法\'>算法之排列与组合算法</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/script/linux-shell/\' title=\'Linux Shell 命令总结\'>Linux Shell 命令总结</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/search-engine/log-systems/\' title=\'开源日志系统比较\'>开源日志系统比较</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/nosql/cassandra-strategy/\' title=\'Cassandra中的各种策略\'>Cassandra中的各种策略</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/nosql/cassandra-data-model/\' title=\'Cassandra数据模型\'>Cassandra数据模型</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/nosql/cassandra-sql/\' title=\'Cassandra中实现SQL操作\'>Cassandra中实现SQL操作</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/nosql/cassandra-client/\' title=\'Cassandra客户端\'>Cassandra客户端</a></li>';
+collapsItems['collapsArch-2011-5:1'] = '          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/nosql/cassandra-install/\' title=\'Cassandra部署与安装\'>Cassandra部署与安装</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/nosql/cassandra-intro/\' title=\'Cassandra概要介绍\'>Cassandra概要介绍</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/search-engine/thrift-guide/\' title=\'Thrift使用指南\'>Thrift使用指南</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/structure/bitmap/\' title=\'数据结构之位图\'>数据结构之位图</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/big-data/select-ten-from-billions/\' title=\'怎样从10亿查询词找出出现频率最高的10个\'>怎样从10亿查询词找出出现频率最高的10个</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce/writing-hadoop-programes/\' title=\'如何在Hadoop上编写MapReduce程序\'>如何在Hadoop上编写MapReduce程序</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/structure/avl/\' title=\'数据结构之AVL树\'>数据结构之AVL树</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/structure/sort/\' title=\'算法之排序算法\'>算法之排序算法</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/structure/treap/\' title=\'数据结构之Treap\'>数据结构之Treap</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/cluster-managemant/puppet/\' title=\'Puppet使用方法总结\'>Puppet使用方法总结</a></li>';
+collapsItems['collapsArch-2011-4:1'] = '          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce/hadoop-optimization-1/\' title=\'Hadoop平台优化综述（二）\'>Hadoop平台优化综述（二）</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce/hadoop-optimization-0/\' title=\'Hadoop平台优化综述（一）\'>Hadoop平台优化综述（一）</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/structure/heap/\' title=\'数据结构之堆\'>数据结构之堆</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/structure/suffix-array/\' title=\'数据结构之后缀数组\'>数据结构之后缀数组</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/structure/splay-tree/\' title=\'数据结构之伸展树\'>数据结构之伸展树</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/structure/binary_indexed_tree/\' title=\'数据结构之树状数组\'>数据结构之树状数组</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/structure/segment-tree/\' title=\'数据结构之线段树\'>数据结构之线段树</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce/hdfs-small-files-solution/\' title=\'HDFS小文件问题及解决方案\'>HDFS小文件问题及解决方案</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/cpp/ooc/\' title=\'C语言实现封装、继承和多态\'>C语言实现封装、继承和多态</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce/hadoop-gridmix-benchmark/\' title=\'Hadoop Gridmix基准测试\'>Hadoop Gridmix基准测试</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/structure/lca-rmq/\' title=\'算法之LCA与RMQ问题\'>算法之LCA与RMQ问题</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/structure/union-find-set/\' title=\'数据结构之并查集\'>数据结构之并查集</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/structure/trietree/\' title=\'数据结构之Trie树\'>数据结构之Trie树</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/structure/blocklink/\' title=\'数据结构之块状链表\'>数据结构之块状链表</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/cpp/scons-intro-usage/\' title=\'Scons介绍与使用\'>Scons介绍与使用</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/structure/structure-algorithm-summary/\' title=\'数据结构与算法汇总\'>数据结构与算法汇总</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/search-engine/scribe-intro/\' title=\'Scribe日志收集系统介绍\'>Scribe日志收集系统介绍</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce/traditional-mapreduce-framework/\' title=\'传统MapReduce框架\'>传统MapReduce框架</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce/iterative-mapreduce-intro/\' title=\'迭代式MapReduce框架介绍\'>迭代式MapReduce框架介绍</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce/streaming-mapreduce-sphere/\' title=\'流式MapReduce实现Sector/Sphere\'>流式MapReduce实现Sector/Sphere</a></li>';
+collapsItems['collapsArch-2011-3:1'] = '          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/search-engine/scribe-installation/\' title=\'Scribe+HDFS日志收集系统安装方法\'>Scribe+HDFS日志收集系统安装方法</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce/hadoop-terasort-analyse/\' title=\'Hadoop中TeraSort算法分析\'>Hadoop中TeraSort算法分析</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/search-engine/kafka/\' title=\'消息系统Kafka介绍\'>消息系统Kafka介绍</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce/hadoop-streaming-programming/\' title=\'Hadoop Streaming 编程\'>Hadoop Streaming 编程</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce/hadoop-shuffle-phase/\' title=\'Hadoop中shuffle阶段流程分析\'>Hadoop中shuffle阶段流程分析</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce/hadoop-schedulers/\' title=\'Hadoop的调度器总结\'>Hadoop的调度器总结</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/mapreduce/hadoop-fair-scheduler/\' title=\'Hadoop-0.20.2公平调度器算法解析\'>Hadoop-0.20.2公平调度器算法解析</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/search-engine/thrift-framework-intro/\' title=\'Thirft框架介绍\'>Thirft框架介绍</a></li>          <li class=\'collapsing archives item\'><a href=\'http://dongxicheng.org/default/hello-world/\' title=\'Hello world！\'>Hello world！</a></li>';
+// ]]>
+</script></li>
+	</dl>
+
+</div>
+
+</div>
+
+<!-- End sidebar -->
+
+
+
+</div> 
+
+<div id="footer">
+
+ <ul>
+
+ <li class="copyright">
+
+ <p>
+
+  Copyright © 2011-2015 
+		<a href="http://dongxicheng.org/"><b><em>董的博客</em></b></a> All rights reserved.<br>
+
+          Powered by WordPress!. Designed by <a href="http://www.yofox.net/" title="">YOFOX</a>
+
+<script type="text/javascript">var cnzz_protocol = (("https:" == document.location.protocol) ? " https://" : " http://");document.write(unescape("%3Cspan id='cnzz_stat_icon_1000097077'%3E%3C/span%3E%3Cscript src='" + cnzz_protocol + "s22.cnzz.com/z_stat.php%3Fid%3D1000097077%26show%3Dpic' type='text/javascript'%3E%3C/script%3E"));</script><span id="cnzz_stat_icon_1000097077"><a href="http://www.cnzz.com/stat/website.php?web_id=1000097077" target="_blank" title="站长统计"><img border="0" hspace="0" vspace="0" src="./董的博客 » Hadoop YARN配置参数剖析(4)—Fair Scheduler相关参数_files/pic.gif"></a></span><script src="./董的博客 » Hadoop YARN配置参数剖析(4)—Fair Scheduler相关参数_files/z_stat.php" type="text/javascript"></script><script src="./董的博客 » Hadoop YARN配置参数剖析(4)—Fair Scheduler相关参数_files/core.php" charset="utf-8" type="text/javascript"></script>
+
+ </p>
+
+ </li>
+
+ <li><a href="http://dongxicheng.org/mapreduce-nextgen/hadoop-yarn-configurations-fair-scheduler/#">网站地图</a></li>
+
+ <li><a href="http://dongxicheng.org/wp-admin">网站管理</a></li>
+
+ <li><a href="javascript:void(0);" onclick="YOFOX.goTop();return false;">返回顶部</a></li>
+
+ </ul>
+
+</div>
+
+<!-- end footer -->
+
+ </div><script type="text/javascript" src="./董的博客 » Hadoop YARN配置参数剖析(4)—Fair Scheduler相关参数_files/shCore.js.下载"></script>
+<script type="text/javascript" src="./董的博客 » Hadoop YARN配置参数剖析(4)—Fair Scheduler相关参数_files/shBrushXml.js.下载"></script>
+<script type="text/javascript">
+	(function(){
+		var corecss = document.createElement('link');
+		var themecss = document.createElement('link');
+		var corecssurl = "http://dongxicheng.org/wp-content/plugins/syntaxhighlighter/syntaxhighlighter3/styles/shCore.css?ver=3.0.83b";
+		if ( corecss.setAttribute ) {
+				corecss.setAttribute( "rel", "stylesheet" );
+				corecss.setAttribute( "type", "text/css" );
+				corecss.setAttribute( "href", corecssurl );
+		} else {
+				corecss.rel = "stylesheet";
+				corecss.href = corecssurl;
+		}
+		document.getElementsByTagName("head")[0].insertBefore( corecss, document.getElementById("syntaxhighlighteranchor") );
+		var themecssurl = "http://dongxicheng.org/wp-content/plugins/syntaxhighlighter/syntaxhighlighter3/styles/shThemeDefault.css?ver=3.0.83b";
+		if ( themecss.setAttribute ) {
+				themecss.setAttribute( "rel", "stylesheet" );
+				themecss.setAttribute( "type", "text/css" );
+				themecss.setAttribute( "href", themecssurl );
+		} else {
+				themecss.rel = "stylesheet";
+				themecss.href = themecssurl;
+		}
+		//document.getElementById("syntaxhighlighteranchor").appendChild(themecss);
+		document.getElementsByTagName("head")[0].insertBefore( themecss, document.getElementById("syntaxhighlighteranchor") );
+	})();
+	SyntaxHighlighter.config.strings.expandSource = '+ expand source';
+	SyntaxHighlighter.config.strings.help = '帮助';
+	SyntaxHighlighter.config.strings.alert = 'SyntaxHighlighter\n\n';
+	SyntaxHighlighter.config.strings.noBrush = '无法找到Brush：';
+	SyntaxHighlighter.config.strings.brushNotHtmlScript = 'Brush不能设置 html-script选项';
+	SyntaxHighlighter.defaults['pad-line-numbers'] = false;
+	SyntaxHighlighter.defaults['toolbar'] = false;
+	SyntaxHighlighter.all();
+</script>
+
+
+<!-- This is the static html file created at  by super static cache --></body></html>

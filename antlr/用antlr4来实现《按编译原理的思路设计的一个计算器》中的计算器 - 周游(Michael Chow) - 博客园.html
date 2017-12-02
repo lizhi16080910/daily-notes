@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<!-- saved from url=(0051)https://www.cnblogs.com/naturemickey/p/3764108.html -->
+<html lang="zh-cn"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>用antlr4来实现《按编译原理的思路设计的一个计算器》中的计算器 - 周游(Michael Chow) - 博客园</title>
+<link type="text/css" rel="stylesheet" href="./用antlr4来实现《按编译原理的思路设计的一个计算器》中的计算器 - 周游(Michael Chow) - 博客园_files/blog-common.css">
+<link id="MainCss" type="text/css" rel="stylesheet" href="./用antlr4来实现《按编译原理的思路设计的一个计算器》中的计算器 - 周游(Michael Chow) - 博客园_files/bundle-LessIsMoreRight.css">
+<link id="mobile-style" media="only screen and (max-width: 767px)" type="text/css" rel="stylesheet" href="./用antlr4来实现《按编译原理的思路设计的一个计算器》中的计算器 - 周游(Michael Chow) - 博客园_files/bundle-LessIsMoreRight-mobile.css">
+<link title="RSS" type="application/rss+xml" rel="alternate" href="http://www.cnblogs.com/naturemickey/rss">
+<link title="RSD" type="application/rsd+xml" rel="EditURI" href="http://www.cnblogs.com/naturemickey/rsd.xml">
+<link type="application/wlwmanifest+xml" rel="wlwmanifest" href="http://www.cnblogs.com/naturemickey/wlwmanifest.xml">
+<script async="" src="./用antlr4来实现《按编译原理的思路设计的一个计算器》中的计算器 - 周游(Michael Chow) - 博客园_files/analytics.js.下载"></script><script type="text/javascript" src="./用antlr4来实现《按编译原理的思路设计的一个计算器》中的计算器 - 周游(Michael Chow) - 博客园_files/encoder.js.下载"></script><script src="./用antlr4来实现《按编译原理的思路设计的一个计算器》中的计算器 - 周游(Michael Chow) - 博客园_files/jquery.js.下载" type="text/javascript"></script>  
+<script type="text/javascript">var currentBlogApp = 'naturemickey', cb_enable_mathjax=false;var isLogined=false;</script>
+<script src="./用antlr4来实现《按编译原理的思路设计的一个计算器》中的计算器 - 周游(Michael Chow) - 博客园_files/blog-common.js.下载" type="text/javascript"></script>
+</head>
+<body>
+<a name="top"></a>
+
+<div id="home">
+<div id="header">
+	<div id="blogTitle">
+		
+<!--done-->
+<div class="title"><a id="Header1_HeaderTitle" class="headermaintitle" href="http://www.cnblogs.com/naturemickey/">周游的博客</a></div>
+<div class="subtitle"></div>
+
+
+
+		
+	</div><!--end: blogTitle 博客的标题和副标题 -->
+	<div id="navigator">
+		
+<ul id="navList">
+<li id="nav_sitehome"></li>
+<li id="nav_myhome"><a id="blog_nav_myhome" class="menu" href="http://www.cnblogs.com/naturemickey/">首页</a></li>
+<li id="nav_newpost"><a id="blog_nav_newpost" class="menu" rel="nofollow" href="https://i.cnblogs.com/EditPosts.aspx?opt=1">新随笔</a></li>
+<li id="nav_contact"><a id="blog_nav_contact" class="menu" rel="nofollow" href="https://msg.cnblogs.com/send/%E5%91%A8%E6%B8%B8%28Michael%20Chow%29">联系</a></li>
+<li id="nav_rss">
+<!----></li>
+<li id="nav_admin"><a id="blog_nav_admin" class="menu" rel="nofollow" href="https://i.cnblogs.com/">管理</a></li>
+</ul>
+
+		<div class="blogStats">
+			
+			
+			
+		</div><!--end: blogStats -->
+	</div><!--end: navigator 博客导航栏 -->
+</div><!--end: header 头部 -->
+<div id="main">
+	<div id="mainContent">
+	<div class="forFlow">
+		
+<div id="post_detail">
+<!--done-->
+<div id="topics">
+	<div class="post">
+		<h1 class="postTitle">
+			<a id="cb_post_title_url" class="postTitle2" href="http://www.cnblogs.com/naturemickey/p/3764108.html">用antlr4来实现《按编译原理的思路设计的一个计算器》中的计算器</a>
+		</h1>
+		<div class="clear"></div>
+		<div class="postBody">
+			<div id="cnblogs_post_body"><p><span style="font-size: 15px;">上次在公司内部讲《<a id="cb_post_title_url" href="http://www.cnblogs.com/naturemickey/p/3667571.html" target="_blank">词法分析——使用正则文法</a>》是一次失败的尝试——上午有十几个人在场，下午就只来了四个听众。</span></p>
+<p><span style="font-size: 15px;">本来我还在构思如何来讲“语法分析”的知识呢，但现在看来已不太可能。</span></p>
+<p>&nbsp;</p>
+<p>这个课程没有预想中的受欢迎，其原因可能是：</p>
+<p>1.课程内容相对复杂，听众知识背景与基础差异比较大。</p>
+<p>2.授课技巧不够，不能把复杂的知识简单化的呈现给基础稍差一点的人。</p>
+<p>&nbsp;</p>
+<p>针对这两个可能的原因，我要尝试做出以下调整：</p>
+<p>1.使用antlr来实现词法和语法的部分。</p>
+<p>2.暂时把“编译”过程改为“解释”来实现。</p>
+<p>&nbsp;</p>
+<p>使用antlr的原因是：</p>
+<p>1.采用文法生成器可直接略过词法和语法的部分直接进入语义分析，这样利于速成，同时避免学员被词法分析和语法分析的复杂性吓到，而失去了继续学习的勇气。</p>
+<p>2.antlr的文法是LL(k)型，非常易于编写——虽然k型方法的性能肯定不如1型文法，但与初学者谈性能问题并不是一个好主意，不如直接避开性能不谈，能运行即可。</p>
+<p>3.antlr默认生成的是java代码，这与公司内大多数员工的现有知识是相吻合的。</p>
+<p>&nbsp;</p>
+<p>&nbsp;下面进入正文。</p>
+<p>&nbsp;</p>
+<p>一、什么是antlr？如何安装？</p>
+<p>这不是一篇凑字数的文章，所以请直接参考官方网站（http://www.antlr.org/）。</p>
+<p>我使用的是目前的最新版本（V4.2.2）.</p>
+<p>我上传了参考资料（包括jar包、电子书和官方示例）到百度云上，可从这个地址下载（http://pan.baidu.com/s/1hq65XWC）。</p>
+<p>&nbsp;</p>
+<p>二、本计算器的文法示例及文法的解释。</p>
+<p>整个计算器的词法的语法就由以下几行的antlr4代码来实现，先贴在下面：</p>
+<div class="cnblogs_code"><div class="cnblogs_code_toolbar"><span class="cnblogs_code_copy"><a href="javascript:void(0);" onclick="copyCnblogsCode(this)" title="复制代码"><img src="./用antlr4来实现《按编译原理的思路设计的一个计算器》中的计算器 - 周游(Michael Chow) - 博客园_files/copycode.gif" alt="复制代码"></a></span></div>
+<pre>grammar Calc;                            <span style="color: #008000;">//</span><span style="color: #008000;"> 文法的名字为Calc
+
+</span><span style="color: #008000;">//</span><span style="color: #008000;"> 以下以小写字母开头的文法表示为语法元素
+</span><span style="color: #008000;">//</span><span style="color: #008000;"> 由大写字母开头的文法表示为词法元素
+</span><span style="color: #008000;">//</span><span style="color: #008000;"> 词法元素的表示类似于正则表示式
+</span><span style="color: #008000;">//</span><span style="color: #008000;"> 语法元素的表示类似于BNF</span>
+<span style="color: #000000;">
+exprs : setExpr                            </span><span style="color: #008000;">//</span><span style="color: #008000;"> set表达式</span>
+    | calcExpr                            <span style="color: #008000;">//</span><span style="color: #008000;"> 或calc表达式</span>
+<span style="color: #000000;">    ;
+
+setExpr : </span>'set' agmts ;                    <span style="color: #008000;">//</span><span style="color: #008000;"> 以set命令开头，后面是多个赋值语句</span>
+agmts   : agmt (';' agmts)? ';'? ;        <span style="color: #008000;">//</span><span style="color: #008000;"> 多个赋值语句是由一个赋值语句后根着多个赋值语句，中间由分号分隔，结尾有一个可选的分号</span>
+agmt    : id=ID '=' num=NUMBER ;        <span style="color: #008000;">//</span><span style="color: #008000;"> 一个赋值语句是由一个ID，后跟着一个等号，再后面跟送一个数字组成</span>
+calcExpr: 'calc' expr ;                    <span style="color: #008000;">//</span><span style="color: #008000;"> 以calc命令开头，后面是一个计算表达式
+
+</span><span style="color: #008000;">//</span><span style="color: #008000;"> expr可能由多个产生式
+</span><span style="color: #008000;">//</span><span style="color: #008000;"> 在前面的产生式优先于在后面的产生式
+</span><span style="color: #008000;">//</span><span style="color: #008000;"> 这样来解决优先级的问题</span>
+<span style="color: #000000;">
+expr: expr op</span>=(MUL | DIV) expr            <span style="color: #008000;">//</span><span style="color: #008000;"> 乘法或除法</span>
+    | expr op=(ADD | SUB) expr            <span style="color: #008000;">//</span><span style="color: #008000;"> 加法或减法</span>
+    | factor                            <span style="color: #008000;">//</span><span style="color: #008000;"> 一个计算因子——可做为+-*/的操作数据的东西</span>
+<span style="color: #000000;">    ;
+
+factor: (sign</span>=(ADD | SUB))? num=NUMBER    <span style="color: #008000;">//</span><span style="color: #008000;"> 计算因子可以是一个正数或负数</span>
+    | '(' expr ')'                        <span style="color: #008000;">//</span><span style="color: #008000;"> 计算因子可以是括号括起来的表示式</span>
+    | id=ID                                <span style="color: #008000;">//</span><span style="color: #008000;"> 计算因子可以是一个变量</span>
+    | funCall                            <span style="color: #008000;">//</span><span style="color: #008000;"> 计算因子可以是一个函数调用</span>
+<span style="color: #000000;">    ;
+
+funCall: name</span>=ID '(' params ')' ;        <span style="color: #008000;">//</span><span style="color: #008000;"> 函数名后面加参数列表</span>
+params : expr (',' params)? ;            <span style="color: #008000;">//</span><span style="color: #008000;"> 参数列表是由一个表达式后面跟关一个可选的参数列表组成</span>
+<span style="color: #000000;">
+WS : [ \t\n\r]</span>+ -&gt; skip ;                <span style="color: #008000;">//</span><span style="color: #008000;"> 空白， 后面的-&gt;skip表示antlr4在分析语言的文本时，符合这个规则的词法将被无视</span>
+ID : [a-z]+ ;                            <span style="color: #008000;">//</span><span style="color: #008000;"> 标识符，由0到多个小写字母组成</span>
+NUMBER : [0-9]+('.'([0-9]+)?)? ;        <span style="color: #008000;">//</span><span style="color: #008000;"> 数字</span>
+ADD : '+'<span style="color: #000000;"> ;
+SUB : </span>'-'<span style="color: #000000;"> ;
+MUL : </span>'*'<span style="color: #000000;"> ;
+DIV : </span>'/' ;</pre>
+<div class="cnblogs_code_toolbar"><span class="cnblogs_code_copy"><a href="javascript:void(0);" onclick="copyCnblogsCode(this)" title="复制代码"><img src="./用antlr4来实现《按编译原理的思路设计的一个计算器》中的计算器 - 周游(Michael Chow) - 博客园_files/copycode.gif" alt="复制代码"></a></span></div></div>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>我们把这段文法保存到一个文件Calc.g4中，并运行命令“antlr4 -visitor Calc.g4”即生成6个java文件和两个tokens文件。</p>
+<p>这几个文件包括了这个计算器的“词法分析程序”、“语法分析程序”和一个visitor（CalcBaseVisitor.java），不过此时这个visitor内部实现都是空的，我们需要自己实现它。</p>
+<p>在实现这个visitor之前，我们先实现一个上下文，上下文的做用有两个：</p>
+<p>1.保存变量——用于在计算表达式中引用变量。</p>
+<p>2.保存堆栈——用于函数的参数传递。</p>
+<p>这个上下文的内容很少，代码也很短，直接贴在下面：</p>
+<div class="cnblogs_code"><div class="cnblogs_code_toolbar"><span class="cnblogs_code_copy"><a href="javascript:void(0);" onclick="copyCnblogsCode(this)" title="复制代码"><img src="./用antlr4来实现《按编译原理的思路设计的一个计算器》中的计算器 - 周游(Michael Chow) - 博客园_files/copycode.gif" alt="复制代码"></a></span></div>
+<pre><span style="color: #008080;"> 1</span> <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">class</span><span style="color: #000000;"> Context {
+</span><span style="color: #008080;"> 2</span>     <span style="color: #0000ff;">private</span> <span style="color: #0000ff;">static</span> Context ourInstance = <span style="color: #0000ff;">new</span><span style="color: #000000;"> Context();
+</span><span style="color: #008080;"> 3</span> 
+<span style="color: #008080;"> 4</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">static</span><span style="color: #000000;"> Context getInstance() {
+</span><span style="color: #008080;"> 5</span>         <span style="color: #0000ff;">return</span><span style="color: #000000;"> ourInstance;
+</span><span style="color: #008080;"> 6</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;"> 7</span> 
+<span style="color: #008080;"> 8</span>     <span style="color: #0000ff;">private</span><span style="color: #000000;"> Context() {
+</span><span style="color: #008080;"> 9</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">10</span> 
+<span style="color: #008080;">11</span>     <span style="color: #0000ff;">private</span> Map&lt;String, Double&gt; map = <span style="color: #0000ff;">new</span> HashMap&lt;&gt;<span style="color: #000000;">();
+</span><span style="color: #008080;">12</span>     <span style="color: #0000ff;">private</span> Deque&lt;Double&gt; stack = <span style="color: #0000ff;">new</span> ArrayDeque&lt;&gt;<span style="color: #000000;">();
+</span><span style="color: #008080;">13</span> 
+<span style="color: #008080;">14</span>     <span style="color: #0000ff;">public</span><span style="color: #000000;"> Double getValue(String key) {
+</span><span style="color: #008080;">15</span>         Double d =<span style="color: #000000;"> map.get(key);
+</span><span style="color: #008080;">16</span>         <span style="color: #0000ff;">return</span> d == <span style="color: #0000ff;">null</span> ?<span style="color: #000000;"> Double.NaN : d;
+</span><span style="color: #008080;">17</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">18</span> 
+<span style="color: #008080;">19</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">void</span><span style="color: #000000;"> setContext(String key, Double value) {
+</span><span style="color: #008080;">20</span> <span style="color: #000000;">        map.put(key, value);
+</span><span style="color: #008080;">21</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">22</span> 
+<span style="color: #008080;">23</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">void</span><span style="color: #000000;"> setContext(String key, String value) {
+</span><span style="color: #008080;">24</span> <span style="color: #000000;">        setContext(key, Double.valueOf(value));
+</span><span style="color: #008080;">25</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">26</span> 
+<span style="color: #008080;">27</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">void</span><span style="color: #000000;"> pushStack(Double d) {
+</span><span style="color: #008080;">28</span> <span style="color: #000000;">        stack.push(d);
+</span><span style="color: #008080;">29</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">30</span> 
+<span style="color: #008080;">31</span>     <span style="color: #0000ff;">public</span><span style="color: #000000;"> Double popStack() {
+</span><span style="color: #008080;">32</span>         <span style="color: #0000ff;">return</span><span style="color: #000000;"> stack.pop();
+</span><span style="color: #008080;">33</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">34</span> }</pre>
+<div class="cnblogs_code_toolbar"><span class="cnblogs_code_copy"><a href="javascript:void(0);" onclick="copyCnblogsCode(this)" title="复制代码"><img src="./用antlr4来实现《按编译原理的思路设计的一个计算器》中的计算器 - 周游(Michael Chow) - 博客园_files/copycode.gif" alt="复制代码"></a></span></div></div>
+<p>&nbsp;</p>
+<p>下面我们开始实现这个计算器的visitor，</p>
+<div class="cnblogs_code"><div class="cnblogs_code_toolbar"><span class="cnblogs_code_copy"><a href="javascript:void(0);" onclick="copyCnblogsCode(this)" title="复制代码"><img src="./用antlr4来实现《按编译原理的思路设计的一个计算器》中的计算器 - 周游(Michael Chow) - 博客园_files/copycode.gif" alt="复制代码"></a></span></div>
+<pre><span style="color: #008080;"> 1</span> <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">class</span> MyCalcVisitor <span style="color: #0000ff;">extends</span> CalcBaseVisitor&lt;Double&gt;<span style="color: #000000;"> {
+</span><span style="color: #008080;"> 2</span> 
+<span style="color: #008080;"> 3</span> <span style="color: #000000;">    @Override
+</span><span style="color: #008080;"> 4</span>     <span style="color: #0000ff;">public</span><span style="color: #000000;"> Double visitExprs(CalcParser.ExprsContext ctx) {
+</span><span style="color: #008080;"> 5</span>         <span style="color: #0000ff;">return</span> visit(ctx.getChild(0<span style="color: #000000;">));
+</span><span style="color: #008080;"> 6</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;"> 7</span> 
+<span style="color: #008080;"> 8</span> <span style="color: #000000;">    @Override
+</span><span style="color: #008080;"> 9</span>     <span style="color: #0000ff;">public</span><span style="color: #000000;"> Double visitAgmt(CalcParser.AgmtContext ctx) {
+</span><span style="color: #008080;">10</span> <span style="color: #000000;">        Context.getInstance().setContext(ctx.id.getText(), ctx.num.getText());
+</span><span style="color: #008080;">11</span>         <span style="color: #0000ff;">return</span> <span style="color: #0000ff;">null</span><span style="color: #000000;">;
+</span><span style="color: #008080;">12</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">13</span> 
+<span style="color: #008080;">14</span> <span style="color: #000000;">    @Override
+</span><span style="color: #008080;">15</span>     <span style="color: #0000ff;">public</span><span style="color: #000000;"> Double visitAgmts(CalcParser.AgmtsContext ctx) {
+</span><span style="color: #008080;">16</span> <span style="color: #000000;">        visit(ctx.agmt());
+</span><span style="color: #008080;">17</span>         <span style="color: #0000ff;">if</span> (ctx.agmts() != <span style="color: #0000ff;">null</span><span style="color: #000000;">)
+</span><span style="color: #008080;">18</span> <span style="color: #000000;">            visit(ctx.agmts());
+</span><span style="color: #008080;">19</span>         <span style="color: #0000ff;">return</span> <span style="color: #0000ff;">null</span><span style="color: #000000;">;
+</span><span style="color: #008080;">20</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">21</span> 
+<span style="color: #008080;">22</span> <span style="color: #000000;">    @Override
+</span><span style="color: #008080;">23</span>     <span style="color: #0000ff;">public</span><span style="color: #000000;"> Double visitCalcExpr(CalcParser.CalcExprContext ctx) {
+</span><span style="color: #008080;">24</span>         <span style="color: #0000ff;">return</span><span style="color: #000000;"> visit(ctx.expr());
+</span><span style="color: #008080;">25</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">26</span> 
+<span style="color: #008080;">27</span> <span style="color: #000000;">    @Override
+</span><span style="color: #008080;">28</span>     <span style="color: #0000ff;">public</span><span style="color: #000000;"> Double visitExpr(CalcParser.ExprContext ctx) {
+</span><span style="color: #008080;">29</span>         <span style="color: #0000ff;">int</span> cc =<span style="color: #000000;"> ctx.getChildCount();
+</span><span style="color: #008080;">30</span>         <span style="color: #0000ff;">if</span> (cc == 3<span style="color: #000000;">) {
+</span><span style="color: #008080;">31</span>             <span style="color: #0000ff;">switch</span><span style="color: #000000;"> (ctx.op.getType()) {
+</span><span style="color: #008080;">32</span>             <span style="color: #0000ff;">case</span><span style="color: #000000;"> CalcParser.ADD:
+</span><span style="color: #008080;">33</span>                 <span style="color: #0000ff;">return</span> visit(ctx.expr(0)) + visit(ctx.expr(1<span style="color: #000000;">));
+</span><span style="color: #008080;">34</span>             <span style="color: #0000ff;">case</span><span style="color: #000000;"> CalcParser.SUB:
+</span><span style="color: #008080;">35</span>                 <span style="color: #0000ff;">return</span> visit(ctx.expr(0)) - visit(ctx.expr(1<span style="color: #000000;">));
+</span><span style="color: #008080;">36</span>             <span style="color: #0000ff;">case</span><span style="color: #000000;"> CalcParser.MUL:
+</span><span style="color: #008080;">37</span>                 <span style="color: #0000ff;">return</span> visit(ctx.expr(0)) * visit(ctx.expr(1<span style="color: #000000;">));
+</span><span style="color: #008080;">38</span>             <span style="color: #0000ff;">case</span><span style="color: #000000;"> CalcParser.DIV:
+</span><span style="color: #008080;">39</span>                 <span style="color: #0000ff;">return</span> visit(ctx.expr(0)) / visit(ctx.expr(1<span style="color: #000000;">));
+</span><span style="color: #008080;">40</span> <span style="color: #000000;">            }
+</span><span style="color: #008080;">41</span>         } <span style="color: #0000ff;">else</span> <span style="color: #0000ff;">if</span> (cc == 1<span style="color: #000000;">) {
+</span><span style="color: #008080;">42</span>             <span style="color: #0000ff;">return</span> visit(ctx.getChild(0<span style="color: #000000;">));
+</span><span style="color: #008080;">43</span> <span style="color: #000000;">        }
+</span><span style="color: #008080;">44</span>         <span style="color: #0000ff;">throw</span> <span style="color: #0000ff;">new</span><span style="color: #000000;"> RuntimeException();
+</span><span style="color: #008080;">45</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">46</span> 
+<span style="color: #008080;">47</span> <span style="color: #000000;">    @Override
+</span><span style="color: #008080;">48</span>     <span style="color: #0000ff;">public</span><span style="color: #000000;"> Double visitFactor(CalcParser.FactorContext ctx) {
+</span><span style="color: #008080;">49</span>         <span style="color: #0000ff;">int</span> cc =<span style="color: #000000;"> ctx.getChildCount();
+</span><span style="color: #008080;">50</span>         <span style="color: #0000ff;">if</span> (cc == 3<span style="color: #000000;">) {
+</span><span style="color: #008080;">51</span>             <span style="color: #0000ff;">return</span> visit(ctx.getChild(1<span style="color: #000000;">));
+</span><span style="color: #008080;">52</span>         } <span style="color: #0000ff;">else</span> <span style="color: #0000ff;">if</span> (cc == 2<span style="color: #000000;">) {
+</span><span style="color: #008080;">53</span>             <span style="color: #0000ff;">if</span> (ctx.sign.getType() ==<span style="color: #000000;"> CalcParser.ADD)
+</span><span style="color: #008080;">54</span>                 <span style="color: #0000ff;">return</span> Double.valueOf(ctx.getChild(1<span style="color: #000000;">).getText());
+</span><span style="color: #008080;">55</span>             <span style="color: #0000ff;">if</span> (ctx.sign.getType() ==<span style="color: #000000;"> CalcParser.SUB)
+</span><span style="color: #008080;">56</span>                 <span style="color: #0000ff;">return</span> -1 * Double.valueOf(ctx.getChild(1<span style="color: #000000;">).getText());
+</span><span style="color: #008080;">57</span>         } <span style="color: #0000ff;">else</span> <span style="color: #0000ff;">if</span> (cc == 1<span style="color: #000000;">) {
+</span><span style="color: #008080;">58</span>             <span style="color: #0000ff;">if</span> (ctx.num != <span style="color: #0000ff;">null</span><span style="color: #000000;">)
+</span><span style="color: #008080;">59</span>                 <span style="color: #0000ff;">return</span> Double.valueOf(ctx.getChild(0<span style="color: #000000;">).getText());
+</span><span style="color: #008080;">60</span>             <span style="color: #0000ff;">if</span> (ctx.id != <span style="color: #0000ff;">null</span><span style="color: #000000;">)
+</span><span style="color: #008080;">61</span>                 <span style="color: #0000ff;">return</span><span style="color: #000000;"> Context.getInstance().getValue(ctx.id.getText());
+</span><span style="color: #008080;">62</span>             <span style="color: #0000ff;">return</span><span style="color: #000000;"> visit(ctx.funCall());
+</span><span style="color: #008080;">63</span> <span style="color: #000000;">        }
+</span><span style="color: #008080;">64</span>         <span style="color: #0000ff;">throw</span> <span style="color: #0000ff;">new</span><span style="color: #000000;"> RuntimeException();
+</span><span style="color: #008080;">65</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">66</span> 
+<span style="color: #008080;">67</span> <span style="color: #000000;">    @Override
+</span><span style="color: #008080;">68</span>     <span style="color: #0000ff;">public</span><span style="color: #000000;"> Double visitParams(CalcParser.ParamsContext ctx) {
+</span><span style="color: #008080;">69</span>         <span style="color: #0000ff;">if</span> (ctx.params() != <span style="color: #0000ff;">null</span><span style="color: #000000;">)
+</span><span style="color: #008080;">70</span> <span style="color: #000000;">            visit(ctx.params());
+</span><span style="color: #008080;">71</span> <span style="color: #000000;">        Context.getInstance().pushStack(visit(ctx.expr()));
+</span><span style="color: #008080;">72</span>         <span style="color: #0000ff;">return</span> <span style="color: #0000ff;">null</span><span style="color: #000000;">;
+</span><span style="color: #008080;">73</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">74</span> 
+<span style="color: #008080;">75</span> <span style="color: #000000;">    @Override
+</span><span style="color: #008080;">76</span>     <span style="color: #0000ff;">public</span><span style="color: #000000;"> Double visitFunCall(CalcParser.FunCallContext ctx) {
+</span><span style="color: #008080;">77</span> <span style="color: #000000;">        visit(ctx.params());
+</span><span style="color: #008080;">78</span>         String funName =<span style="color: #000000;"> ctx.name.getText();
+</span><span style="color: #008080;">79</span>         <span style="color: #0000ff;">switch</span><span style="color: #000000;"> (funName) {
+</span><span style="color: #008080;">80</span>         <span style="color: #0000ff;">case</span> "pow"<span style="color: #000000;">:
+</span><span style="color: #008080;">81</span>             <span style="color: #0000ff;">return</span><span style="color: #000000;"> Math.pow(Context.getInstance().popStack(), Context.getInstance().popStack());
+</span><span style="color: #008080;">82</span>         <span style="color: #0000ff;">case</span> "sqrt"<span style="color: #000000;">:
+</span><span style="color: #008080;">83</span>             <span style="color: #0000ff;">return</span><span style="color: #000000;"> Math.sqrt(Context.getInstance().popStack());
+</span><span style="color: #008080;">84</span> <span style="color: #000000;">        }
+</span><span style="color: #008080;">85</span>         <span style="color: #0000ff;">throw</span> <span style="color: #0000ff;">new</span><span style="color: #000000;"> RuntimeException();
+</span><span style="color: #008080;">86</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">87</span> 
+<span style="color: #008080;">88</span> <span style="color: #000000;">    @Override
+</span><span style="color: #008080;">89</span>     <span style="color: #0000ff;">public</span><span style="color: #000000;"> Double visitSetExpr(CalcParser.SetExprContext ctx) {
+</span><span style="color: #008080;">90</span>         <span style="color: #0000ff;">return</span><span style="color: #000000;"> visit(ctx.agmts());
+</span><span style="color: #008080;">91</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">92</span> 
+<span style="color: #008080;">93</span> }</pre>
+<div class="cnblogs_code_toolbar"><span class="cnblogs_code_copy"><a href="javascript:void(0);" onclick="copyCnblogsCode(this)" title="复制代码"><img src="./用antlr4来实现《按编译原理的思路设计的一个计算器》中的计算器 - 周游(Michael Chow) - 博客园_files/copycode.gif" alt="复制代码"></a></span></div></div>
+<p>&nbsp;最后再实现一个入口，调用这个Visitor即完成了我们的计算器。</p>
+<p>入口代码如下：</p>
+<div class="cnblogs_code"><div class="cnblogs_code_toolbar"><span class="cnblogs_code_copy"><a href="javascript:void(0);" onclick="copyCnblogsCode(this)" title="复制代码"><img src="./用antlr4来实现《按编译原理的思路设计的一个计算器》中的计算器 - 周游(Michael Chow) - 博客园_files/copycode.gif" alt="复制代码"></a></span></div>
+<pre><span style="color: #008080;"> 1</span> <span style="color: #0000ff;">import</span><span style="color: #000000;"> java.util.Scanner;
+</span><span style="color: #008080;"> 2</span> 
+<span style="color: #008080;"> 3</span> <span style="color: #0000ff;">import</span><span style="color: #000000;"> org.antlr.v4.runtime.ANTLRInputStream;
+</span><span style="color: #008080;"> 4</span> <span style="color: #0000ff;">import</span><span style="color: #000000;"> org.antlr.v4.runtime.CommonTokenStream;
+</span><span style="color: #008080;"> 5</span> <span style="color: #0000ff;">import</span><span style="color: #000000;"> org.antlr.v4.runtime.tree.ParseTree;
+</span><span style="color: #008080;"> 6</span> 
+<span style="color: #008080;"> 7</span> <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">class</span><span style="color: #000000;"> Portal {
+</span><span style="color: #008080;"> 8</span> 
+<span style="color: #008080;"> 9</span>     <span style="color: #0000ff;">private</span> <span style="color: #0000ff;">static</span> <span style="color: #0000ff;">final</span> String lineStart = "CALC&gt; "<span style="color: #000000;">;
+</span><span style="color: #008080;">10</span> 
+<span style="color: #008080;">11</span>     <span style="color: #0000ff;">public</span> <span style="color: #0000ff;">static</span> <span style="color: #0000ff;">void</span><span style="color: #000000;"> main(String[] args) {
+</span><span style="color: #008080;">12</span>         <span style="color: #0000ff;">try</span> (Scanner scanner = <span style="color: #0000ff;">new</span><span style="color: #000000;"> Scanner(System.in)) {
+</span><span style="color: #008080;">13</span> <span style="color: #000000;">            System.out.print(lineStart);
+</span><span style="color: #008080;">14</span>             <span style="color: #0000ff;">while</span><span style="color: #000000;"> (scanner.hasNext()) {
+</span><span style="color: #008080;">15</span>                 String line =<span style="color: #000000;"> scanner.nextLine();
+</span><span style="color: #008080;">16</span>                 <span style="color: #0000ff;">if</span> (line != <span style="color: #0000ff;">null</span><span style="color: #000000;">) {
+</span><span style="color: #008080;">17</span>                     line =<span style="color: #000000;"> line.trim();
+</span><span style="color: #008080;">18</span>                     <span style="color: #0000ff;">if</span> (line.length() != 0<span style="color: #000000;">) {
+</span><span style="color: #008080;">19</span>                         <span style="color: #0000ff;">if</span> ("exit".equals(line) || "bye"<span style="color: #000000;">.equals(line))
+</span><span style="color: #008080;">20</span>                             <span style="color: #0000ff;">break</span><span style="color: #000000;">;
+</span><span style="color: #008080;">21</span>                         ANTLRInputStream input = <span style="color: #0000ff;">new</span><span style="color: #000000;"> ANTLRInputStream(line);
+</span><span style="color: #008080;">22</span>                         CalcLexer lexer = <span style="color: #0000ff;">new</span><span style="color: #000000;"> CalcLexer(input);
+</span><span style="color: #008080;">23</span>                         CommonTokenStream tokens = <span style="color: #0000ff;">new</span><span style="color: #000000;"> CommonTokenStream(lexer);
+</span><span style="color: #008080;">24</span>                         CalcParser parser = <span style="color: #0000ff;">new</span><span style="color: #000000;"> CalcParser(tokens);
+</span><span style="color: #008080;">25</span>                         ParseTree tree =<span style="color: #000000;"> parser.exprs();
+</span><span style="color: #008080;">26</span>                         MyCalcVisitor mv = <span style="color: #0000ff;">new</span><span style="color: #000000;"> MyCalcVisitor();
+</span><span style="color: #008080;">27</span>                         Double res =<span style="color: #000000;"> mv.visit(tree);
+</span><span style="color: #008080;">28</span>                         <span style="color: #0000ff;">if</span> (res != <span style="color: #0000ff;">null</span><span style="color: #000000;">)
+</span><span style="color: #008080;">29</span> <span style="color: #000000;">                            System.out.println(res);
+</span><span style="color: #008080;">30</span> <span style="color: #000000;">                    }
+</span><span style="color: #008080;">31</span> <span style="color: #000000;">                }
+</span><span style="color: #008080;">32</span> 
+<span style="color: #008080;">33</span> <span style="color: #000000;">                System.out.print(lineStart);
+</span><span style="color: #008080;">34</span> <span style="color: #000000;">            }
+</span><span style="color: #008080;">35</span> <span style="color: #000000;">        }
+</span><span style="color: #008080;">36</span> <span style="color: #000000;">    }
+</span><span style="color: #008080;">37</span> 
+<span style="color: #008080;">38</span> }</pre>
+<div class="cnblogs_code_toolbar"><span class="cnblogs_code_copy"><a href="javascript:void(0);" onclick="copyCnblogsCode(this)" title="复制代码"><img src="./用antlr4来实现《按编译原理的思路设计的一个计算器》中的计算器 - 周游(Michael Chow) - 博客园_files/copycode.gif" alt="复制代码"></a></span></div></div>
+<p>&nbsp;</p>
+<p>整个计算器只写了一个文法和三个类，所有代码都贴在上面了，相对于完全自己手写的计算器来说，的确是简单很多了。</p></div><div id="MySignature" style="display: block;">-------------------------------------------------------------------
+<p>周游[http://www.cnblogs.com/naturemickey]版权所有，未经许可请勿转载</p></div>
+<div class="clear"></div>
+<div id="blog_post_info_block">
+<div id="BlogPostCategory">分类: <a href="http://www.cnblogs.com/naturemickey/category/570505.html" target="_blank">编译技术</a></div>
+<div id="EntryTag">标签: <a href="http://www.cnblogs.com/naturemickey/tag/antlr4%20antlr%20%E7%BC%96%E8%AF%91/">antlr4 antlr 编译</a></div>
+<div id="blog_post_info"><div id="green_channel">
+        <a href="javascript:void(0);" id="green_channel_digg" onclick="DiggIt(3764108,cb_blogId,1);green_channel_success(this,&#39;谢谢推荐！&#39;);">好文要顶</a>
+            <a id="green_channel_follow" onclick="follow(&#39;54131087-e5c3-e311-8d02-90b11c0b17d6&#39;);" href="javascript:void(0);">关注我</a>
+    <a id="green_channel_favorite" onclick="AddToWz(cb_entryId);return false;" href="javascript:void(0);">收藏该文</a>
+    <a id="green_channel_weibo" href="javascript:void(0);" title="分享至新浪微博" onclick="ShareToTsina()"><img src="./用antlr4来实现《按编译原理的思路设计的一个计算器》中的计算器 - 周游(Michael Chow) - 博客园_files/icon_weibo_24.png" alt=""></a>
+    <a id="green_channel_wechat" href="javascript:void(0);" title="分享至微信" onclick="shareOnWechat()"><img src="./用antlr4来实现《按编译原理的思路设计的一个计算器》中的计算器 - 周游(Michael Chow) - 博客园_files/wechat.png" alt=""></a>
+</div>
+<div id="author_profile">
+    <div id="author_profile_info" class="author_profile_info">
+            <a href="http://home.cnblogs.com/u/naturemickey/" target="_blank"><img src="./用antlr4来实现《按编译原理的思路设计的一个计算器》中的计算器 - 周游(Michael Chow) - 博客园_files/20140712173928.png" class="author_avatar" alt=""></a>
+        <div id="author_profile_detail" class="author_profile_info">
+            <a href="http://home.cnblogs.com/u/naturemickey/">周游(Michael Chow)</a><br>
+            <a href="http://home.cnblogs.com/u/naturemickey/followees">关注 - 1</a><br>
+            <a href="http://home.cnblogs.com/u/naturemickey/followers">粉丝 - 13</a>
+        </div>
+    </div>
+    <div class="clear"></div>
+    <div id="author_profile_honor"></div>
+    <div id="author_profile_follow">
+                <a href="javascript:void(0);" onclick="follow(&#39;54131087-e5c3-e311-8d02-90b11c0b17d6&#39;);return false;">+加关注</a>
+    </div>
+</div>
+<div id="div_digg">
+    <div class="diggit" onclick="votePost(3764108,&#39;Digg&#39;)">
+        <span class="diggnum" id="digg_count">0</span>
+    </div>
+    <div class="buryit" onclick="votePost(3764108,&#39;Bury&#39;)">
+        <span class="burynum" id="bury_count">0</span>
+    </div>
+    <div class="clear"></div>
+    <div class="diggword" id="digg_tips">
+    </div>
+</div>
+</div>
+<div class="clear"></div>
+<div id="post_next_prev"><a href="http://www.cnblogs.com/naturemickey/p/3703765.html" class="p_n_p_prefix">« </a> 上一篇：<a href="http://www.cnblogs.com/naturemickey/p/3703765.html" title="发布于2014-05-02 10:42">天下第一萌程序</a><br><a href="http://www.cnblogs.com/naturemickey/p/3774753.html" class="p_n_p_prefix">» </a> 下一篇：<a href="http://www.cnblogs.com/naturemickey/p/3774753.html" title="发布于2014-06-07 14:25">使用antlr4及java实现snl语言的解释器</a><br></div>
+</div>
+
+
+		</div>
+		<div class="postDesc">posted @ <span id="post-date">2014-06-02 14:57</span> <a href="http://www.cnblogs.com/naturemickey/">周游(Michael Chow)</a> 阅读(<span id="post_view_count">1647</span>) 评论(<span id="post_comment_count">0</span>)  <a href="https://i.cnblogs.com/EditPosts.aspx?postid=3764108" rel="nofollow">编辑</a> <a href="https://www.cnblogs.com/naturemickey/p/3764108.html#" onclick="AddToWz(3764108);return false;">收藏</a></div>
+	</div>
+	<script type="text/javascript">var allowComments=true,cb_blogId=182797,cb_entryId=3764108,cb_blogApp=currentBlogApp,cb_blogUserGuid='54131087-e5c3-e311-8d02-90b11c0b17d6',cb_entryCreatedDate='2014/6/2 14:57:00';loadViewCount(cb_entryId);var cb_postType=1;</script>
+	
+</div><!--end: topics 文章、评论容器-->
+</div><a name="!comments"></a><div id="blog-comments-placeholder"></div><script type="text/javascript">var commentManager = new blogCommentManager();commentManager.renderComments(0);</script>
+<div id="comment_form" class="commentform">
+<a name="commentform"></a>
+<div id="divCommentShow"></div>
+<div id="comment_nav"><span id="span_refresh_tips"></span><a href="javascript:void(0);" onclick="return RefreshCommentList();" id="lnk_RefreshComments" runat="server" clientidmode="Static">刷新评论</a><a href="https://www.cnblogs.com/naturemickey/p/3764108.html#" onclick="return RefreshPage();">刷新页面</a><a href="https://www.cnblogs.com/naturemickey/p/3764108.html#top">返回顶部</a></div>
+<div id="comment_form_container"><div class="login_tips">注册用户登录后才能发表评论，请 <a rel="nofollow" href="javascript:void(0);" class="underline" onclick="return login(&#39;commentform&#39;);">登录</a> 或 <a rel="nofollow" href="javascript:void(0);" class="underline" onclick="return register();">注册</a>，<a href="http://www.cnblogs.com/">访问</a>网站首页。</div></div>
+<div class="ad_text_commentbox" id="ad_text_under_commentbox"></div>
+<div id="ad_t2"><a href="http://www.ucancode.com/index.htm" target="_blank">【推荐】50万行VC++源码: 大型组态工控、电力仿真CAD与GIS源码库</a><br><a href="http://xc.hubwiz.com/course/592ee9b2b343f27b0ae1ba99?affid=cnblogs" target="_blank">【推荐】Vue.js 2.x 快速入门，大量高效实战示例</a><br><a href="https://cloud.tencent.com/act/campus?fromSource=gwzcw.613398.613398.613398" target="_blank">【活动】腾讯云 学生专属优惠套餐 多规格选择</a><br><a href="https://cloud.tencent.com/community/article/303682?fromSource=gwzcw.614532.614532.614532" target="_blank">【活动】释放技术的想象-解码腾讯云软件架构与应用</a><br></div>
+<div id="opt_under_post"></div>
+<div id="cnblogs_c1" class="c_ad_block"><a href="http://www.grapecity.com.cn/enterprise-solutions/huozige/?utm_source=cnblogs&amp;utm_medium=blogpage&amp;utm_term=bottom&amp;utm_content=huozige&amp;utm_campaign=community" target="_blank"><img width="300" height="250" src="./用antlr4来实现《按编译原理的思路设计的一个计算器》中的计算器 - 周游(Michael Chow) - 博客园_files/24442-20171114102259156-1700577248.png" alt="葡萄城1114"></a></div>
+<div id="under_post_news"><div class="itnews c_ad_block"><b>最新IT新闻</b>:<br> ·  <a href="http://news.cnblogs.com/n/582807/" target="_blank">摩拜创始人胡玮炜：共享单车过度会造成浪费</a><br> ·  <a href="http://news.cnblogs.com/n/582806/" target="_blank">李开复：未来20年内人工智能不会有自我意识</a><br> ·  <a href="http://news.cnblogs.com/n/582805/" target="_blank">滴滴创始人程维：共享经济发展才刚刚开始</a><br> ·  <a href="http://news.cnblogs.com/n/582804/" target="_blank">腾讯每天收入超7亿，但这个成绩只能打70分</a><br> ·  <a href="http://news.cnblogs.com/n/582803/" target="_blank">共享单车的倒闭，是正常的“优胜汰劣”现象</a><br>» <a href="http://news.cnblogs.com/" title="IT新闻" target="_blank">更多新闻...</a></div></div>
+<div id="cnblogs_c2" class="c_ad_block"><a href="http://click.aliyun.com/m/34771/" target="_blank"><img width="468" height="60" src="./用antlr4来实现《按编译原理的思路设计的一个计算器》中的计算器 - 周游(Michael Chow) - 博客园_files/24442-20171113120112796-634832761.jpg" alt="阿里云1113"></a></div>
+<div id="under_post_kb"><div class="itnews c_ad_block" id="kb_block"><b>最新知识库文章</b>:<br><div id="kb_recent"> ·  <a href="http://kb.cnblogs.com/page/112506/" target="_blank">大道至简，职场上做人做事做管理</a><br> ·  <a href="http://kb.cnblogs.com/page/563790/" target="_blank">关于编程，你的练习是不是有效的？</a><br> ·  <a href="http://kb.cnblogs.com/page/581467/" target="_blank">改善程序员生活质量的 3+10 习惯</a><br> ·  <a href="http://kb.cnblogs.com/page/568841/" target="_blank">NASA的10条代码编写原则</a><br> ·  <a href="http://kb.cnblogs.com/page/578502/" target="_blank">为什么你参加了那么多培训，却依然表现平平？</a><br></div>» <a href="http://kb.cnblogs.com/" target="_blank">更多知识库文章...</a></div></div>
+<div id="HistoryToday" class="c_ad_block"></div>
+<script type="text/javascript">
+    fixPostBody();
+    setTimeout(function () { incrementViewCount(cb_entryId); }, 50);
+    deliverAdT2();
+    deliverAdC1();
+    deliverAdC2();    
+    loadNewsAndKb();
+    loadBlogSignature();
+    LoadPostInfoBlock(cb_blogId, cb_entryId, cb_blogApp, cb_blogUserGuid);
+    GetPrevNextPost(cb_entryId, cb_blogId, cb_entryCreatedDate, cb_postType);
+    loadOptUnderPost();
+    GetHistoryToday(cb_blogId, cb_blogApp, cb_entryCreatedDate);   
+</script>
+</div>
+
+
+	</div><!--end: forFlow -->
+	</div><!--end: mainContent 主体内容容器-->
+
+	<div id="sideBar">
+		<div id="sideBarMain">
+			
+<!--done-->
+<div class="newsItem">
+<h3 class="catListTitle">公告</h3>
+	<div id="blog-news"><p>我的<a href="https://github.com/naturemickey" target="_blank">GitHub</a></p><p>------------&nbsp;</p><div id="profile_block">昵称：<a href="http://home.cnblogs.com/u/naturemickey/">周游(Michael Chow)</a><br>园龄：<a href="http://home.cnblogs.com/u/naturemickey/" title="入园时间：2014-04-14">3年7个月</a><br>粉丝：<a href="http://home.cnblogs.com/u/naturemickey/followers/">13</a><br>关注：<a href="http://home.cnblogs.com/u/naturemickey/followees/">1</a><div id="p_b_follow"><a href="javascript:void(0);" onclick="follow(&#39;54131087-e5c3-e311-8d02-90b11c0b17d6&#39;)">+加关注</a></div></div></div><script type="text/javascript">loadBlogNews();</script>
+</div>
+
+			<div id="calendar"><div id="blog-calendar" style="display:none"></div><script type="text/javascript">loadBlogDefaultCalendar();</script></div>
+			
+			<div id="leftcontentcontainer">
+				<div id="blog-sidecolumn"><div id="sidebar_search" class="sidebar-block"></div><div id="sidebar_shortcut" class="sidebar-block">
+<div class="catListLink">
+<h3 class="catListTitle">常用链接</h3>
+<ul>
+<li><a href="http://www.cnblogs.com/naturemickey/p/" title="我的博客的随笔列表">我的随笔</a></li><li><a href="http://www.cnblogs.com/naturemickey/MyComments.html" title="我发表过的评论列表">我的评论</a></li><li><a href="http://www.cnblogs.com/naturemickey/OtherPosts.html" title="我评论过的随笔列表">我的参与</a></li><li><a href="http://www.cnblogs.com/naturemickey/RecentComments.html" title="我的博客的评论列表">最新评论</a></li><li><a href="http://www.cnblogs.com/naturemickey/tag/" title="我的博客的标签列表">我的标签</a></li>
+</ul>
+<div id="itemListLin_con" style="display:none;">
+<ul>
+
+</ul>
+</div>
+</div></div><div id="sidebar_recentposts" class="sidebar-block">
+<div class="catListEssay">
+<h3 class="catListTitle">最新随笔</h3>
+<ul>
+<li><a href="http://www.cnblogs.com/naturemickey/p/7820252.html">1. 全球领先的redis客户端：SFedis</a></li><li><a href="http://www.cnblogs.com/naturemickey/p/6358038.html">2. ESSENTIALS OF PROGRAMMING LANGUAGES (THIRD EDITION) ：编程语言的本质 —— （一）</a></li><li><a href="http://www.cnblogs.com/naturemickey/p/5774918.html">3. 请大家帮我找一找bug —— 一个MySQL解析程序（JAVA实现）</a></li><li><a href="http://www.cnblogs.com/naturemickey/p/5014544.html">4. 半个月使用rust语言的体验</a></li><li><a href="http://www.cnblogs.com/naturemickey/p/4674924.html">5. 把Scheme翻译成Java和C++的工具</a></li><li><a href="http://www.cnblogs.com/naturemickey/p/4444145.html">6. 对openjdk的javac编译器扩展了一个语法糖</a></li><li><a href="http://www.cnblogs.com/naturemickey/p/4424590.html">7. 我们使用看板的方式介绍</a></li><li><a href="http://www.cnblogs.com/naturemickey/p/3947885.html">8. 技术团队管理点滴</a></li><li><a href="http://www.cnblogs.com/naturemickey/p/3900836.html">9. 简说JAVA8引入函数式的问题</a></li><li><a href="http://www.cnblogs.com/naturemickey/p/3855403.html">10. 我想要的程序开发语言特性——之“面向对象”——之“退化”</a></li>
+</ul>
+</div>
+</div><div id="sidebar_toptags" class="sidebar-block">
+<div class="catListTag">
+<h3 class="catListTitle">我的标签</h3>
+<ul>
+<li><a href="http://www.cnblogs.com/naturemickey/tag/antlr4%20antlr%20%E7%BC%96%E8%AF%91/">antlr4 antlr 编译</a>(1)</li><li><a href="http://www.cnblogs.com/naturemickey/tag/JAVA8/">JAVA8</a>(1)</li><li><a href="http://www.cnblogs.com/naturemickey/tag/Lambda/">Lambda</a>(1)</li><li><a href="http://www.cnblogs.com/naturemickey/tag/Scala/">Scala</a>(1)</li><li><a href="http://www.cnblogs.com/naturemickey/tag/Scheme%20Java%20C%2B%2B/">Scheme Java C++</a>(1)</li><li><a href="http://www.cnblogs.com/naturemickey/tag/Spark/">Spark</a>(1)</li><li><a href="http://www.cnblogs.com/naturemickey/tag/%E7%A8%8B%E5%BA%8F%E8%AE%BE%E8%AE%A1%E8%AF%AD%E8%A8%80%20%E7%BC%96%E8%AF%91/">程序设计语言 编译</a>(1)</li><li><a href="http://www.cnblogs.com/naturemickey/tag/%E5%87%BD%E6%95%B0%E5%BC%8F/">函数式</a>(1)</li><li><a href="http://www.cnblogs.com/naturemickey/tag/%E7%9C%8B%E6%9D%BF/">看板</a>(1)</li>
+</ul>
+</div></div><div id="sidebar_categories">
+<div class="catListPostCategory">
+<h3 class="catListTitle">随笔分类</h3>
+
+<ul>
+
+<li><a id="CatList_LinkList_0_Link_0" href="http://www.cnblogs.com/naturemickey/category/570505.html">编译技术(9)</a> </li>
+
+<li><a id="CatList_LinkList_0_Link_1" href="http://www.cnblogs.com/naturemickey/category/608791.html">管理(2)</a> </li>
+
+<li><a id="CatList_LinkList_0_Link_2" href="http://www.cnblogs.com/naturemickey/category/1113167.html">架构(1)</a> </li>
+
+<li><a id="CatList_LinkList_0_Link_3" href="http://www.cnblogs.com/naturemickey/category/592063.html">随笔(5)</a> </li>
+
+<li><a id="CatList_LinkList_0_Link_4" href="http://www.cnblogs.com/naturemickey/category/570507.html">语言研究(10)</a> </li>
+
+</ul>
+
+</div>
+
+<div class="catListPostArchive">
+<h3 class="catListTitle">随笔档案</h3>
+
+<ul>
+
+<li><a id="CatList_LinkList_1_Link_0" href="http://www.cnblogs.com/naturemickey/archive/2017/11.html">2017年11月 (1)</a> </li>
+
+<li><a id="CatList_LinkList_1_Link_1" href="http://www.cnblogs.com/naturemickey/archive/2017/01.html">2017年1月 (1)</a> </li>
+
+<li><a id="CatList_LinkList_1_Link_2" href="http://www.cnblogs.com/naturemickey/archive/2016/08.html">2016年8月 (1)</a> </li>
+
+<li><a id="CatList_LinkList_1_Link_3" href="http://www.cnblogs.com/naturemickey/archive/2015/12.html">2015年12月 (1)</a> </li>
+
+<li><a id="CatList_LinkList_1_Link_4" href="http://www.cnblogs.com/naturemickey/archive/2015/07.html">2015年7月 (1)</a> </li>
+
+<li><a id="CatList_LinkList_1_Link_5" href="http://www.cnblogs.com/naturemickey/archive/2015/04.html">2015年4月 (2)</a> </li>
+
+<li><a id="CatList_LinkList_1_Link_6" href="http://www.cnblogs.com/naturemickey/archive/2014/08.html">2014年8月 (2)</a> </li>
+
+<li><a id="CatList_LinkList_1_Link_7" href="http://www.cnblogs.com/naturemickey/archive/2014/07.html">2014年7月 (3)</a> </li>
+
+<li><a id="CatList_LinkList_1_Link_8" href="http://www.cnblogs.com/naturemickey/archive/2014/06.html">2014年6月 (3)</a> </li>
+
+<li><a id="CatList_LinkList_1_Link_9" href="http://www.cnblogs.com/naturemickey/archive/2014/05.html">2014年5月 (1)</a> </li>
+
+<li><a id="CatList_LinkList_1_Link_10" href="http://www.cnblogs.com/naturemickey/archive/2014/04.html">2014年4月 (3)</a> </li>
+
+</ul>
+
+</div>
+
+</div></div><script type="text/javascript">loadBlogSideColumn();</script>
+			</div>
+			
+		</div><!--end: sideBarMain -->
+	</div><!--end: sideBar 侧边栏容器 -->
+	<div class="clear"></div>
+	</div><!--end: main -->
+	<div class="clear"></div>
+	<div id="footer">
+		
+<!--done-->
+Copyright ©2017 周游(Michael Chow)
+	</div><!--end: footer -->
+</div><!--end: home 自定义的最大容器 -->
+
+
+</body></html>

@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<allocations>
+    <queue name="root">
+        <weight>1.0</weight>
+        <minSharePreemptionTimeout>180</minSharePreemptionTimeout>
+        <fairSharePreemptionTimeout>180</fairSharePreemptionTimeout>
+        <fairSharePreemptionThreshold>0.8</fairSharePreemptionThreshold>
+        <schedulingPolicy>fair</schedulingPolicy>
+        <aclSubmitApps>hadoop hadoop</aclSubmitApps>
+        <aclAdministerApps>hadoop hadoop</aclAdministerApps>
+        <queue name="production">
+            <minResources>163840 mb, 80 vcores</minResources>
+            <weight>3.0</weight>
+            <schedulingPolicy>fair</schedulingPolicy>
+            <aclSubmitApps>hadoop hadoop</aclSubmitApps>
+            <aclAdministerApps>hadoop hadoop</aclAdministerApps>
+            <queue name="gobblin">
+                <minResources>81920 mb, 40 vcores</minResources>
+                <weight>1.0</weight>
+                <allowPreemptionFrom>false</allowPreemptionFrom>
+                <schedulingPolicy>fair</schedulingPolicy>
+                <aclSubmitApps>hadoop hadoop,gobblin</aclSubmitApps>
+                <aclAdministerApps>hadoop hadoop,gobblin</aclAdministerApps>
+            </queue>
+            <queue name="algo">
+                <minResources>81920 mb, 40 vcores</minResources>
+                <weight>1.0</weight>
+                <allowPreemptionFrom>false</allowPreemptionFrom>
+                <schedulingPolicy>fair</schedulingPolicy>
+                <aclSubmitApps>hadoop hadoop</aclSubmitApps>
+                <aclAdministerApps>hadoop hadoop</aclAdministerApps>
+                <queue name="lechuan">
+                    <minResources>20480 mb, 10 vcores</minResources>
+                    <maxResources>2048000 mb, 500 vcores</maxResources>
+                    <weight>1.0</weight>
+                    <allowPreemptionFrom>false</allowPreemptionFrom>
+                    <schedulingPolicy>fair</schedulingPolicy>
+                    <aclSubmitApps>lechuan </aclSubmitApps>
+                    <aclAdministerApps>lechuan </aclAdministerApps>
+                </queue>
+            </queue>
+            <queue name="biz">
+                <minResources>81920 mb, 40 vcores</minResources>
+                <weight>1.0</weight>
+                <allowPreemptionFrom>false</allowPreemptionFrom>
+                <schedulingPolicy>fair</schedulingPolicy>
+                <aclSubmitApps>hadoop hadoop</aclSubmitApps>
+                <aclAdministerApps>hadoop hadoop</aclAdministerApps>
+                <queue name="lechuan">
+                    <minResources>20480 mb, 10 vcores</minResources>
+                    <maxResources>1048576 mb, 500 vcores</maxResources>
+                    <weight>1.0</weight>
+                    <allowPreemptionFrom>false</allowPreemptionFrom>
+                    <schedulingPolicy>fair</schedulingPolicy>
+                    <aclSubmitApps>lechuan </aclSubmitApps>
+                    <aclAdministerApps>lechuan </aclAdministerApps>
+                </queue>
+                <queue name="quduopai">
+                    <minResources>102400 mb, 100 vcores</minResources>
+                    <maxResources>204800 mb, 100 vcores</maxResources>
+                    <weight>1.0</weight>
+                    <allowPreemptionFrom>false</allowPreemptionFrom>
+                    <schedulingPolicy>fair</schedulingPolicy>
+                    <aclSubmitApps>quduopai </aclSubmitApps>
+                    <aclAdministerApps>quduopai </aclAdministerApps>
+                </queue>
+                <queue name="cpc">
+                    <minResources>102400 mb, 100 vcores</minResources>
+                    <maxResources>512000 mb, 200 vcores</maxResources>
+                    <weight>1.0</weight>
+                    <allowPreemptionFrom>false</allowPreemptionFrom>
+                    <schedulingPolicy>fair</schedulingPolicy>
+                    <aclSubmitApps>cpc </aclSubmitApps>
+                    <aclAdministerApps>cpc </aclAdministerApps>
+                </queue>
+             </queue>
+        </queue>
+        <queue name="report">
+            <minResources>368640 mb, 240 vcores</minResources>
+            <weight>2.0</weight>
+            <allowPreemptionFrom>false</allowPreemptionFrom>
+            <schedulingPolicy>fair</schedulingPolicy>
+            <aclSubmitApps>hadoop hadoop</aclSubmitApps>
+            <aclAdministerApps>hadoop hadoop</aclAdministerApps>
+            <queue name="data">
+                <minResources>245760 mb, 120 vcores</minResources>
+                <weight>1.0</weight>
+                <allowPreemptionFrom>false</allowPreemptionFrom>
+                <schedulingPolicy>fair</schedulingPolicy>
+                <aclSubmitApps>spark </aclSubmitApps>
+                <aclAdministerApps>spark </aclAdministerApps>
+            </queue>
+            <queue name="biz">
+                <minResources>122880 mb, 60 vcores</minResources>
+                <weight>1.0</weight>
+                <schedulingPolicy>fair</schedulingPolicy>
+                <aclSubmitApps>hadoop hadoop</aclSubmitApps>
+                <aclAdministerApps>hadoop hadoop</aclAdministerApps>
+                <queue name="lechuan">
+                    <minResources>20480 mb, 10 vcores</minResources>
+                    <weight>1.0</weight>
+                    <schedulingPolicy>fair</schedulingPolicy>
+                    <aclSubmitApps>lechuan,datacenter </aclSubmitApps>
+                    <aclAdministerApps>lechuan,datacenter </aclAdministerApps>
+                </queue>
+                <queue name="ac">
+                    <minResources>20480 mb, 10 vcores</minResources>
+                    <maxResources>409600 mb, 200 vcores</maxResources>
+                    <weight>1.0</weight>
+                    <schedulingPolicy>fair</schedulingPolicy>
+                    <aclSubmitApps>ac </aclSubmitApps>
+                    <aclAdministerApps>ac </aclAdministerApps>
+                </queue>
+                <queue name="quduopai">
+                    <minResources>20480 mb, 10 vcores</minResources>
+                    <maxResources>204800 mb, 100 vcores</maxResources>
+                    <weight>1.0</weight>
+                    <schedulingPolicy>fair</schedulingPolicy>
+                    <aclSubmitApps>quduopai </aclSubmitApps>
+                    <aclAdministerApps>quiduopai </aclAdministerApps>
+                </queue>
+                <queue name="test">
+                    <minResources>20480 mb, 10 vcores</minResources>
+                    <maxResources>307200 mb, 100 vcores</maxResources>
+                    <weight>1.0</weight>
+                    <schedulingPolicy>fair</schedulingPolicy>
+                    <aclSubmitApps>spark,hbase,root </aclSubmitApps>
+                    <aclAdministerApps>spark,hbase,root </aclAdministerApps>
+                </queue>
+				<queue name="executor">
+                    <minResources>204800 mb, 50 vcores</minResources>
+                    <maxResources>307200 mb, 100 vcores</maxResources>
+                    <weight>1.0</weight>
+                    <schedulingPolicy>fair</schedulingPolicy>
+                    <aclSubmitApps>spark,root </aclSubmitApps>
+                    <aclAdministerApps>spark,root </aclAdministerApps>
+                </queue>
+                <queue name="work">
+                    <minResources>20480 mb, 10 vcores</minResources>
+                    <maxResources>204800 mb, 100 vcores</maxResources>
+                    <weight>1.0</weight>
+                    <schedulingPolicy>fair</schedulingPolicy>
+                    <aclSubmitApps> work</aclSubmitApps>
+                    <aclAdministerApps> work</aclAdministerApps>
+                </queue>
+                <queue name="cpc">
+                    <minResources>20480 mb, 10 vcores</minResources>
+                    <maxResources>512000 mb, 200 vcores</maxResources>
+                    <weight>1.0</weight>
+                    <schedulingPolicy>fair</schedulingPolicy>
+                    <aclSubmitApps> cpc</aclSubmitApps>
+                    <aclAdministerApps> cpc</aclAdministerApps>
+                </queue>
+                <queue name="surevideo">
+                    <minResources>20480 mb, 10 vcores</minResources>
+                    <maxResources>204800 mb, 100 vcores</maxResources>
+                    <weight>1.0</weight>
+                    <schedulingPolicy>fair</schedulingPolicy>
+                    <aclSubmitApps> surevideo</aclSubmitApps>
+                    <aclAdministerApps> surevideo</aclAdministerApps>
+                </queue>
+            </queue>
+        </queue>
+        <queue name="develop">
+            <minResources>143360 mb, 70 vcores</minResources>
+            <maxResources>1887436 mb, 1000 vcores</maxResources>
+            <weight>1.0</weight>
+            <schedulingPolicy>fair</schedulingPolicy>
+            <allowPreemptionFrom>true</allowPreemptionFrom>
+            <aclSubmitApps>hadoop hadoop</aclSubmitApps>
+            <aclAdministerApps>hadoop hadoop</aclAdministerApps>
+            <queue name="adhoc">
+                <minResources>122880 mb, 60 vcores</minResources>
+                <weight>3.0</weight>
+                <schedulingPolicy>fair</schedulingPolicy>
+                <aclSubmitApps>hadoop hadoop</aclSubmitApps>
+                <aclAdministerApps>hadoop hadoop</aclAdministerApps>
+                <queue name="lechuan">
+                    <minResources>20480 mb, 10 vcores</minResources>
+                    <weight>1.0</weight>
+                    <schedulingPolicy>fair</schedulingPolicy>
+                    <aclSubmitApps> lechuan,datacenter</aclSubmitApps>
+                    <aclAdministerApps> lechuan,datacenter</aclAdministerApps>
+                </queue>
+                <queue name="ac">
+                    <minResources>20480 mb, 10 vcores</minResources>
+                    <maxResources>512000 mb, 200 vcores</maxResources>
+                    <weight>1.0</weight>
+                    <schedulingPolicy>fair</schedulingPolicy>
+                    <aclSubmitApps> ac</aclSubmitApps>
+                    <aclAdministerApps> ac</aclAdministerApps>
+                </queue>
+                <queue name="work">
+                    <minResources>20480 mb, 10 vcores</minResources>
+                    <maxResources>204800 mb, 100 vcores</maxResources>
+                    <weight>1.0</weight>
+                    <schedulingPolicy>fair</schedulingPolicy>
+                    <aclSubmitApps> work</aclSubmitApps>
+                    <aclAdministerApps> work</aclAdministerApps>
+                </queue>
+                <queue name="cpc">
+                    <minResources>20480 mb, 10 vcores</minResources>
+                    <maxResources>512000 mb, 200 vcores</maxResources>
+                    <weight>1.0</weight>
+                    <schedulingPolicy>fair</schedulingPolicy>
+                    <aclSubmitApps> cpc</aclSubmitApps>
+                    <aclAdministerApps> cpc</aclAdministerApps>
+                </queue>
+                <queue name="surevideo">
+                    <minResources>20480 mb, 10 vcores</minResources>
+                    <maxResources>204800 mb, 100 vcores</maxResources>
+                    <weight>1.0</weight>
+                    <schedulingPolicy>fair</schedulingPolicy>
+                    <aclSubmitApps> surevideo</aclSubmitApps>
+                    <aclAdministerApps> surevideo</aclAdministerApps>
+                </queue>
+            </queue>
+        </queue>
+    </queue>
+    <defaultFairSharePreemptionTimeout>300</defaultFairSharePreemptionTimeout>
+    <defaultMinSharePreemptionTimeout>300</defaultMinSharePreemptionTimeout>
+    <defaultFairSharePreemptionThreshold>0.8</defaultFairSharePreemptionThreshold>
+    <defaultQueueSchedulingPolicy>fair</defaultQueueSchedulingPolicy>
+    <queuePlacementPolicy>
+        <rule name="specified" create="false"/>
+        <rule name="reject"/>
+    </queuePlacementPolicy>
+</allocations>
+

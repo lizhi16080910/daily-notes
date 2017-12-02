@@ -1,0 +1,46 @@
+由于yarn只能使用一种调度器，所以要想使用Fair Scheduler首先要在yarn-site.xml中将配置参数 yarn.resourcemanager.scheduler.class 设置为 org.apache.hadoop.yarn.server.resourcemanager.scheduler.fair.FairScheduler。 
+FairScheduler的配置选项包括两部分，其中一部分在yarn-site.xml中，主要用于配置调度器级别的参数，另外一部分在一个自定义配置文件（默认是fair-scheduler.xml）中，主要用于配置各个队列的资源量、权重等信息。
+
+（1）、配置文件yarn-site.xml
+1. yarn.scheduler.fair.allocation.file ：自定义XML配置文件所在位置，该文件主要用于描述各个队列的属性，比如资源量、权重等，具体配置格式将在后面介绍。
+2. yarn.scheduler.fair.user-as-default-queue：当应用程序未指定队列名时，是否指定用户名作为应用程序所在的队列名。如果设置为false或者未设置，
+    所有未知队列的应用程序将被提交到default队列中，默认值为true。
+3. yarn.scheduler.fair.preemption：是否启用抢占机制，默认值是false。
+4. yarn.scheduler.fair.sizebasedweight：在一个队列内部分配资源时，默认情况下，采用公平轮询的方法将资源分配各各个应用程序，
+    而该参数则提供了另外一种资源分配方式：按照应用程序资源需求数目分配资源，即需求资源数量越多，分配的资源越多。默认情况下，该参数值为false。
+5. yarn.scheduler.assignmultiple：是否启动批量分配功能。当一个节点出现大量资源时，可以一次分配完成，也可以多次分配完成。默认情况下，该参数值为false。
+6. yarn.scheduler.fair.max.assign：如果开启批量分配功能，可指定一次分配的container数目。默认情况下，该参数值为-1，表示不限制。
+7. yarn.scheduler.fair.locality.threshold.node：当应用程序请求某个节点上资源时，它可以接受的可跳过的最大资源调度机会。
+    当按照分配策略，可将一个节点上的资源分配给某个应用程序时，如果该节点不是应用程序期望的节点，可选择跳过该分配机会暂时将资源分配给其他应用程序， 直到出现满足该应用程序需的节点资源出现。通常而言，一次心跳代表一次调度机会，而该参数则表示跳过调度机会占节点总数的比例，默认情况下，该值为-1.0，表示不跳过任何调度机会。
+8. yarn.scheduler.fair.locality.threshold.rack：当应用程序请求某个机架上资源时，它可以接受的可跳过的最大资源调度机会。
+9. yarn.scheduler.fair.allow-undeclared-pools：默认是true，提交的app会被提交到指定队列或者取决于user-as-default-queue属性。如果为false，app总是提交到默认队列中。
+    如果allocations配置文件中给出了队列匹配规则这个属性将会被忽略。
+10.yarn.scheduler.increment-allocation-mb：内存规整化单位，默认是1024，这意味着，如果一个Container请求资源是1.5GB，则将被调度器规整化为ceiling(1.5 GB / 1GB) * 1G=2GB。
+11. yarn.scheduler.increment-allocation-vcores：虚拟CPU规整化单位，默认是1，含义与内存规整化单位类似。
+
+（2）自定义配置文件
+1. minResources ：最少资源保证量，设置格式为“X mb, Y vcores”，当一个队列的最少资源保证量未满足时，它将优先于其他同级队列获得资源，
+    对于不同的调度策略（后面会详细介绍），最少资源保证量的含义不同，对于fair策略，则只考虑内存资源，
+    即如果一个队列使用的内存资源超过了它的最少资源量，则认为它已得到了满足；对于drf策略，则考虑主资源使用的资源量，
+    即如果一个队列的主资源量超过它的最少资源量，则认为它已得到了满足。
+2. maxResources：最多可以使用的资源量，fair scheduler会保证每个队列使用的资源量不会超过该队列的最多可使用资源量。
+3. maxRunningApps：最多同时运行的应用程序数目。通过限制该数目，可防止超量Map Task同时运行时产生的中间输出结果撑爆磁盘。
+4. weight：队列间的权重值，当队列中有任务等待，并且集群中有空闲资源时候，每个队列可以根据权重获得不同比例的集群空闲资源。
+5. schedulingPolicy：队列采用的调度模式，可以是fifo、fair或者drf。
+6. aclSubmitApps：可向队列中提交应用程序的Linux用户或用户组列表，默认情况下为“*”，表示任何用户均可以向该队列提交应用程序。
+    需要注意的是，该属性具有继承性，即子队列的列表会继承父队列的列表。配置该属性时，用户之间或用户组之间用“，”分割，
+    用户和用户组之间用空格分割，比如“user1, user2 group1,group2”。
+7. aclAdministerApps：该队列的管理员列表。一个队列的管理员可管理该队列中的资源和应用程序，比如可杀死任意应用程序。
+8. minSharePreemptionTimeout：最小共享量抢占时间。如果一个资源池在该时间内使用的资源量一直低于最小资源量，则开始抢占其他队列的资源。
+
+（3）其他配置
+1. User elements：为单个用户添加maxRunningApps属性限制其最多同时运行的应用程序数目
+2. userMaxAppsDefault elements：其他用户最多同时运行的app数目的默认值
+3. fairSharePreemptionTimeout elements：公平共享量抢占时间，如果一个队列在该时间内使用资源量一直低于公平共享量的一半
+    (这个比例可以配置，通过defaultFairSharePreemptionThreshold来配置默认比例，fairSharePreemptionThreshold配置该队列比例)，
+    则开始抢占该队列的资源。
+4. defaultMinSharePreemptionTimeout elements：队列的minSharePreemptionTimeout属性的默认值。
+5. queueMaxAppsDefault elements：队列的maxRunningApps属性的默认值，会被队列的maxRunningApps属性覆盖。
+6. defaultQueueSchedulingPolicy elements：队列的schedulingPolicy属性的默认值。
+7. queuePlacementPolicy elements：基于规则来确定应用应该放到哪个队列，<queuePlacementPolicy> 元素定义了一个规则列表，其中的每个规则会被逐个尝试直到匹配成功，
+    至于它的规则官网上有写，这里就不写了。

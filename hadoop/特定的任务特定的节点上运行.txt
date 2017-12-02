@@ -1,0 +1,2 @@
+1、指定nodelabel
+2、指定队列在指定的nodelabel上

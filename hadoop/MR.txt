@@ -1,0 +1,6 @@
+1、
+
+mapreduce.job.reduce.slowstart.completedmaps为0.8
+
+2、如果该参数过低，有可能导致
+在往hbase表里通过bulkload导数据时，某个mapreduce跑了一个多小时还没跑，看yarn界面，发现map还有一小部分没跑完，没跑完的map全在pending，running中没有，同时reduce在copy阶段把资源全用光，导致map没资源去跑，进而导致reduce一直在copy状态等待。也就是说map需要资源去跑，reduce需要等map全部跑完才能进行下一个阶段，这样就导致相互等待，类似死锁。大约在一个半小时左右，有130多个reduce被AppMaster kill，被kill的reduce出现日志：Reducer preempted to make room for pending map attempts Container killed by the ApplicationMaster. Container killed on request. Exit code is 143 Container exited with a non-zero exit code 143。这就是说当资源不够是，AppMaster会kill掉reduce释放资源给map。解决办法是调整mapreduce.job.reduce.slowstart.completedmaps参数，默认为0.05，即map完成0.05后reduce就开始copy，如果集群资源不够，有可能导致reduce把资源全抢光，可以把这个参数调整到0.8，map完成80%后才开始reduce copy。
